@@ -1,13 +1,21 @@
 /// api_service.dart
 /// Serviço HTTP centralizado para comunicação com a API Node.js.
-/// Todas as chamadas à API passam por esta classe.
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class ApiService {
-  // URL base do servidor Node.js (use 10.0.2.2 para emulador Android)
-  static const String _baseUrl = 'http://localhost:3000';
+  // Configuração da URL base:
+  // - Emulador Android: 10.0.2.2
+  // - iOS/Web/Desktop: localhost
+  static String get _baseUrl {
+    if (kIsWeb) return 'http://localhost:3000';
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:3000';
+    }
+    return 'http://localhost:3000';
+  }
 
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
@@ -37,9 +45,12 @@ class ApiService {
             body: jsonEncode({'email': email, 'senha': senha}),
           )
           .timeout(const Duration(seconds: 15));
-      return jsonDecode(response.body) as Map<String, dynamic>;
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) return body;
+      return {'success': false, 'message': 'Resposta do servidor inválida.'};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {'success': false, 'message': 'Erro de conexão. Verifique se o servidor está rodando.'};
     }
   }
 
@@ -54,7 +65,10 @@ class ApiService {
             body: jsonEncode(data),
           )
           .timeout(const Duration(seconds: 15));
-      return jsonDecode(response.body) as Map<String, dynamic>;
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) return body;
+      return {'success': false, 'message': 'Resposta do servidor inválida.'};
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
     }
@@ -71,7 +85,10 @@ class ApiService {
             body: jsonEncode(data),
           )
           .timeout(const Duration(seconds: 15));
-      return jsonDecode(response.body) as Map<String, dynamic>;
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) return body;
+      return {'success': false, 'message': 'Resposta do servidor inválida.'};
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
     }
@@ -88,7 +105,10 @@ class ApiService {
             body: jsonEncode({'email': email}),
           )
           .timeout(const Duration(seconds: 15));
-      return jsonDecode(response.body) as Map<String, dynamic>;
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) return body;
+      return {'success': false, 'message': 'Resposta do servidor inválida.'};
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
     }
@@ -105,7 +125,10 @@ class ApiService {
             body: jsonEncode({'email': email, 'code': code}),
           )
           .timeout(const Duration(seconds: 15));
-      return jsonDecode(response.body) as Map<String, dynamic>;
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) return body;
+      return {'success': false, 'message': 'Resposta do servidor inválida.'};
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
     }
@@ -132,7 +155,10 @@ class ApiService {
             }),
           )
           .timeout(const Duration(seconds: 15));
-      return jsonDecode(response.body) as Map<String, dynamic>;
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) return body;
+      return {'success': false, 'message': 'Resposta do servidor inválida.'};
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
     }
