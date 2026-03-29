@@ -10,16 +10,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # HTTP client para comunicação com a API Node.js
-  http: ^1.2.1
+  # ── Supabase (Auth + Database + Storage) ──────────────
+  supabase_flutter: ^2.8.4
 
-  # Armazenamento local do token JWT
+  # ── Armazenamento seguro do token de sessão ───────────
+  flutter_secure_storage: ^9.2.4
+
+  # ── Armazenamento de preferências simples ─────────────
   shared_preferences: ^2.2.3
 
-  # Máscaras de input (CPF, telefone, CEP)
+  # ── Máscaras de input (CPF, telefone, CEP) ────────────
   mask_text_input_formatter: ^2.9.0
 
-  # Ícones e fontes
+  # ── Ícones e fontes ───────────────────────────────────
   cupertino_icons: ^1.0.6
   google_fonts: ^6.2.1
 

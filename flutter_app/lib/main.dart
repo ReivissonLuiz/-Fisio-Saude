@@ -3,6 +3,8 @@
 /// Configura o tema e as rotas de navegação.
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config/supabase_config.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
@@ -14,7 +16,15 @@ import 'screens/register/profile_selection_screen.dart';
 import 'screens/register/patient_register_screen.dart';
 import 'screens/register/professional_register_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa o Supabase antes de qualquer widget
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+
   runApp(const FisioSaudeApp());
 }
 

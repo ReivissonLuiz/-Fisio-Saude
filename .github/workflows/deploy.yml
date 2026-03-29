@@ -1,0 +1,58 @@
+name: 🚀 Deploy Flutter Web → GitHub Pages
+
+on:
+  push:
+    branches:
+      - main          # Publica automaticamente a cada push em main
+  workflow_dispatch:   # Permite rodar manualmente pelo GitHub
+
+permissions:
+  contents: write     # Necessário para fazer push na branch gh-pages
+
+jobs:
+  build-and-deploy:
+    name: Build Flutter Web e publicar
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Clonar o repositório
+      - name: 📥 Checkout do repositório
+        uses: actions/checkout@v4
+
+      # 2. Configurar o Flutter
+      - name: 🐦 Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.4'
+          channel: 'stable'
+          cache: true
+
+      # 3. Instalar dependências do Flutter
+      - name: 📦 Instalar dependências
+        working-directory: flutter_app
+        run: flutter pub get
+
+      # 4. Verificar se o código compila sem erros
+      - name: 🔍 Analisar código
+        working-directory: flutter_app
+        run: flutter analyze --no-fatal-infos
+
+      # 5. Compilar para Web
+      #    --base-href deve corresponder ao nome exato do repositório no GitHub
+      - name: 🏗️ Compilar Flutter Web
+        working-directory: flutter_app
+        run: |
+          flutter build web \
+            --release \
+            --base-href "/-Fisio-Saude/" \
+            --web-renderer canvaskit
+
+      # 6. Publicar na branch gh-pages
+      - name: 🌐 Deploy no GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: flutter_app/build/web
+          publish_branch: gh-pages
+          force_orphan: true           # Branch limpa a cada deploy
+          commit_message: "🚀 Deploy automático — ${{ github.sha }}"
