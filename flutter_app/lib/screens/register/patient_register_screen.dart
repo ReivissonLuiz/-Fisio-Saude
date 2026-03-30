@@ -209,10 +209,10 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
 
                     CustomTextField(
                       label: 'RG *',
-                      hint: 'Apenas números (ou com letras se aplicável)',
+                      hint: 'Apenas números e letras...',
                       controller: _rgCtrl,
                       keyboardType: TextInputType.text,
-                      prefixIcon: const Icon(Icons.credit_card_outlined),
+                      prefixIcon: const Icon(Icons.badge_outlined),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
                           return 'Informe seu RG.';
@@ -223,23 +223,9 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     const SizedBox(height: 14),
 
                     DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Gênero *',
-                        prefixIcon: const Icon(Icons.people_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.3)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: AppTheme.divider),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: AppTheme.background,
+                        prefixIcon: Icon(Icons.people_outline),
                       ),
                       value: _generoSelecionado,
                       items: const [
