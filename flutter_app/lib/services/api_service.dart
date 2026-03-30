@@ -212,10 +212,14 @@ class ApiService {
   // ─── Auth: Esqueci Minha Senha ────────────────────────────────────────────
 
   /// Envia e-mail real de recuperação de senha via Supabase.
-  /// Não retorna mais _devCode — o usuário recebe o e-mail automaticamente.
-  Future<Map<String, dynamic>> forgotPassword(String email) async {
+  /// O link no e-mail redireciona para a tela de redefinição de senha do app.
+  Future<Map<String, dynamic>> forgotPassword(String email,
+      {String? redirectTo}) async {
     try {
-      await _sb.auth.resetPasswordForEmail(email.trim().toLowerCase());
+      await _sb.auth.resetPasswordForEmail(
+        email.trim().toLowerCase(),
+        redirectTo: redirectTo,
+      );
       return {
         'success': true,
         'message':
