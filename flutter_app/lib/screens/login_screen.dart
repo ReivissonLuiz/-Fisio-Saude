@@ -1,6 +1,6 @@
-/// login_screen.dart
-/// Tela de login com validação em tempo real, controle de tentativas
-/// e navegação para recuperação de senha e cadastro.
+﻿/// login_screen.dart
+/// Tela de login com validaÃ§Ã£o em tempo real, controle de tentativas
+/// e navegaÃ§Ã£o para recuperaÃ§Ã£o de senha e cadastro.
 library;
 
 import 'package:flutter/material.dart';
@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
         '/home',
         (r) => false,
         arguments: {
-          'nome': result['user']['nome'] ?? result['user']['email'] ?? 'Usuário',
+          'nome': result['user']['nome'] ?? result['user']['email'] ?? 'UsuÃ¡rio',
           'tipo': result['user']['tipo'],
           'email': result['user']['email'],
           'id_paciente': result['user']['id_paciente'],
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const SizedBox(height: 48),
 
-                      // ─── Cabeçalho ────────────────────────────────────────
+                      // â”€â”€â”€ CabeÃ§alho â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       Center(
                         child: Column(
                           children: [
@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 40),
 
-                      // ─── Campo Email ──────────────────────────────────────
+                      // â”€â”€â”€ Campo Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       CustomTextField(
                         label: 'E-mail',
                         hint: 'seu@email.com',
@@ -128,11 +128,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         prefixIcon: const Icon(Icons.email_outlined,
                             color: AppTheme.textSecondary),
                         validator: (v) {
-                          if (v == null || v.isEmpty)
+                          if (v == null || v.isEmpty) {
                             return 'Informe seu e-mail.';
+                          }
                           if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
                               .hasMatch(v)) {
-                            return 'E-mail inválido.';
+                            return 'E-mail invÃ¡lido.';
                           }
                           return null;
                         },
@@ -140,10 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // ─── Campo Senha ──────────────────────────────────────
+                      // â”€â”€â”€ Campo Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       CustomTextField(
                         label: 'Senha',
-                        hint: '••••••••',
+                        hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                         controller: _senhaCtrl,
                         obscureText: _obscureSenha,
                         prefixIcon: const Icon(Icons.lock_outline,
@@ -159,15 +160,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               setState(() => _obscureSenha = !_obscureSenha),
                         ),
                         validator: (v) {
-                          if (v == null || v.isEmpty)
+                          if (v == null || v.isEmpty) {
                             return 'Informe sua senha.';
+                          }
                           return null;
                         },
                         onChanged: (_) => setState(() => _errorMessage = null),
                       ),
                       const SizedBox(height: 8),
 
-                      // ─── Link Esqueci senha ───────────────────────────────
+                      // â”€â”€â”€ Link Esqueci senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -183,17 +185,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // ─── Mensagem de Erro ─────────────────────────────────
+                      // â”€â”€â”€ Mensagem de Erro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       if (_errorMessage != null)
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: AppTheme.error.withOpacity(0.1),
+                            color: AppTheme.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                                color: AppTheme.error.withOpacity(0.3)),
+                                color: AppTheme.error.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             children: [
@@ -211,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                      // ─── Botão Entrar ─────────────────────────────────────
+                      // â”€â”€â”€ BotÃ£o Entrar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       PrimaryButton(
                         label: 'Entrar',
                         onPressed: _doLogin,
@@ -219,13 +221,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 28),
 
-                      // ─── Link Cadastro ────────────────────────────────────
+                      // â”€â”€â”€ Link Cadastro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text(
-                              'Não tenho conta? ',
+                              'NÃ£o tenho conta? ',
                               style: TextStyle(color: AppTheme.textSecondary),
                             ),
                             GestureDetector(

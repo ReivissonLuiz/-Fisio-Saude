@@ -1,14 +1,14 @@
-/// supabase_service.dart  (antigo api_service.dart)
-/// Serviço de comunicação com o Supabase — +Físio +Saúde
+﻿/// supabase_service.dart  (antigo api_service.dart)
+/// ServiÃ§o de comunicaÃ§Ã£o com o Supabase â€” +FÃ­sio +SaÃºde
 ///
 /// Substitui completamente a camada Node.js (localhost:3000).
-/// Usa o Supabase Auth SDK para login, registro e recuperação de senha.
-/// Os dados de paciente/profissional são gravados diretamente nas tabelas.
+/// Usa o Supabase Auth SDK para login, registro e recuperaÃ§Ã£o de senha.
+/// Os dados de paciente/profissional sÃ£o gravados diretamente nas tabelas.
 library;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Acesso global ao cliente Supabase (após Supabase.initialize)
+/// Acesso global ao cliente Supabase (apÃ³s Supabase.initialize)
 SupabaseClient get _sb => Supabase.instance.client;
 
 class ApiService {
@@ -16,15 +16,15 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // ─── Sessão atual ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ SessÃ£o atual â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Retorna o usuário autenticado atual, ou null se não logado.
+  /// Retorna o usuÃ¡rio autenticado atual, ou null se nÃ£o logado.
   User? get currentUser => _sb.auth.currentUser;
 
-  /// Stream que emite eventos de mudança de autenticação.
+  /// Stream que emite eventos de mudanÃ§a de autenticaÃ§Ã£o.
   Stream<AuthState> get authStateChanges => _sb.auth.onAuthStateChange;
 
-  // ─── Auth: Login ──────────────────────────────────────────────────────────
+  // â”€â”€â”€ Auth: Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Realiza login com e-mail e senha via Supabase Auth.
   /// Retorna { success, user, token, tipo, message }
@@ -39,10 +39,10 @@ class ApiService {
       final session = response.session;
 
       if (user == null) {
-        return {'success': false, 'message': 'Credenciais inválidas.'};
+        return {'success': false, 'message': 'Credenciais invÃ¡lidas.'};
       }
 
-      // Busca o tipo de usuário na tabela login
+      // Busca o tipo de usuÃ¡rio na tabela login
       final loginData = await _sb
           .from('login')
           .select(
@@ -67,12 +67,12 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÃ£o. Verifique sua internet.'
       };
     }
   }
 
-  // ─── Auth: Registro de Paciente ───────────────────────────────────────────
+  // â”€â”€â”€ Auth: Registro de Paciente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Registra paciente no Supabase Auth e grava dados na tabela `paciente`.
   Future<Map<String, dynamic>> registerPatient(
@@ -90,7 +90,7 @@ class ApiService {
 
       final user = response.user;
       if (user == null) {
-        return {'success': false, 'message': 'Não foi possível criar a conta.'};
+        return {'success': false, 'message': 'NÃ£o foi possÃ­vel criar a conta.'};
       }
 
       // 2. Gravar dados na tabela paciente
@@ -110,7 +110,7 @@ class ApiService {
           .select()
           .single();
 
-      // 3. Criar vínculo na tabela login
+      // 3. Criar vÃ­nculo na tabela login
       await _sb.from('login').insert({
         'supabase_user_id': user.id,
         'email': email,
@@ -127,7 +127,7 @@ class ApiService {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        return {'success': false, 'message': 'E-mail ou CPF já cadastrado.'};
+        return {'success': false, 'message': 'E-mail ou CPF jÃ¡ cadastrado.'};
       }
       return {
         'success': false,
@@ -136,15 +136,15 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÃ£o. Verifique sua internet.'
       };
     }
   }
 
-  // ─── Auth: Registro de Profissional ───────────────────────────────────────
+  // â”€â”€â”€ Auth: Registro de Profissional â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Registra profissional no Auth e grava dados na tabela `profissional`.
-  /// O profissional é ativado imediatamente (sem aprovação de administrador).
+  /// O profissional Ã© ativado imediatamente (sem aprovaÃ§Ã£o de administrador).
   Future<Map<String, dynamic>> registerProfessional(
       Map<String, dynamic> data) async {
     try {
@@ -160,7 +160,7 @@ class ApiService {
 
       final user = response.user;
       if (user == null) {
-        return {'success': false, 'message': 'Não foi possível criar a conta.'};
+        return {'success': false, 'message': 'NÃ£o foi possÃ­vel criar a conta.'};
       }
 
       // 2. Gravar dados na tabela profissional (ativo imediatamente)
@@ -174,12 +174,12 @@ class ApiService {
             'especialidade': (data['especializacao'] as String).trim(),
             'telefone':
                 (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'ativo': true, // Ativado automaticamente — sem aprovação
+            'ativo': true, // Ativado automaticamente â€” sem aprovaÃ§Ã£o
           })
           .select()
           .single();
 
-      // 3. Criar vínculo na tabela login
+      // 3. Criar vÃ­nculo na tabela login
       await _sb.from('login').insert({
         'supabase_user_id': user.id,
         'email': email,
@@ -189,14 +189,14 @@ class ApiService {
 
       return {
         'success': true,
-        'message': 'Cadastro realizado com sucesso! Você já pode fazer login.',
+        'message': 'Cadastro realizado com sucesso! VocÃª jÃ¡ pode fazer login.',
         'profissional_id': profResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        return {'success': false, 'message': 'E-mail ou CPF já cadastrado.'};
+        return {'success': false, 'message': 'E-mail ou CPF jÃ¡ cadastrado.'};
       }
       return {
         'success': false,
@@ -205,15 +205,15 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÃ£o. Verifique sua internet.'
       };
     }
   }
 
-  // ─── Auth: Esqueci Minha Senha ────────────────────────────────────────────
+  // â”€â”€â”€ Auth: Esqueci Minha Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Envia e-mail real de recuperação de senha via Supabase.
-  /// O link no e-mail redireciona para a tela de redefinição de senha do app.
+  /// Envia e-mail real de recuperaÃ§Ã£o de senha via Supabase.
+  /// O link no e-mail redireciona para a tela de redefiniÃ§Ã£o de senha do app.
   Future<Map<String, dynamic>> forgotPassword(String email,
       {String? redirectTo}) async {
     try {
@@ -224,19 +224,19 @@ class ApiService {
       return {
         'success': true,
         'message':
-            'Se este e-mail estiver cadastrado, você receberá as instruções em breve.',
+            'Se este e-mail estiver cadastrado, vocÃª receberÃ¡ as instruÃ§Ãµes em breve.',
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÃ£o. Verifique sua internet.'
       };
     }
   }
 
-  // ─── Auth: Verificar Código OTP (Passo 2) ─────────────────────────────────
+  // â”€â”€â”€ Auth: Verificar CÃ³digo OTP (Passo 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Verifica o token OTP enviado por e-mail pelo Supabase.
   Future<Map<String, dynamic>> verifyCode(String email, String code) async {
@@ -247,22 +247,22 @@ class ApiService {
         type: OtpType.recovery,
       );
       if (response.user != null) {
-        return {'success': true, 'message': 'Código verificado com sucesso!'};
+        return {'success': true, 'message': 'CÃ³digo verificado com sucesso!'};
       }
-      return {'success': false, 'message': 'Código inválido ou expirado.'};
+      return {'success': false, 'message': 'CÃ³digo invÃ¡lido ou expirado.'};
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÃ£o. Verifique sua internet.'
       };
     }
   }
 
-  // ─── Auth: Redefinir Senha (Passo 3) ──────────────────────────────────────
+  // â”€â”€â”€ Auth: Redefinir Senha (Passo 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Atualiza a senha do usuário após OTP verificado.
+  /// Atualiza a senha do usuÃ¡rio apÃ³s OTP verificado.
   Future<Map<String, dynamic>> resetPassword({
     required String email,
     required String code,
@@ -270,12 +270,12 @@ class ApiService {
     required String confirmarSenha,
   }) async {
     if (novaSenha != confirmarSenha) {
-      return {'success': false, 'message': 'As senhas não coincidem.'};
+      return {'success': false, 'message': 'As senhas nÃ£o coincidem.'};
     }
     if (novaSenha.length < 6) {
       return {
         'success': false,
-        'message': 'A senha deve ter no mínimo 6 caracteres.'
+        'message': 'A senha deve ter no mÃ­nimo 6 caracteres.'
       };
     }
     try {
@@ -287,25 +287,25 @@ class ApiService {
       }
       return {
         'success': false,
-        'message': 'Não foi possível redefinir a senha.'
+        'message': 'NÃ£o foi possÃ­vel redefinir a senha.'
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÃ£o. Verifique sua internet.'
       };
     }
   }
 
-  // ─── Auth: Logout ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ Auth: Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> logout() async {
     await _sb.auth.signOut();
   }
 
-  // ─── Paciente: Perfil ─────────────────────────────────────────────────────
+  // â”€â”€â”€ Paciente: Perfil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Busca os dados completos do paciente pelo ID.
   Future<Map<String, dynamic>> getPaciente(String pacienteId) async {
@@ -319,11 +319,11 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÃ£o.'};
     }
   }
 
-  /// Atualiza os dados editáveis do paciente.
+  /// Atualiza os dados editÃ¡veis do paciente.
   Future<Map<String, dynamic>> updatePaciente(
       String pacienteId, Map<String, dynamic> dados) async {
     try {
@@ -337,11 +337,11 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÃ£o.'};
     }
   }
 
-  // ─── Paciente: Sintomas ───────────────────────────────────────────────────
+  // â”€â”€â”€ Paciente: Sintomas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Registra um novo sintoma do paciente.
   Future<Map<String, dynamic>> registrarSintoma(
@@ -356,11 +356,11 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÃ£o.'};
     }
   }
 
-  /// Busca o histórico de sintomas de um paciente, do mais recente ao mais antigo.
+  /// Busca o histÃ³rico de sintomas de um paciente, do mais recente ao mais antigo.
   Future<Map<String, dynamic>> getSintomas(String pacienteId) async {
     try {
       final data = await _sb
@@ -373,11 +373,11 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÃ£o.'};
     }
   }
 
-  // ─── Profissionais: Busca ─────────────────────────────────────────────────
+  // â”€â”€â”€ Profissionais: Busca â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Lista todos os profissionais ativos para busca pelo paciente.
   Future<Map<String, dynamic>> getProfissionais({String? termoBusca}) async {
@@ -405,11 +405,11 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÃ£o.'};
     }
   }
 
-  // ─── Paciente: Consultas ──────────────────────────────────────────────────
+  // â”€â”€â”€ Paciente: Consultas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Busca as consultas do paciente com dados do profissional.
   Future<Map<String, dynamic>> getConsultas(String pacienteId) async {
@@ -424,13 +424,13 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÃ£o.'};
     }
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Traduz mensagens de erro do Supabase Auth para português.
+  /// Traduz mensagens de erro do Supabase Auth para portuguÃªs.
   String _traduzirErroAuth(String message) {
     if (message.contains('Invalid login credentials')) {
       return 'E-mail ou senha incorretos.';
@@ -439,25 +439,25 @@ class ApiService {
       return 'Confirme seu e-mail antes de fazer login.';
     }
     if (message.contains('User already registered')) {
-      return 'Este e-mail já está cadastrado.';
+      return 'Este e-mail jÃ¡ estÃ¡ cadastrado.';
     }
     if (message.contains('Password should be at least')) {
-      return 'A senha deve ter no mínimo 6 caracteres.';
+      return 'A senha deve ter no mÃ­nimo 6 caracteres.';
     }
     if (message.contains('rate limit') ||
         message.contains('only request this after')) {
-      // Extrai o número de segundos da mensagem se disponível
+      // Extrai o nÃºmero de segundos da mensagem se disponÃ­vel
       final match = RegExp(r'after (\d+) seconds').firstMatch(message);
       if (match != null) {
-        return 'Por segurança, aguarde ${match.group(1)} segundos antes de tentar novamente.';
+        return 'Por seguranÃ§a, aguarde ${match.group(1)} segundos antes de tentar novamente.';
       }
       return 'Muitas tentativas. Aguarde um momento e tente novamente.';
     }
     if (message.contains('Token has expired')) {
-      return 'Código expirado. Solicite um novo.';
+      return 'CÃ³digo expirado. Solicite um novo.';
     }
     if (message.contains('otp_expired') || message.contains('invalid')) {
-      return 'Código inválido ou expirado.';
+      return 'CÃ³digo invÃ¡lido ou expirado.';
     }
     return 'Erro: $message';
   }

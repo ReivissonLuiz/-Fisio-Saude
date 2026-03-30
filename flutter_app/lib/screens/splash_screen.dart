@@ -1,5 +1,5 @@
-/// splash_screen.dart
-/// Tela de boas-vindas com logo, nome do app e botões de acesso.
+﻿/// splash_screen.dart
+/// Tela de boas-vindas com logo, nome do app e botÃµes de acesso.
 library;
 
 import 'package:flutter/material.dart';
@@ -48,22 +48,22 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               children: [
                 const Spacer(flex: 2),
-                // ─── Logo e Nome ───────────────────────────────────────────
+                // â”€â”€â”€ Logo e Nome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 FadeTransition(
                   opacity: _fadeAnim,
                   child: SlideTransition(
                     position: _slideAnim,
                     child: Column(
                       children: [
-                        // Ícone do app
+                        // Ãcone do app
                         Container(
                           width: 110,
                           height: 110,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                           ),
@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen>
                         const SizedBox(height: 28),
                         // Nome do app
                         const Text(
-                          '+Físio +Saúde',
+                          '+FÃ­sio +SaÃºde',
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
@@ -86,10 +86,10 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Sua reabilitação, em boas mãos.',
+                          'Sua reabilitaÃ§Ã£o, em boas mÃ£os.',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withValues(alpha: 0.85),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const Spacer(flex: 3),
-                // ─── Botões ────────────────────────────────────────────────
+                // â”€â”€â”€ BotÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 FadeTransition(
                   opacity: _fadeAnim,
                   child: Center(
@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen>
                       constraints: const BoxConstraints(maxWidth: 400),
                       child: Column(
                         children: [
-                          // Botão Entrar
+                          // BotÃ£o Entrar
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                           const SizedBox(height: 14),
-                          // Botão Cadastrar-se
+                          // BotÃ£o Cadastrar-se
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -160,11 +160,11 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 40),
-                // Rodapé
+                // RodapÃ©
                 Text(
-                  'Plataforma de suporte fisioterapêutico',
+                  'Plataforma de suporte fisioterapÃªutico',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 12,
                   ),
                 ),

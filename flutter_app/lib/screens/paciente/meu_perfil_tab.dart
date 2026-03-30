@@ -1,5 +1,5 @@
-/// meu_perfil_tab.dart
-/// Aba "Meu Perfil" — visualização e edição dos dados do paciente — +Físio +Saúde
+﻿/// meu_perfil_tab.dart
+/// Aba "Meu Perfil" â€” visualizaÃ§Ã£o e ediÃ§Ã£o dos dados do paciente â€” +FÃ­sio +SaÃºde
 library;
 
 import 'package:flutter/material.dart';
@@ -38,7 +38,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
   String? _errorMsg;
 
   static const _generos = [
-    'Masculino', 'Feminino', 'Não-binário', 'Prefiro não informar', 'Outro'
+    'Masculino', 'Feminino', 'NÃ£o-binÃ¡rio', 'Prefiro nÃ£o informar', 'Outro'
   ];
   String? _generoSelecionado;
 
@@ -109,7 +109,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua sessão?'),
+        content: const Text('Deseja encerrar sua sessÃ£o?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -147,7 +147,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ── Avatar e nome ──────────────────────────────────────────────
+            // â”€â”€ Avatar e nome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -159,7 +159,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: Colors.white.withOpacity(0.25),
+                    backgroundColor: Colors.white.withValues(alpha: 0.25),
                     child: Text(
                       nome.isNotEmpty ? nome[0].toUpperCase() : 'P',
                       style: const TextStyle(
@@ -180,10 +180,10 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('🧑 Paciente',
+                    child: const Text('ðŸ§‘ Paciente',
                         style:
                             TextStyle(color: Colors.white, fontSize: 12)),
                   ),
@@ -192,15 +192,15 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 20),
 
-            // ── Feedbacks ──────────────────────────────────────────────────
+            // â”€â”€ Feedbacks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (_successMsg != null)
               _FeedbackBanner(message: _successMsg!, isError: false),
             if (_errorMsg != null)
               _FeedbackBanner(message: _errorMsg!, isError: true),
 
-            // ── Dados não editáveis ────────────────────────────────────────
+            // â”€â”€ Dados nÃ£o editÃ¡veis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _SectionCard(
-              title: 'Informações da Conta',
+              title: 'InformaÃ§Ãµes da Conta',
               icon: Icons.lock_outline,
               children: [
                 _InfoRow(label: 'E-mail', value: email,
@@ -219,7 +219,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 14),
 
-            // ── Dados editáveis ───────────────────────────────────────────
+            // â”€â”€ Dados editÃ¡veis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _SectionCard(
               title: 'Dados Pessoais',
               icon: Icons.person_outline,
@@ -245,12 +245,12 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                               ?.isNotEmpty ==
                           true
                           ? _paciente!['telefone'] as String
-                          : 'Não informado',
+                          : 'NÃ£o informado',
                       icon: Icons.phone_outlined),
                   _InfoRow(
-                      label: 'Gênero',
+                      label: 'GÃªnero',
                       value: (_paciente?['genero'] as String?) ??
-                          'Não informado',
+                          'NÃ£o informado',
                       icon: Icons.people_outline),
                 ] else ...[
                   CustomTextField(
@@ -258,7 +258,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                     controller: _nomeCtrl,
                     prefixIcon: const Icon(Icons.person_outline),
                     validator: (v) => (v == null || v.trim().length < 3)
-                        ? 'Nome inválido.'
+                        ? 'Nome invÃ¡lido.'
                         : null,
                   ),
                   const SizedBox(height: 12),
@@ -273,7 +273,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                   DropdownButtonFormField<String>(
                     value: _generoSelecionado,
                     decoration: InputDecoration(
-                      labelText: 'Gênero',
+                      labelText: 'GÃªnero',
                       prefixIcon: const Icon(Icons.people_outline),
                       filled: true,
                       fillColor: Colors.white,
@@ -328,7 +328,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 24),
 
-            // ── Botão Sair ────────────────────────────────────────────────
+            // â”€â”€ BotÃ£o Sair â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -367,7 +367,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
   }
 }
 
-// ─── Widgets auxiliares ───────────────────────────────────────────────────────
+// â”€â”€â”€ Widgets auxiliares â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SectionCard extends StatelessWidget {
   final String title;
@@ -471,9 +471,9 @@ class _FeedbackBanner extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [

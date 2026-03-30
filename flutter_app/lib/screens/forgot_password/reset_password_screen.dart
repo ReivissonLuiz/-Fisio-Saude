@@ -1,12 +1,12 @@
-/// reset_password_screen.dart
-/// Tela de redefinição de senha acessada via link do e-mail do Supabase.
+﻿/// reset_password_screen.dart
+/// Tela de redefiniÃ§Ã£o de senha acessada via link do e-mail do Supabase.
 ///
 /// O Supabase envia um e-mail com um link do tipo:
 ///   https://SEU_PROJETO.supabase.co/auth/v1/verify?token=...&type=recovery&redirect_to=...
 ///
 /// O supabase_flutter intercepta a URL de redirect e emite um evento
 /// AuthChangeEvent.passwordRecovery no stream onAuthStateChange.
-/// Esta tela detecta esse evento e apresenta o formulário de nova senha.
+/// Esta tela detecta esse evento e apresenta o formulÃ¡rio de nova senha.
 library;
 
 import 'dart:async';
@@ -39,12 +39,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   void initState() {
     super.initState();
-    // Verifica se já há uma sessão de recovery ativa (usuário já clicou no link)
+    // Verifica se jÃ¡ hÃ¡ uma sessÃ£o de recovery ativa (usuÃ¡rio jÃ¡ clicou no link)
     final currentSession = Supabase.instance.client.auth.currentSession;
     if (currentSession != null) {
       setState(() => _sessionReady = true);
     } else {
-      // Aguarda o evento de recovery emitido quando o link é processado
+      // Aguarda o evento de recovery emitido quando o link Ã© processado
       _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
         if (data.event == AuthChangeEvent.passwordRecovery ||
             data.event == AuthChangeEvent.signedIn) {
@@ -77,12 +77,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (!mounted) return;
 
       if (response.user != null) {
-        // Faz logout para forçar novo login com a nova senha
+        // Faz logout para forÃ§ar novo login com a nova senha
         await Supabase.instance.client.auth.signOut();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Senha redefinida com sucesso! Faça login.'),
+            content: Text('âœ… Senha redefinida com sucesso! FaÃ§a login.'),
             backgroundColor: AppTheme.accent,
             duration: Duration(seconds: 3),
           ),
@@ -91,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       } else {
         setState(() {
           _isLoading = false;
-          _errorMsg = 'Não foi possível redefinir a senha. Tente novamente.';
+          _errorMsg = 'NÃ£o foi possÃ­vel redefinir a senha. Tente novamente.';
         });
       }
     } on AuthException catch (e) {
@@ -104,17 +104,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMsg = 'Erro inesperado. Verifique sua conexão.';
+        _errorMsg = 'Erro inesperado. Verifique sua conexÃ£o.';
       });
     }
   }
 
   String _traduzirErro(String msg) {
     if (msg.contains('Password should be at least')) {
-      return 'A senha deve ter no mínimo 6 caracteres.';
+      return 'A senha deve ter no mÃ­nimo 6 caracteres.';
     }
     if (msg.contains('same password')) {
-      return 'A nova senha não pode ser igual à anterior.';
+      return 'A nova senha nÃ£o pode ser igual Ã  anterior.';
     }
     return 'Erro: $msg';
   }
@@ -141,7 +141,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-  // ── Aguardando processamento do link ──────────────────────────────────────
+  // â”€â”€ Aguardando processamento do link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildAguardando() {
     return Column(
@@ -151,12 +151,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         const CircularProgressIndicator(),
         const SizedBox(height: 24),
         const Text(
-          'Verificando seu link…',
+          'Verificando seu linkâ€¦',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         const Text(
-          'Aguarde um instante enquanto validamos sua sessão de recuperação.',
+          'Aguarde um instante enquanto validamos sua sessÃ£o de recuperaÃ§Ã£o.',
           textAlign: TextAlign.center,
           style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
         ),
@@ -171,7 +171,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-  // ── Formulário de nova senha ──────────────────────────────────────────────
+  // â”€â”€ FormulÃ¡rio de nova senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildFormulario() {
     return Form(
@@ -179,7 +179,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ícone
+          // Ãcone
           Center(
             child: Container(
               width: 72,
@@ -210,7 +210,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           // Campo nova senha
           CustomTextField(
             label: 'Nova senha',
-            hint: '••••••••',
+            hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
             controller: _novaSenhaCtrl,
             obscureText: _obscureNova,
             prefixIcon: const Icon(Icons.lock_outline),
@@ -226,7 +226,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             onChanged: (_) => setState(() {}),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Informe a nova senha.';
-              if (v.length < 6) return 'Mínimo de 6 caracteres.';
+              if (v.length < 6) return 'MÃ­nimo de 6 caracteres.';
               return null;
             },
           ),
@@ -236,7 +236,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           // Campo confirmar
           CustomTextField(
             label: 'Confirmar nova senha',
-            hint: '••••••••',
+            hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
             controller: _confirmarCtrl,
             obscureText: _obscureConfirmar,
             prefixIcon: const Icon(Icons.lock_outline),
@@ -252,7 +252,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Confirme a nova senha.';
-              if (v != _novaSenhaCtrl.text) return 'As senhas não coincidem.';
+              if (v != _novaSenhaCtrl.text) return 'As senhas nÃ£o coincidem.';
               return null;
             },
           ),
@@ -264,9 +264,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: AppTheme.error.withOpacity(0.1),
+                color: AppTheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
