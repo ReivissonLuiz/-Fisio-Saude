@@ -271,8 +271,13 @@ class ApiService {
     if (message.contains('Password should be at least')) {
       return 'A senha deve ter no mínimo 6 caracteres.';
     }
-    if (message.contains('rate limit')) {
-      return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+    if (message.contains('rate limit') || message.contains('only request this after')) {
+      // Extrai o número de segundos da mensagem se disponível
+      final match = RegExp(r'after (\d+) seconds').firstMatch(message);
+      if (match != null) {
+        return 'Por segurança, aguarde ${match.group(1)} segundos antes de tentar novamente.';
+      }
+      return 'Muitas tentativas. Aguarde um momento e tente novamente.';
     }
     if (message.contains('Token has expired')) {
       return 'Código expirado. Solicite um novo.';
