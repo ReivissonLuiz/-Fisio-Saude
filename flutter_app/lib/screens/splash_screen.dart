@@ -1,5 +1,6 @@
 /// splash_screen.dart
 /// Tela de boas-vindas com logo, nome do app e botões de acesso.
+library;
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -110,7 +111,8 @@ class _SplashScreenState extends State<SplashScreen>
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton(
-                              onPressed: () => Navigator.pushNamed(context, '/login'),
+                              onPressed: () =>
+                                  Navigator.pushNamed(context, '/login'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: AppTheme.primary,
@@ -133,11 +135,12 @@ class _SplashScreenState extends State<SplashScreen>
                             width: double.infinity,
                             height: 52,
                             child: OutlinedButton(
-                              onPressed: () =>
-                                  Navigator.pushNamed(context, '/profile-selection'),
+                              onPressed: () => Navigator.pushNamed(
+                                  context, '/profile-selection'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                side: const BorderSide(color: Colors.white, width: 2),
+                                side: const BorderSide(
+                                    color: Colors.white, width: 2),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),

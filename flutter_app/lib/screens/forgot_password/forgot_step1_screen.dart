@@ -1,5 +1,6 @@
 /// forgot_step1_screen.dart
 /// Passo 1 da recuperação de senha: o usuário informa o e-mail.
+library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
@@ -31,7 +32,11 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
 
   Future<void> _sendCode() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _isLoading = true; _errorMsg = null; _successMsg = null; });
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+      _successMsg = null;
+    });
 
     final result = await _api.forgotPassword(_emailCtrl.text.trim());
 
@@ -70,53 +75,53 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
             constraints: const BoxConstraints(maxWidth: 540),
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                StepIndicator(current: 1),
-                const SizedBox(height: 32),
-
-                const Text(
-                  'Informe seu e-mail',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const StepIndicator(current: 1),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'Informe seu e-mail',
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Enviaremos um código de 6 dígitos para recuperar sua senha.',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 14),
+                    ),
+                    const SizedBox(height: 32),
+                    CustomTextField(
+                      label: 'E-mail',
+                      hint: 'seu@email.com',
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      validator: (v) {
+                        if (v == null || v.isEmpty)
+                          return 'Informe seu e-mail.';
+                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                            .hasMatch(v)) {
+                          return 'E-mail inválido.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    if (_errorMsg != null) ErrorBox(message: _errorMsg!),
+                    if (_successMsg != null) SuccessBox(message: _successMsg!),
+                    PrimaryButton(
+                      label: 'Enviar código de recuperação',
+                      onPressed: _sendCode,
+                      isLoading: _isLoading,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Enviaremos um código de 6 dígitos para recuperar sua senha.',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                ),
-                const SizedBox(height: 32),
-
-                CustomTextField(
-                  label: 'E-mail',
-                  hint: 'seu@email.com',
-                  controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Informe seu e-mail.';
-                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
-                      return 'E-mail inválido.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                if (_errorMsg != null) ErrorBox(message: _errorMsg!),
-                if (_successMsg != null) SuccessBox(message: _successMsg!),
-
-                PrimaryButton(
-                  label: 'Enviar código de recuperação',
-                  onPressed: _sendCode,
-                  isLoading: _isLoading,
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
           ),
         ),
       ),
@@ -145,7 +150,9 @@ class StepIndicator extends StatelessWidget {
                   duration: const Duration(milliseconds: 300),
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDone || isActive ? AppTheme.primary : AppTheme.divider,
+                    color: isDone || isActive
+                        ? AppTheme.primary
+                        : AppTheme.divider,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -155,7 +162,8 @@ class StepIndicator extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: isActive || isDone ? AppTheme.primary : AppTheme.divider,
+                  color:
+                      isActive || isDone ? AppTheme.primary : AppTheme.divider,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -164,7 +172,9 @@ class StepIndicator extends StatelessWidget {
                       : Text(
                           '$step',
                           style: TextStyle(
-                            color: isActive ? Colors.white : AppTheme.textSecondary,
+                            color: isActive
+                                ? Colors.white
+                                : AppTheme.textSecondary,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -199,7 +209,9 @@ class ErrorBox extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, color: AppTheme.error, size: 18),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: const TextStyle(color: AppTheme.error, fontSize: 13))),
+          Expanded(
+              child: Text(message,
+                  style: const TextStyle(color: AppTheme.error, fontSize: 13))),
         ],
       ),
     );
@@ -223,9 +235,13 @@ class SuccessBox extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_outline, color: AppTheme.accent, size: 18),
+          const Icon(Icons.check_circle_outline,
+              color: AppTheme.accent, size: 18),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: const TextStyle(color: AppTheme.accent, fontSize: 13))),
+          Expanded(
+              child: Text(message,
+                  style:
+                      const TextStyle(color: AppTheme.accent, fontSize: 13))),
         ],
       ),
     );

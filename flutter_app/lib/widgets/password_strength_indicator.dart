@@ -1,5 +1,6 @@
 /// widgets/password_strength_indicator.dart
 /// Indicador visual de força da senha (fraca / média / forte).
+library;
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -68,7 +69,8 @@ class PasswordStrengthIndicator extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'Força da senha: $label',
-          style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
+          style: TextStyle(
+              fontSize: 12, color: color, fontWeight: FontWeight.w500),
         ),
       ],
     );

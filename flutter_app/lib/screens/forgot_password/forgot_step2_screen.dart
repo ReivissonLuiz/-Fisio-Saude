@@ -1,6 +1,7 @@
 /// forgot_step2_screen.dart
 /// Passo 2: O usuário insere o código de 6 dígitos recebido por e-mail.
 /// Inclui cooldown de 60s para reenvio e validação de código inválido/expirado.
+library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -37,7 +38,8 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_argsInitialized) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       _email = args['email'] as String;
       _devCode = args['devCode'] as String?;
       _argsInitialized = true;
@@ -54,14 +56,19 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
   void _startCooldown() {
     setState(() => _resendCooldown = 60);
     _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (_resendCooldown <= 1) { t.cancel(); }
+      if (_resendCooldown <= 1) {
+        t.cancel();
+      }
       setState(() => _resendCooldown = (_resendCooldown - 1).clamp(0, 60));
     });
   }
 
   Future<void> _verifyCode() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _isLoading = true; _errorMsg = null; });
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+    });
 
     final result = await _api.verifyCode(_email, _codeCtrl.text.trim());
 
@@ -86,7 +93,9 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
     if (result['success'] == true) {
       _startCooldown();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código reenviado!'), backgroundColor: AppTheme.accent),
+        const SnackBar(
+            content: Text('Código reenviado!'),
+            backgroundColor: AppTheme.accent),
       );
     }
   }
@@ -94,7 +103,8 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Recuperar Senha'), leading: const BackButton()),
+      appBar: AppBar(
+          title: const Text('Recuperar Senha'), leading: const BackButton()),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -102,91 +112,111 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                StepIndicator(current: 2),
-                const SizedBox(height: 32),
-                const Text(
-                  'Verifique seu e-mail',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Enviamos um código de 6 dígitos para $_email.',
-                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                ),
-                // Em desenvolvimento, mostra o código gerado
-                if (_devCode != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.warning.withOpacity(0.4)),
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const StepIndicator(current: 2),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'Verifique seu e-mail',
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Enviamos um código de 6 dígitos para $_email.',
+                      style: const TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 14),
+                    ),
+                    // Em desenvolvimento, mostra o código gerado
+                    if (_devCode != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.warning.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: AppTheme.warning.withOpacity(0.4)),
+                          ),
+                          child: Text(
+                            '🛠 Modo Dev — Código: $_devCode',
+                            style: const TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.warning,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
                       ),
-                      child: Text(
-                        '🛠 Modo Dev — Código: $_devCode',
-                        style: const TextStyle(fontSize: 13, color: AppTheme.warning, fontWeight: FontWeight.w600),
+                    const SizedBox(height: 32),
+                    // Campo código
+                    TextFormField(
+                      controller: _codeCtrl,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      maxLength: 6,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      style: const TextStyle(
+                          fontSize: 28,
+                          letterSpacing: 12,
+                          fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        hintText: '000000',
+                        hintStyle: const TextStyle(
+                            color: AppTheme.textHint,
+                            letterSpacing: 12,
+                            fontSize: 28),
+                        counterText: '',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                              color: AppTheme.primary, width: 2),
+                        ),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.length != 6)
+                          return 'Digite o código de 6 dígitos.';
+                        return null;
+                      },
+                      onChanged: (_) => setState(() => _errorMsg = null),
+                    ),
+                    const SizedBox(height: 16),
+
+                    if (_errorMsg != null) ErrorBox(message: _errorMsg!),
+
+                    PrimaryButton(
+                        label: 'Verificar código',
+                        onPressed: _verifyCode,
+                        isLoading: _isLoading),
+                    const SizedBox(height: 24),
+
+                    // Link reenviar
+                    Center(
+                      child: TextButton(
+                        onPressed: _resendCooldown > 0 ? null : _resendCode,
+                        child: Text(
+                          _resendCooldown > 0
+                              ? 'Reenviar código em ${_resendCooldown}s'
+                              : 'Reenviar código',
+                          style: TextStyle(
+                            color: _resendCooldown > 0
+                                ? AppTheme.textHint
+                                : AppTheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                const SizedBox(height: 32),
-                // Campo código
-                TextFormField(
-                  controller: _codeCtrl,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  maxLength: 6,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  style: const TextStyle(fontSize: 28, letterSpacing: 12, fontWeight: FontWeight.bold),
-                  decoration: InputDecoration(
-                    hintText: '000000',
-                    hintStyle: TextStyle(color: AppTheme.textHint, letterSpacing: 12, fontSize: 28),
-                    counterText: '',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-                    ),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.length != 6) return 'Digite o código de 6 dígitos.';
-                    return null;
-                  },
-                  onChanged: (_) => setState(() => _errorMsg = null),
+                  ],
                 ),
-                const SizedBox(height: 16),
-
-                if (_errorMsg != null) ErrorBox(message: _errorMsg!),
-
-                PrimaryButton(label: 'Verificar código', onPressed: _verifyCode, isLoading: _isLoading),
-                const SizedBox(height: 24),
-
-                // Link reenviar
-                Center(
-                  child: TextButton(
-                    onPressed: _resendCooldown > 0 ? null : _resendCode,
-                    child: Text(
-                      _resendCooldown > 0
-                          ? 'Reenviar código em ${_resendCooldown}s'
-                          : 'Reenviar código',
-                      style: TextStyle(
-                        color: _resendCooldown > 0 ? AppTheme.textHint : AppTheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
           ),
         ),
       ),

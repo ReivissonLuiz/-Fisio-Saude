@@ -1,22 +1,23 @@
 /// app_theme.dart
 /// Define o tema visual do app +Físio +Saúde.
 /// Paleta: tons de azul e verde, fontes Poppins (Google Fonts).
+library;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ─── Cores Principais ──────────────────────────────────────────────────────
-  static const Color primary = Color(0xFF1A73E8);       // Azul principal
-  static const Color primaryDark = Color(0xFF1557B0);   // Azul escuro
-  static const Color secondary = Color(0xFF00BFA5);     // Verde-teal
+  static const Color primary = Color(0xFF1A73E8); // Azul principal
+  static const Color primaryDark = Color(0xFF1557B0); // Azul escuro
+  static const Color secondary = Color(0xFF00BFA5); // Verde-teal
   static const Color secondaryDark = Color(0xFF00897B); // Verde escuro
-  static const Color accent = Color(0xFF4CAF50);        // Verde sucesso
+  static const Color accent = Color(0xFF4CAF50); // Verde sucesso
 
-  static const Color background = Color(0xFFF5F7FA);    // Fundo claro
-  static const Color surface = Color(0xFFFFFFFF);       // Cartões brancos
-  static const Color error = Color(0xFFE53935);         // Vermelho erro
-  static const Color warning = Color(0xFFFFA726);       // Laranja aviso
+  static const Color background = Color(0xFFF5F7FA); // Fundo claro
+  static const Color surface = Color(0xFFFFFFFF); // Cartões brancos
+  static const Color error = Color(0xFFE53935); // Vermelho erro
+  static const Color warning = Color(0xFFFFA726); // Laranja aviso
 
   static const Color textPrimary = Color(0xFF1A1A2E);
   static const Color textSecondary = Color(0xFF6B7280);
@@ -50,15 +51,21 @@ class AppTheme {
       scaffoldBackgroundColor: background,
       textTheme: GoogleFonts.poppinsTextTheme().copyWith(
         displayLarge: GoogleFonts.poppins(
-          fontSize: 28, fontWeight: FontWeight.bold, color: textPrimary,
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: textPrimary,
         ),
         displayMedium: GoogleFonts.poppins(
-          fontSize: 22, fontWeight: FontWeight.bold, color: textPrimary,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: textPrimary,
         ),
         bodyLarge: GoogleFonts.poppins(fontSize: 16, color: textPrimary),
         bodyMedium: GoogleFonts.poppins(fontSize: 14, color: textSecondary),
         labelLarge: GoogleFonts.poppins(
-          fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -66,7 +73,9 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: GoogleFonts.poppins(
-          fontSize: 18, fontWeight: FontWeight.w600, color: textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: textPrimary,
         ),
         iconTheme: const IconThemeData(color: textPrimary),
       ),
@@ -75,15 +84,18 @@ class AppTheme {
           backgroundColor: primary,
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          textStyle:
+              GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
           elevation: 0,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: divider),

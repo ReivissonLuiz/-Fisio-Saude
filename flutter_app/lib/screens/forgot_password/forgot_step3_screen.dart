@@ -1,5 +1,6 @@
 /// forgot_step3_screen.dart
 /// Passo 3: O usuário define uma nova senha com indicador de força.
+library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
@@ -35,7 +36,8 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_argsInitialized) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
       _email = args['email'] as String;
       _code = args['code'] as String;
       _argsInitialized = true;
@@ -51,7 +53,10 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
 
   Future<void> _resetPassword() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _isLoading = true; _errorMsg = null; });
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+    });
 
     final result = await _api.resetPassword(
       email: _email,
@@ -79,7 +84,8 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Recuperar Senha'), leading: const BackButton()),
+      appBar: AppBar(
+          title: const Text('Recuperar Senha'), leading: const BackButton()),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -87,83 +93,94 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                StepIndicator(current: 3),
-                const SizedBox(height: 32),
-                const Text(
-                  'Crie uma nova senha',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Sua nova senha deve ter pelo menos 6 caracteres.',
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                ),
-                const SizedBox(height: 32),
-
-                // Campo nova senha
-                CustomTextField(
-                  label: 'Nova senha',
-                  hint: '••••••••',
-                  controller: _novaSenhaCtrl,
-                  obscureText: _obscureNova,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureNova ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: AppTheme.textSecondary,
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const StepIndicator(current: 3),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'Crie uma nova senha',
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
-                    onPressed: () => setState(() => _obscureNova = !_obscureNova),
-                  ),
-                  onChanged: (_) => setState(() {}),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Informe a nova senha.';
-                    if (v.length < 6) return 'Mínimo de 6 caracteres.';
-                    return null;
-                  },
-                ),
-
-                // Indicador de força
-                PasswordStrengthIndicator(password: _novaSenhaCtrl.text),
-                const SizedBox(height: 16),
-
-                // Campo confirmar senha
-                CustomTextField(
-                  label: 'Confirmar nova senha',
-                  hint: '••••••••',
-                  controller: _confirmarCtrl,
-                  obscureText: _obscureConfirmar,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmar ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: AppTheme.textSecondary,
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Sua nova senha deve ter pelo menos 6 caracteres.',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 14),
                     ),
-                    onPressed: () => setState(() => _obscureConfirmar = !_obscureConfirmar),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Confirme a nova senha.';
-                    if (v != _novaSenhaCtrl.text) return 'As senhas não coincidem.';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
+                    const SizedBox(height: 32),
 
-                if (_errorMsg != null) ErrorBox(message: _errorMsg!),
+                    // Campo nova senha
+                    CustomTextField(
+                      label: 'Nova senha',
+                      hint: '••••••••',
+                      controller: _novaSenhaCtrl,
+                      obscureText: _obscureNova,
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureNova
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppTheme.textSecondary,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscureNova = !_obscureNova),
+                      ),
+                      onChanged: (_) => setState(() {}),
+                      validator: (v) {
+                        if (v == null || v.isEmpty)
+                          return 'Informe a nova senha.';
+                        if (v.length < 6) return 'Mínimo de 6 caracteres.';
+                        return null;
+                      },
+                    ),
 
-                PrimaryButton(
-                  label: 'Redefinir senha',
-                  onPressed: _resetPassword,
-                  isLoading: _isLoading,
-                  backgroundColor: AppTheme.secondary,
+                    // Indicador de força
+                    PasswordStrengthIndicator(password: _novaSenhaCtrl.text),
+                    const SizedBox(height: 16),
+
+                    // Campo confirmar senha
+                    CustomTextField(
+                      label: 'Confirmar nova senha',
+                      hint: '••••••••',
+                      controller: _confirmarCtrl,
+                      obscureText: _obscureConfirmar,
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmar
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppTheme.textSecondary,
+                        ),
+                        onPressed: () => setState(
+                            () => _obscureConfirmar = !_obscureConfirmar),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.isEmpty)
+                          return 'Confirme a nova senha.';
+                        if (v != _novaSenhaCtrl.text)
+                          return 'As senhas não coincidem.';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    if (_errorMsg != null) ErrorBox(message: _errorMsg!),
+
+                    PrimaryButton(
+                      label: 'Redefinir senha',
+                      onPressed: _resetPassword,
+                      isLoading: _isLoading,
+                      backgroundColor: AppTheme.secondary,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
           ),
         ),
       ),

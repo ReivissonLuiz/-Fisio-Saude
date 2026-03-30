@@ -4,6 +4,7 @@
 /// Substitui completamente a camada Node.js (localhost:3000).
 /// Usa o Supabase Auth SDK para login, registro e recuperação de senha.
 /// Os dados de paciente/profissional são gravados diretamente nas tabelas.
+library;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -44,7 +45,8 @@ class ApiService {
       // Busca o tipo de usuário na tabela login
       final loginData = await _sb
           .from('login')
-          .select('tipo_usuario, id_paciente, id_profissional, id_administrador')
+          .select(
+              'tipo_usuario, id_paciente, id_profissional, id_administrador')
           .eq('supabase_user_id', user.id)
           .maybeSingle();
 
@@ -63,14 +65,18 @@ class ApiService {
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
     }
   }
 
   // ─── Auth: Registro de Paciente ───────────────────────────────────────────
 
   /// Registra paciente no Supabase Auth e grava dados na tabela `paciente`.
-  Future<Map<String, dynamic>> registerPatient(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> registerPatient(
+      Map<String, dynamic> data) async {
     try {
       final email = (data['email'] as String).trim().toLowerCase();
       final senha = data['senha'] as String;
@@ -88,15 +94,20 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela paciente
-      final pacienteResp = await _sb.from('paciente').insert({
-        'nome': (data['nome'] as String).trim(),
-        'email': email,
-        'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-        'data_nasc': data['dataNascimento'],
-        'telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'genero': data['genero'],
-        'ativo': true,
-      }).select().single();
+      final pacienteResp = await _sb
+          .from('paciente')
+          .insert({
+            'nome': (data['nome'] as String).trim(),
+            'email': email,
+            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
+            'data_nasc': data['dataNascimento'],
+            'telefone':
+                (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'genero': data['genero'],
+            'ativo': true,
+          })
+          .select()
+          .single();
 
       // 3. Criar vínculo na tabela login
       await _sb.from('login').insert({
@@ -117,17 +128,24 @@ class ApiService {
       if (e.code == '23505') {
         return {'success': false, 'message': 'E-mail ou CPF já cadastrado.'};
       }
-      return {'success': false, 'message': 'Erro ao salvar dados. Tente novamente.'};
+      return {
+        'success': false,
+        'message': 'Erro ao salvar dados. Tente novamente.'
+      };
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
     }
   }
 
   // ─── Auth: Registro de Profissional ───────────────────────────────────────
 
   /// Registra profissional no Auth e grava dados na tabela `profissional`.
-  /// O profissional é criado com `ativo: false` — aguarda aprovação do admin.
-  Future<Map<String, dynamic>> registerProfessional(Map<String, dynamic> data) async {
+  /// O profissional é ativado imediatamente (sem aprovação de administrador).
+  Future<Map<String, dynamic>> registerProfessional(
+      Map<String, dynamic> data) async {
     try {
       final email = (data['email'] as String).trim().toLowerCase();
       final senha = data['senha'] as String;
@@ -144,16 +162,21 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela profissional
-      final profResp = await _sb.from('profissional').insert({
-        'nome': (data['nome'] as String).trim(),
-        'email': email,
-        'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-        'crefito': (data['crefito'] as String).trim(),
-        'especialidade': (data['especializacao'] as String).trim(),
-        'telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'ativo': false, // Aguarda aprovação do administrador
-      }).select().single();
+      // 2. Gravar dados na tabela profissional (ativo imediatamente)
+      final profResp = await _sb
+          .from('profissional')
+          .insert({
+            'nome': (data['nome'] as String).trim(),
+            'email': email,
+            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
+            'crefito': (data['crefito'] as String).trim(),
+            'especialidade': (data['especializacao'] as String).trim(),
+            'telefone':
+                (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'ativo': true, // Ativado automaticamente — sem aprovação
+          })
+          .select()
+          .single();
 
       // 3. Criar vínculo na tabela login
       await _sb.from('login').insert({
@@ -165,7 +188,7 @@ class ApiService {
 
       return {
         'success': true,
-        'message': 'Profissional cadastrado! Seu cadastro está em análise e será aprovado em breve.',
+        'message': 'Cadastro realizado com sucesso! Você já pode fazer login.',
         'profissional_id': profResp['id'],
       };
     } on AuthException catch (e) {
@@ -174,9 +197,15 @@ class ApiService {
       if (e.code == '23505') {
         return {'success': false, 'message': 'E-mail ou CPF já cadastrado.'};
       }
-      return {'success': false, 'message': 'Erro ao salvar dados. Tente novamente.'};
+      return {
+        'success': false,
+        'message': 'Erro ao salvar dados. Tente novamente.'
+      };
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
     }
   }
 
@@ -189,12 +218,16 @@ class ApiService {
       await _sb.auth.resetPasswordForEmail(email.trim().toLowerCase());
       return {
         'success': true,
-        'message': 'Se este e-mail estiver cadastrado, você receberá as instruções em breve.',
+        'message':
+            'Se este e-mail estiver cadastrado, você receberá as instruções em breve.',
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
     }
   }
 
@@ -215,7 +248,10 @@ class ApiService {
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
     }
   }
 
@@ -232,7 +268,10 @@ class ApiService {
       return {'success': false, 'message': 'As senhas não coincidem.'};
     }
     if (novaSenha.length < 6) {
-      return {'success': false, 'message': 'A senha deve ter no mínimo 6 caracteres.'};
+      return {
+        'success': false,
+        'message': 'A senha deve ter no mínimo 6 caracteres.'
+      };
     }
     try {
       final response = await _sb.auth.updateUser(
@@ -241,11 +280,17 @@ class ApiService {
       if (response.user != null) {
         return {'success': true, 'message': 'Senha redefinida com sucesso!'};
       }
-      return {'success': false, 'message': 'Não foi possível redefinir a senha.'};
+      return {
+        'success': false,
+        'message': 'Não foi possível redefinir a senha.'
+      };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão. Verifique sua internet.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
     }
   }
 
@@ -253,6 +298,129 @@ class ApiService {
 
   Future<void> logout() async {
     await _sb.auth.signOut();
+  }
+
+  // ─── Paciente: Perfil ─────────────────────────────────────────────────────
+
+  /// Busca os dados completos do paciente pelo ID.
+  Future<Map<String, dynamic>> getPaciente(String pacienteId) async {
+    try {
+      final data = await _sb
+          .from('paciente')
+          .select()
+          .eq('id', pacienteId)
+          .single();
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Atualiza os dados editáveis do paciente.
+  Future<Map<String, dynamic>> updatePaciente(
+      String pacienteId, Map<String, dynamic> dados) async {
+    try {
+      final data = await _sb
+          .from('paciente')
+          .update(dados)
+          .eq('id', pacienteId)
+          .select()
+          .single();
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  // ─── Paciente: Sintomas ───────────────────────────────────────────────────
+
+  /// Registra um novo sintoma do paciente.
+  Future<Map<String, dynamic>> registrarSintoma(
+      Map<String, dynamic> dados) async {
+    try {
+      final data = await _sb
+          .from('registro_sintomas')
+          .insert(dados)
+          .select()
+          .single();
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Busca o histórico de sintomas de um paciente, do mais recente ao mais antigo.
+  Future<Map<String, dynamic>> getSintomas(String pacienteId) async {
+    try {
+      final data = await _sb
+          .from('registro_sintomas')
+          .select()
+          .eq('id_paciente', pacienteId)
+          .order('data_hora', ascending: false)
+          .limit(50);
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  // ─── Profissionais: Busca ─────────────────────────────────────────────────
+
+  /// Lista todos os profissionais ativos para busca pelo paciente.
+  Future<Map<String, dynamic>> getProfissionais({String? termoBusca}) async {
+    try {
+      var query = _sb
+          .from('profissional')
+          .select('id, nome, especialidade, crefito, telefone')
+          .eq('ativo', true)
+          .order('nome');
+
+      final data = await query;
+
+      // Filtro local por termo (nome ou especialidade)
+      if (termoBusca != null && termoBusca.trim().isNotEmpty) {
+        final termo = termoBusca.trim().toLowerCase();
+        final filtrado = (data as List).where((p) {
+          final nome = (p['nome'] as String? ?? '').toLowerCase();
+          final esp = (p['especialidade'] as String? ?? '').toLowerCase();
+          return nome.contains(termo) || esp.contains(termo);
+        }).toList();
+        return {'success': true, 'data': filtrado};
+      }
+
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  // ─── Paciente: Consultas ──────────────────────────────────────────────────
+
+  /// Busca as consultas do paciente com dados do profissional.
+  Future<Map<String, dynamic>> getConsultas(String pacienteId) async {
+    try {
+      final data = await _sb
+          .from('consulta')
+          .select('*, profissional(nome, especialidade)')
+          .eq('id_paciente', pacienteId)
+          .order('data_hora', ascending: false)
+          .limit(20);
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -271,7 +439,8 @@ class ApiService {
     if (message.contains('Password should be at least')) {
       return 'A senha deve ter no mínimo 6 caracteres.';
     }
-    if (message.contains('rate limit') || message.contains('only request this after')) {
+    if (message.contains('rate limit') ||
+        message.contains('only request this after')) {
       // Extrai o número de segundos da mensagem se disponível
       final match = RegExp(r'after (\d+) seconds').firstMatch(message);
       if (match != null) {
@@ -288,4 +457,3 @@ class ApiService {
     return 'Erro: $message';
   }
 }
-

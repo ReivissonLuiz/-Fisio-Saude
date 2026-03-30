@@ -1,5 +1,6 @@
 /// profile_selection_screen.dart
 /// Tela de seleção de perfil: o usuário escolhe entre Paciente ou Fisioterapeuta.
+library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
@@ -10,7 +11,8 @@ class ProfileSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Criar Conta'), leading: const BackButton()),
+      appBar:
+          AppBar(title: const Text('Criar Conta'), leading: const BackButton()),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -32,7 +34,8 @@ class ProfileSelectionScreen extends StatelessWidget {
               _ProfileCard(
                 icon: Icons.person_2_rounded,
                 title: 'Paciente',
-                description: 'Busque fisioterapeutas, agende sessões e acompanhe sua recuperação.',
+                description:
+                    'Busque fisioterapeutas, agende sessões e acompanhe sua recuperação.',
                 color: AppTheme.primary,
                 onTap: () => Navigator.pushNamed(context, '/register-patient'),
               ),
@@ -42,9 +45,11 @@ class ProfileSelectionScreen extends StatelessWidget {
               _ProfileCard(
                 icon: Icons.medical_services_rounded,
                 title: 'Fisioterapeuta',
-                description: 'Gerencie seus pacientes, consultas e evolução clínica.',
+                description:
+                    'Gerencie seus pacientes, consultas e evolução clínica.',
                 color: AppTheme.secondary,
-                onTap: () => Navigator.pushNamed(context, '/register-professional'),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/register-professional'),
               ),
 
               const Spacer(),
@@ -52,12 +57,15 @@ class ProfileSelectionScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Já tem conta? ', style: TextStyle(color: AppTheme.textSecondary)),
+                    const Text('Já tem conta? ',
+                        style: TextStyle(color: AppTheme.textSecondary)),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, '/login'),
                       child: const Text(
                         'Entrar',
-                        style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

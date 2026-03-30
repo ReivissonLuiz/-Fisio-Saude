@@ -1,6 +1,7 @@
 /// main.dart
 /// Ponto de entrada do app +Físio +Saúde.
 /// Configura o tema e as rotas de navegação.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,7 +48,8 @@ class FisioSaudeApp extends StatelessWidget {
         '/forgot-step3': (context) => const ForgotStep3Screen(),
         '/profile-selection': (context) => const ProfileSelectionScreen(),
         '/register-patient': (context) => const PatientRegisterScreen(),
-        '/register-professional': (context) => const ProfessionalRegisterScreen(),
+        '/register-professional': (context) =>
+            const ProfessionalRegisterScreen(),
       },
     );
   }

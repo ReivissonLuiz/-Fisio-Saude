@@ -1,5 +1,6 @@
 /// widgets/primary_button.dart
 /// Botão principal reutilizável com estado de loading.
+library;
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
@@ -30,7 +31,8 @@ class PrimaryButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? AppTheme.primary,
           disabledBackgroundColor: AppTheme.primary.withOpacity(0.6),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: isLoading
             ? const SizedBox(
