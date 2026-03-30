@@ -2,3 +2,6 @@ supabase
 python-dotenv
 postgrest-py
 httpx
+kaggle
+pandas
+numpy
