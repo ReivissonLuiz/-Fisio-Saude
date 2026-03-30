@@ -29,6 +29,9 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   final _senhaCtrl = TextEditingController();
   final _confirmarCtrl = TextEditingController();
   final _cepCtrl = TextEditingController();
+  final _rgCtrl = TextEditingController();
+
+  String? _generoSelecionado;
 
   bool _obscureSenha = true;
   bool _obscureConfirmar = true;
@@ -59,7 +62,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       _telCtrl,
       _senhaCtrl,
       _confirmarCtrl,
-      _cepCtrl
+      _cepCtrl,
+      _rgCtrl
     ]) {
       c.dispose();
     }
@@ -73,6 +77,10 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
           'Você deve aceitar os Termos de Uso e Política de Privacidade.');
       return;
     }
+    if (_generoSelecionado == null) {
+      setState(() => _errorMsg = 'Por favor, selecione o seu Gênero.');
+      return;
+    }
     setState(() {
       _isLoading = true;
       _errorMsg = null;
@@ -83,6 +91,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       'nome': _nomeCtrl.text.trim(),
       'email': _emailCtrl.text.trim(),
       'cpf': _cpfCtrl.text.trim(),
+      'rg': _rgCtrl.text.trim(),
+      'genero': _generoSelecionado,
       'dataNascimento': _nascCtrl.text.trim(),
       'telefone': _telCtrl.text.trim(),
       'cep': _cepCtrl.text.trim(),
@@ -189,10 +199,56 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       prefixIcon: const Icon(Icons.badge_outlined),
                       validator: (v) {
                         if (v == null ||
-                            _cpfMask.getUnmaskedText().length != 11)
+                            _cpfMask.getUnmaskedText().length != 11) {
                           return 'CPF inválido.';
+                        }
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 14),
+
+                    CustomTextField(
+                      label: 'RG *',
+                      hint: 'Apenas números (ou com letras se aplicável)',
+                      controller: _rgCtrl,
+                      keyboardType: TextInputType.text,
+                      prefixIcon: const Icon(Icons.credit_card_outlined),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Informe seu RG.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: 'Gênero *',
+                        prefixIcon: const Icon(Icons.people_outline),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.3)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: AppTheme.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: AppTheme.background,
+                      ),
+                      value: _generoSelecionado,
+                      items: const [
+                        DropdownMenuItem(value: 'Feminino', child: Text('Feminino')),
+                        DropdownMenuItem(value: 'Masculino', child: Text('Masculino')),
+                        DropdownMenuItem(value: 'Outro', child: Text('Outro')),
+                      ],
+                      onChanged: (v) => setState(() => _generoSelecionado = v),
+                      validator: (v) => v == null ? 'Selecione.' : null,
                     ),
                     const SizedBox(height: 14),
 
