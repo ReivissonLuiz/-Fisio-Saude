@@ -44,8 +44,7 @@ jobs:
         run: |
           flutter build web \
             --release \
-            --base-href "/-Fisio-Saude/" \
-            --web-renderer canvaskit
+            --base-href "/-Fisio-Saude/"
 
       # 6. Publicar na branch gh-pages
       - name: 🌐 Deploy no GitHub Pages
