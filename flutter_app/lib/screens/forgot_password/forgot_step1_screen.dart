@@ -1,5 +1,6 @@
 /// forgot_step1_screen.dart
-/// Passo 1 da recuperação de senha: o usuário informa o e-mail.
+/// Passo 1: usuário informa o e-mail e recebe link de recuperação no e-mail.
+/// O Supabase envia um e-mail real com link de redefinição de senha.
 library;
 
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
   final _emailCtrl = TextEditingController();
   bool _isLoading = false;
   String? _errorMsg;
-  String? _successMsg;
+  bool _enviado = false;
 
   final _api = ApiService();
 
@@ -30,12 +31,11 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     super.dispose();
   }
 
-  Future<void> _sendCode() async {
+  Future<void> _sendLink() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _isLoading = true;
       _errorMsg = null;
-      _successMsg = null;
     });
 
     final result = await _api.forgotPassword(_emailCtrl.text.trim());
@@ -44,19 +44,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      setState(() {
-        _successMsg = result['message'] ?? 'Código enviado!';
-      });
-      await Future.delayed(const Duration(milliseconds: 1500));
-      if (!mounted) return;
-      Navigator.pushNamed(
-        context,
-        '/forgot-step2',
-        arguments: {
-          'email': _emailCtrl.text.trim(),
-          'devCode': result['_devCode'],
-        },
-      );
+      setState(() => _enviado = true);
     } else {
       setState(() => _errorMsg = result['message']);
     }
@@ -74,62 +62,239 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 540),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const StepIndicator(current: 1),
-                    const SizedBox(height: 32),
-                    const Text(
-                      'Informe seu e-mail',
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Enviaremos um código de 6 dígitos para recuperar sua senha.',
-                      style: TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 14),
-                    ),
-                    const SizedBox(height: 32),
-                    CustomTextField(
-                      label: 'E-mail',
-                      hint: 'seu@email.com',
-                      controller: _emailCtrl,
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      validator: (v) {
-                        if (v == null || v.isEmpty)
-                          return 'Informe seu e-mail.';
-                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                            .hasMatch(v)) {
-                          return 'E-mail inválido.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    if (_errorMsg != null) ErrorBox(message: _errorMsg!),
-                    if (_successMsg != null) SuccessBox(message: _successMsg!),
-                    PrimaryButton(
-                      label: 'Enviar código de recuperação',
-                      onPressed: _sendCode,
-                      isLoading: _isLoading,
-                    ),
-                  ],
-                ),
-              ),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: _enviado ? _buildConfirmacao() : _buildFormulario(),
             ),
           ),
         ),
       ),
     );
   }
+
+  // ── Tela de confirmação após envio ────────────────────────────────────────
+
+  Widget _buildConfirmacao() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 20),
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: const Icon(Icons.mark_email_read_rounded,
+              color: Colors.white, size: 40),
+        ),
+        const SizedBox(height: 28),
+        const Text(
+          'Verifique seu e-mail!',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Enviamos um link de recuperação para:\n${_emailCtrl.text.trim()}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              color: AppTheme.textSecondary, fontSize: 15, height: 1.5),
+        ),
+        const SizedBox(height: 28),
+        // Card com instruções
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Como prosseguir:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(height: 10),
+              _InstrucaoItem(
+                numero: '1',
+                texto: 'Abra o e-mail enviado para ${_emailCtrl.text.trim()}',
+              ),
+              _InstrucaoItem(
+                numero: '2',
+                texto: 'Clique no botão "Redefinir minha senha"',
+              ),
+              _InstrucaoItem(
+                numero: '3',
+                texto:
+                    'Você será redirecionado para criar uma nova senha',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        // Aviso sobre spam
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.warning.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.warning.withOpacity(0.3)),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, color: AppTheme.warning, size: 18),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Não encontrou o e-mail? Verifique a pasta de spam ou lixo eletrônico.',
+                  style: TextStyle(
+                      fontSize: 12, color: AppTheme.warning, height: 1.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 28),
+        // Botão reenviar
+        OutlinedButton.icon(
+          onPressed: () => setState(() {
+            _enviado = false;
+            _emailCtrl.clear();
+          }),
+          icon: const Icon(Icons.refresh_rounded, size: 18),
+          label: const Text('Tentar com outro e-mail'),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        const SizedBox(height: 14),
+        TextButton(
+          onPressed: () =>
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false),
+          child: const Text('Voltar ao login',
+              style: TextStyle(
+                  color: AppTheme.primary, fontWeight: FontWeight.w600)),
+        ),
+      ],
+    );
+  }
+
+  // ── Formulário de e-mail ──────────────────────────────────────────────────
+
+  Widget _buildFormulario() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Ícone
+          Center(
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.lock_reset_rounded,
+                  color: Colors.white, size: 36),
+            ),
+          ),
+          const SizedBox(height: 28),
+          const Text(
+            'Recuperar sua senha',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Informe seu e-mail cadastrado e enviaremos um link para você criar uma nova senha.',
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.5),
+          ),
+          const SizedBox(height: 32),
+          CustomTextField(
+            label: 'E-mail',
+            hint: 'seu@email.com',
+            controller: _emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            prefixIcon: const Icon(Icons.email_outlined),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Informe seu e-mail.';
+              if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
+                return 'E-mail inválido.';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 24),
+          if (_errorMsg != null) ErrorBox(message: _errorMsg!),
+          PrimaryButton(
+            label: 'Enviar link de recuperação',
+            onPressed: _sendLink,
+            isLoading: _isLoading,
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Voltar ao login',
+                style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ─── Widgets públicos compartilhados entre as telas de recuperação ─────────────
+// ─── Widgets compartilhados entre as telas de recuperação ─────────────────────
+
+class _InstrucaoItem extends StatelessWidget {
+  final String numero;
+  final String texto;
+  const _InstrucaoItem({required this.numero, required this.texto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              color: AppTheme.primary,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(numero,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(texto,
+                style: const TextStyle(fontSize: 13, height: 1.4)),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class StepIndicator extends StatelessWidget {
   final int current;
@@ -138,7 +303,7 @@ class StepIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(3, (i) {
+      children: List.generate(2, (i) {
         final step = i + 1;
         final isActive = step == current;
         final isDone = step < current;
@@ -162,8 +327,9 @@ class StepIndicator extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color:
-                      isActive || isDone ? AppTheme.primary : AppTheme.divider,
+                  color: isActive || isDone
+                      ? AppTheme.primary
+                      : AppTheme.divider,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -211,7 +377,8 @@ class ErrorBox extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
               child: Text(message,
-                  style: const TextStyle(color: AppTheme.error, fontSize: 13))),
+                  style:
+                      const TextStyle(color: AppTheme.error, fontSize: 13))),
         ],
       ),
     );
