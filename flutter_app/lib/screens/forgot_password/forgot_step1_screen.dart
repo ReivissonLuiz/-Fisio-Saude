@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/custom_text_field.dart';
@@ -38,7 +39,18 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
       _errorMsg = null;
     });
 
-    final result = await _api.forgotPassword(_emailCtrl.text.trim());
+    // Pega a URL em que o aplicativo está rodando atualmente (mesmo se for localhost ou github)
+    String? redirectUrl;
+    if (kIsWeb) {
+      final currentUri = Uri.base;
+      // Garante que retorne para a mesma raiz do site atual
+      redirectUrl = '${currentUri.origin}${currentUri.path}';
+    }
+
+    final result = await _api.forgotPassword(
+      _emailCtrl.text.trim(),
+      redirectTo: redirectUrl,
+    );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
