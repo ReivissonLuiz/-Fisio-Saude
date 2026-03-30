@@ -217,8 +217,9 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.email_outlined),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Informe um e-mail.';
-                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v))
+                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
                           return 'E-mail inválido.';
+                        }
                         return null;
                       },
                     ),
@@ -360,10 +361,12 @@ class _ProfessionalRegisterScreenState
                             () => _obscureConfirmar = !_obscureConfirmar),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Confirme sua senha.';
-                        if (v != _senhaCtrl.text)
+                        }
+                        if (v != _senhaCtrl.text) {
                           return 'As senhas não coincidem.';
+                        }
                         return null;
                       },
                     ),

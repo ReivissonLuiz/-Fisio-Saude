@@ -180,8 +180,9 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.length != 6)
+                        if (v == null || v.length != 6) {
                           return 'Digite o código de 6 dígitos.';
+                        }
                         return null;
                       },
                       onChanged: (_) => setState(() => _errorMsg = null),

@@ -135,25 +135,25 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _sintomas.isEmpty
-                    ? Center(
+                    ? const Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.healing_rounded,
+                            Icon(Icons.healing_rounded,
                                 color: AppTheme.textHint, size: 60),
-                            const SizedBox(height: 14),
-                            const Text('Nenhum sintoma registrado',
+                            SizedBox(height: 14),
+                            Text('Nenhum sintoma registrado',
                                 style: TextStyle(
                                     color: AppTheme.textSecondary,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500)),
-                            const SizedBox(height: 6),
-                            const Text(
+                            SizedBox(height: 6),
+                            Text(
                                 'Use o botão abaixo para registrar\ncomo você está sentindo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: AppTheme.textHint, fontSize: 13)),
-                            const SizedBox(height: 80),
+                            SizedBox(height: 80),
                           ],
                         ),
                       )

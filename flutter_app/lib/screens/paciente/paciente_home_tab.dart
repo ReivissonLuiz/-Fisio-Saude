@@ -133,23 +133,23 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // ── Próxima Consulta ──────────────────────────────────────
-                  _SectionTitle(
+                  const _SectionTitle(
                       title: 'Próxima Consulta',
                       icon: Icons.calendar_month_rounded),
                   const SizedBox(height: 10),
-                  _proxima_consulta(),
+                  _proximaConsulta(),
                   const SizedBox(height: 24),
 
                   // ── Último Sintoma Registrado ─────────────────────────────
-                  _SectionTitle(
+                  const _SectionTitle(
                       title: 'Último Sintoma Registrado',
                       icon: Icons.monitor_heart_rounded),
                   const SizedBox(height: 10),
-                  _ultimo_sintoma(),
+                  _ultimoSintoma(),
                   const SizedBox(height: 24),
 
                   // ── Resumo Rápido ─────────────────────────────────────────
-                  _SectionTitle(
+                  const _SectionTitle(
                       title: 'Resumo', icon: Icons.bar_chart_rounded),
                   const SizedBox(height: 10),
                   Row(
@@ -183,13 +183,13 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
     );
   }
 
-  Widget _proxima_consulta() {
+  Widget _proximaConsulta() {
     final proximas = _consultas
         .where((c) => c['status'] == 'Agendada')
         .toList();
 
     if (proximas.isEmpty) {
-      return _EmptyCard(
+      return const _EmptyCard(
         icon: Icons.calendar_today_rounded,
         message: 'Nenhuma consulta agendada.',
         sub: 'Busque um fisioterapeuta para agendar.',
@@ -265,9 +265,9 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
     );
   }
 
-  Widget _ultimo_sintoma() {
+  Widget _ultimoSintoma() {
     if (_sintomas.isEmpty) {
-      return _EmptyCard(
+      return const _EmptyCard(
         icon: Icons.monitor_heart_outlined,
         message: 'Nenhum sintoma registrado.',
         sub: 'Use a aba Saúde para registrar seus sintomas.',

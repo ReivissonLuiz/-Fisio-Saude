@@ -131,8 +131,9 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                       ),
                       onChanged: (_) => setState(() {}),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Informe a nova senha.';
+                        }
                         if (v.length < 6) return 'Mínimo de 6 caracteres.';
                         return null;
                       },
@@ -160,10 +161,12 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                             () => _obscureConfirmar = !_obscureConfirmar),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Confirme a nova senha.';
-                        if (v != _novaSenhaCtrl.text)
+                        }
+                        if (v != _novaSenhaCtrl.text) {
                           return 'As senhas não coincidem.';
+                        }
                         return null;
                       },
                     ),

@@ -135,11 +135,11 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
                 numero: '1',
                 texto: 'Abra o e-mail enviado para ${_emailCtrl.text.trim()}',
               ),
-              _InstrucaoItem(
+              const _InstrucaoItem(
                 numero: '2',
                 texto: 'Clique no botão "Redefinir minha senha"',
               ),
-              _InstrucaoItem(
+              const _InstrucaoItem(
                 numero: '3',
                 texto:
                     'Você será redirecionado para criar uma nova senha',
@@ -285,7 +285,7 @@ class _InstrucaoItem extends StatelessWidget {
           Container(
             width: 22,
             height: 22,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.primary,
               shape: BoxShape.circle,
             ),
