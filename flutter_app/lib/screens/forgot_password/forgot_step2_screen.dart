@@ -1,6 +1,6 @@
-﻿/// forgot_step2_screen.dart
-/// Passo 2: O usuÃ¡rio insere o cÃ³digo de 6 dÃ­gitos recebido por e-mail.
-/// Inclui cooldown de 60s para reenvio e validaÃ§Ã£o de cÃ³digo invÃ¡lido/expirado.
+/// forgot_step2_screen.dart
+/// Passo 2: O usuário insere o código de 6 dígitos recebido por e-mail.
+/// Inclui cooldown de 60s para reenvio e validação de código inválido/expirado.
 library;
 
 import 'dart:async';
@@ -94,7 +94,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
       _startCooldown();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('CÃ³digo reenviado!'),
+            content: Text('Código reenviado!'),
             backgroundColor: AppTheme.accent),
       );
     }
@@ -125,24 +125,24 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enviamos um cÃ³digo de 6 dÃ­gitos para $_email.',
+                      'Enviamos um código de 6 dígitos para $_email.',
                       style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14),
                     ),
-                    // Em desenvolvimento, mostra o cÃ³digo gerado
+                    // Em desenvolvimento, mostra o código gerado
                     if (_devCode != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.warning.withValues(alpha: 0.1),
+                            color: AppTheme.warning.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppTheme.warning.withValues(alpha: 0.4)),
+                                color: AppTheme.warning.withOpacity(0.4)),
                           ),
                           child: Text(
-                            'ðŸ›  Modo Dev â€” CÃ³digo: $_devCode',
+                            '🛠 Modo Dev — Código: $_devCode',
                             style: const TextStyle(
                                 fontSize: 13,
                                 color: AppTheme.warning,
@@ -151,7 +151,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         ),
                       ),
                     const SizedBox(height: 32),
-                    // Campo cÃ³digo
+                    // Campo código
                     TextFormField(
                       controller: _codeCtrl,
                       keyboardType: TextInputType.number,
@@ -180,9 +180,8 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.length != 6) {
-                          return 'Digite o cÃ³digo de 6 dÃ­gitos.';
-                        }
+                        if (v == null || v.length != 6)
+                          return 'Digite o código de 6 dígitos.';
                         return null;
                       },
                       onChanged: (_) => setState(() => _errorMsg = null),
@@ -192,7 +191,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                     if (_errorMsg != null) ErrorBox(message: _errorMsg!),
 
                     PrimaryButton(
-                        label: 'Verificar cÃ³digo',
+                        label: 'Verificar código',
                         onPressed: _verifyCode,
                         isLoading: _isLoading),
                     const SizedBox(height: 24),
@@ -203,8 +202,8 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         onPressed: _resendCooldown > 0 ? null : _resendCode,
                         child: Text(
                           _resendCooldown > 0
-                              ? 'Reenviar cÃ³digo em ${_resendCooldown}s'
-                              : 'Reenviar cÃ³digo',
+                              ? 'Reenviar código em ${_resendCooldown}s'
+                              : 'Reenviar código',
                           style: TextStyle(
                             color: _resendCooldown > 0
                                 ? AppTheme.textHint

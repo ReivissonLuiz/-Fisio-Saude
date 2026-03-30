@@ -1,6 +1,6 @@
-﻿/// forgot_step1_screen.dart
-/// Passo 1: usuÃ¡rio informa o e-mail e recebe link de recuperaÃ§Ã£o no e-mail.
-/// O Supabase envia um e-mail real com link de redefiniÃ§Ã£o de senha.
+/// forgot_step1_screen.dart
+/// Passo 1: usuário informa o e-mail e recebe link de recuperação no e-mail.
+/// O Supabase envia um e-mail real com link de redefinição de senha.
 library;
 
 import 'package:flutter/material.dart';
@@ -39,7 +39,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
       _errorMsg = null;
     });
 
-    // Pega a URL em que o aplicativo estÃ¡ rodando atualmente (mesmo se for localhost ou github)
+    // Pega a URL em que o aplicativo está rodando atualmente (mesmo se for localhost ou github)
     String? redirectUrl;
     if (kIsWeb) {
       final currentUri = Uri.base;
@@ -84,7 +84,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     );
   }
 
-  // â”€â”€ Tela de confirmaÃ§Ã£o apÃ³s envio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Tela de confirmação após envio ────────────────────────────────────────
 
   Widget _buildConfirmacao() {
     return Column(
@@ -109,20 +109,20 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Enviamos um link de recuperaÃ§Ã£o para:\n${_emailCtrl.text.trim()}',
+          'Enviamos um link de recuperação para:\n${_emailCtrl.text.trim()}',
           textAlign: TextAlign.center,
           style: const TextStyle(
               color: AppTheme.textSecondary, fontSize: 15, height: 1.5),
         ),
         const SizedBox(height: 28),
-        // Card com instruÃ§Ãµes
+        // Card com instruções
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: AppTheme.primary.withValues(alpha: 0.06),
+            color: AppTheme.primary.withOpacity(0.06),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+            border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,14 +135,14 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
                 numero: '1',
                 texto: 'Abra o e-mail enviado para ${_emailCtrl.text.trim()}',
               ),
-              const _InstrucaoItem(
+              _InstrucaoItem(
                 numero: '2',
-                texto: 'Clique no botÃ£o "Redefinir minha senha"',
+                texto: 'Clique no botão "Redefinir minha senha"',
               ),
-              const _InstrucaoItem(
+              _InstrucaoItem(
                 numero: '3',
                 texto:
-                    'VocÃª serÃ¡ redirecionado para criar uma nova senha',
+                    'Você será redirecionado para criar uma nova senha',
               ),
             ],
           ),
@@ -152,9 +152,9 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.warning.withValues(alpha: 0.08),
+            color: AppTheme.warning.withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.warning.withValues(alpha: 0.3)),
+            border: Border.all(color: AppTheme.warning.withOpacity(0.3)),
           ),
           child: const Row(
             children: [
@@ -162,7 +162,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'NÃ£o encontrou o e-mail? Verifique a pasta de spam ou lixo eletrÃ´nico.',
+                  'Não encontrou o e-mail? Verifique a pasta de spam ou lixo eletrônico.',
                   style: TextStyle(
                       fontSize: 12, color: AppTheme.warning, height: 1.4),
                 ),
@@ -171,7 +171,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           ),
         ),
         const SizedBox(height: 28),
-        // BotÃ£o reenviar
+        // Botão reenviar
         OutlinedButton.icon(
           onPressed: () => setState(() {
             _enviado = false;
@@ -197,7 +197,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     );
   }
 
-  // â”€â”€ FormulÃ¡rio de e-mail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Formulário de e-mail ──────────────────────────────────────────────────
 
   Widget _buildFormulario() {
     return Form(
@@ -205,7 +205,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ãcone
+          // Ícone
           Center(
             child: Container(
               width: 72,
@@ -225,7 +225,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Informe seu e-mail cadastrado e enviaremos um link para vocÃª criar uma nova senha.',
+            'Informe seu e-mail cadastrado e enviaremos um link para você criar uma nova senha.',
             style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, height: 1.5),
           ),
           const SizedBox(height: 32),
@@ -238,7 +238,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
             validator: (v) {
               if (v == null || v.isEmpty) return 'Informe seu e-mail.';
               if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
-                return 'E-mail invÃ¡lido.';
+                return 'E-mail inválido.';
               }
               return null;
             },
@@ -246,7 +246,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           const SizedBox(height: 24),
           if (_errorMsg != null) ErrorBox(message: _errorMsg!),
           PrimaryButton(
-            label: 'Enviar link de recuperaÃ§Ã£o',
+            label: 'Enviar link de recuperação',
             onPressed: _sendLink,
             isLoading: _isLoading,
           ),
@@ -268,7 +268,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
   }
 }
 
-// â”€â”€â”€ Widgets compartilhados entre as telas de recuperaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Widgets compartilhados entre as telas de recuperação ─────────────────────
 
 class _InstrucaoItem extends StatelessWidget {
   final String numero;
@@ -285,7 +285,7 @@ class _InstrucaoItem extends StatelessWidget {
           Container(
             width: 22,
             height: 22,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppTheme.primary,
               shape: BoxShape.circle,
             ),
@@ -379,9 +379,9 @@ class ErrorBox extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.error.withValues(alpha: 0.1),
+        color: AppTheme.error.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.error.withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -408,9 +408,9 @@ class SuccessBox extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppTheme.accent.withValues(alpha: 0.1),
+        color: AppTheme.accent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.accent.withValues(alpha: 0.3)),
+        border: Border.all(color: AppTheme.accent.withOpacity(0.3)),
       ),
       child: Row(
         children: [

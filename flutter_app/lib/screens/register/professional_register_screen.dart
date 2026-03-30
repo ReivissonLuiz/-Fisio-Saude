@@ -1,6 +1,6 @@
-﻿/// professional_register_screen.dart
-/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatÃ³rios,
-/// incluindo CREFITO e especializaÃ§Ã£o, com aceite de termos LGPD.
+/// professional_register_screen.dart
+/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
+/// incluindo CREFITO e especialização, com aceite de termos LGPD.
 library;
 
 import 'package:flutter/material.dart';
@@ -42,7 +42,7 @@ class _ProfessionalRegisterScreenState
   String? _errorMsg;
   String? _successMsg;
 
-  // MÃ¡scaras
+  // Máscaras
   final _cpfMask = MaskTextInputFormatter(
       mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
   final _telMask = MaskTextInputFormatter(
@@ -53,16 +53,16 @@ class _ProfessionalRegisterScreenState
   final _api = ApiService();
 
   static const List<String> _especializacoes = [
-    'Fisioterapia OrtopÃ©dica e TraumatolÃ³gica',
-    'Fisioterapia NeurolÃ³gica',
+    'Fisioterapia Ortopédica e Traumatológica',
+    'Fisioterapia Neurológica',
     'Fisioterapia Esportiva',
-    'Fisioterapia CardiorrespiratÃ³ria',
-    'Fisioterapia em SaÃºde da Mulher',
-    'Fisioterapia PediÃ¡trica',
-    'Fisioterapia GeriÃ¡trica',
-    'Fisioterapia AquÃ¡tica',
+    'Fisioterapia Cardiorrespiratória',
+    'Fisioterapia em Saúde da Mulher',
+    'Fisioterapia Pediátrica',
+    'Fisioterapia Geriátrica',
+    'Fisioterapia Aquática',
     'Fisioterapia Dermato-Funcional',
-    'RPG â€” ReeducaÃ§Ã£o Postural Global',
+    'RPG — Reeducação Postural Global',
     'Outra',
   ];
 
@@ -87,7 +87,7 @@ class _ProfessionalRegisterScreenState
     if (!_formKey.currentState!.validate()) return;
     if (!_aceitaTermos) {
       setState(() => _errorMsg =
-          'VocÃª deve aceitar os Termos de Uso e PolÃ­tica de Privacidade.');
+          'Você deve aceitar os Termos de Uso e Política de Privacidade.');
       return;
     }
     setState(() {
@@ -126,7 +126,7 @@ class _ProfessionalRegisterScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Cadastro â€” Fisioterapeuta'),
+          title: const Text('Cadastro — Fisioterapeuta'),
           leading: const BackButton()),
       body: SafeArea(
         child: Center(
@@ -139,13 +139,13 @@ class _ProfessionalRegisterScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // CabeÃ§alho
+                    // Cabeçalho
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.secondary.withValues(alpha: 0.1),
+                            color: AppTheme.secondary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(Icons.medical_services_rounded,
@@ -172,10 +172,10 @@ class _ProfessionalRegisterScreenState
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.accent.withValues(alpha: 0.1),
+                        color: AppTheme.accent.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppTheme.accent.withValues(alpha: 0.4)),
+                            color: AppTheme.accent.withOpacity(0.4)),
                       ),
                       child: const Row(
                         children: [
@@ -184,7 +184,7 @@ class _ProfessionalRegisterScreenState
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Seu cadastro Ã© ativado imediatamente. VocÃª jÃ¡ pode fazer login apÃ³s o registro.',
+                              'Seu cadastro é ativado imediatamente. Você já pode fazer login após o registro.',
                               style: TextStyle(
                                   fontSize: 12, color: AppTheme.accent),
                             ),
@@ -194,7 +194,7 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 28),
 
-                    // â”€â”€â”€ Dados Pessoais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Dados Pessoais ─────────────────────────────────────
                     const SectionLabel('Dados Pessoais'),
                     const SizedBox(height: 12),
 
@@ -217,9 +217,8 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.email_outlined),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Informe um e-mail.';
-                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
-                          return 'E-mail invÃ¡lido.';
-                        }
+                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v))
+                          return 'E-mail inválido.';
                         return null;
                       },
                     ),
@@ -234,7 +233,7 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.badge_outlined),
                       validator: (v) =>
                           (v == null || _cpfMask.getUnmaskedText().length != 11)
-                              ? 'CPF invÃ¡lido.'
+                              ? 'CPF inválido.'
                               : null,
                     ),
                     const SizedBox(height: 14),
@@ -248,12 +247,12 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.phone_outlined),
                       validator: (v) =>
                           (v == null || _telMask.getUnmaskedText().length < 10)
-                              ? 'Telefone invÃ¡lido.'
+                              ? 'Telefone inválido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Dados Profissionais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Dados Profissionais ────────────────────────────────
                     const SectionLabel('Dados Profissionais'),
                     const SizedBox(height: 12),
 
@@ -268,11 +267,11 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 14),
 
-                    // Dropdown de especializaÃ§Ã£o
+                    // Dropdown de especialização
                     DropdownButtonFormField<String>(
                       value: _especializacaoSelecionada,
                       decoration: InputDecoration(
-                        labelText: 'EspecializaÃ§Ã£o / Ãrea de atuaÃ§Ã£o *',
+                        labelText: 'Especialização / Área de atuação *',
                         prefixIcon: const Icon(Icons.category_outlined),
                         filled: true,
                         fillColor: Colors.white,
@@ -293,13 +292,13 @@ class _ProfessionalRegisterScreenState
                       onChanged: (v) =>
                           setState(() => _especializacaoSelecionada = v),
                       validator: (v) => (v == null || v.isEmpty)
-                          ? 'Selecione uma especializaÃ§Ã£o.'
+                          ? 'Selecione uma especialização.'
                           : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ EndereÃ§o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                    const SectionLabel('EndereÃ§o'),
+                    // ─── Endereço ───────────────────────────────────────────
+                    const SectionLabel('Endereço'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
@@ -311,18 +310,18 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.location_on_outlined),
                       validator: (v) =>
                           (v == null || _cepMask.getUnmaskedText().length != 8)
-                              ? 'CEP invÃ¡lido.'
+                              ? 'CEP inválido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Senha ──────────────────────────────────────────────
                     const SectionLabel('Senha de acesso'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
                       label: 'Senha *',
-                      hint: 'MÃ­nimo 6 caracteres',
+                      hint: 'Mínimo 6 caracteres',
                       controller: _senhaCtrl,
                       obscureText: _obscureSenha,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -338,7 +337,7 @@ class _ProfessionalRegisterScreenState
                       onChanged: (_) => setState(() {}),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Crie uma senha.';
-                        if (v.length < 6) return 'MÃ­nimo 6 caracteres.';
+                        if (v.length < 6) return 'Mínimo 6 caracteres.';
                         return null;
                       },
                     ),
@@ -361,18 +360,16 @@ class _ProfessionalRegisterScreenState
                             () => _obscureConfirmar = !_obscureConfirmar),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) {
+                        if (v == null || v.isEmpty)
                           return 'Confirme sua senha.';
-                        }
-                        if (v != _senhaCtrl.text) {
-                          return 'As senhas nÃ£o coincidem.';
-                        }
+                        if (v != _senhaCtrl.text)
+                          return 'As senhas não coincidem.';
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
 
-                    // â”€â”€â”€ Aceite de termos (LGPD) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Aceite de termos (LGPD) ────────────────────────────
                     TermsCheckbox(
                       value: _aceitaTermos,
                       onChanged: (v) => setState(() {

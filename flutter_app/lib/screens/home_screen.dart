@@ -1,7 +1,7 @@
-﻿/// home_screen.dart
-/// Tela principal pÃ³s-login do +FÃ­sio +SaÃºde.
-/// Paciente â†’ BottomNavigationBar com 4 abas funcionais.
-/// Profissional â†’ Dashboard com cards de acesso rÃ¡pido (em breve).
+/// home_screen.dart
+/// Tela principal pós-login do +Físio +Saúde.
+/// Paciente → BottomNavigationBar com 4 abas funcionais.
+/// Profissional → Dashboard com cards de acesso rápido (em breve).
 library;
 
 import 'package:flutter/material.dart';
@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _args = (ModalRoute.of(context)?.settings.arguments
         as Map<String, dynamic>?) ??
         {};
-    _nome = _args['nome'] as String? ?? 'UsuÃ¡rio';
+    _nome = _args['nome'] as String? ?? 'Usuário';
     _tipo = _args['tipo'] as String? ?? 'Paciente';
     _email = _args['email'] as String? ?? '';
     _pacienteId = _args['id_paciente'] as String?;
@@ -51,12 +51,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // â”€â”€ VisÃ£o do Profissional â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Visão do Profissional ─────────────────────────────────────────────────
     if (!_isPaciente) {
       return _ProfissionalHome(nome: _nome, onLogout: _logout);
     }
 
-    // â”€â”€ VisÃ£o do Paciente â€” abas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Visão do Paciente — abas ──────────────────────────────────────────────
     final tabs = [
       PacienteHomeTab(
           pacienteId: _pacienteId ?? '',
@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedIndex: _tabIndex,
         onDestinationSelected: (i) => setState(() => _tabIndex = i),
         backgroundColor: Colors.white,
-        indicatorColor: AppTheme.primary.withValues(alpha: 0.12),
+        indicatorColor: AppTheme.primary.withOpacity(0.12),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         labelBehavior:
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded, color: AppTheme.primary),
-            label: 'InÃ­cio',
+            label: 'Início',
           ),
           NavigationDestination(
             icon: Icon(Icons.search_outlined),
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.monitor_heart_outlined),
             selectedIcon: Icon(Icons.monitor_heart_rounded,
                 color: Color(0xFFE91E63)),
-            label: 'SaÃºde',
+            label: 'Saúde',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// â”€â”€â”€ Dashboard do Profissional (placeholder) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Dashboard do Profissional (placeholder) ──────────────────────────────────
 
 class _ProfissionalHome extends StatelessWidget {
   final String nome;
@@ -154,7 +154,7 @@ class _ProfissionalHome extends StatelessWidget {
                                     CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'OlÃ¡, ${nome.split(' ').first}! ðŸ‘‹',
+                                    'Olá, ${nome.split(' ').first}! 👋',
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 22,
@@ -166,11 +166,11 @@ class _ProfissionalHome extends StatelessWidget {
                                         horizontal: 10, vertical: 3),
                                     decoration: BoxDecoration(
                                       color:
-                                          Colors.white.withValues(alpha: 0.2),
+                                          Colors.white.withOpacity(0.2),
                                       borderRadius:
                                           BorderRadius.circular(20),
                                     ),
-                                    child: const Text('ðŸ©º Fisioterapeuta',
+                                    child: const Text('🩺 Fisioterapeuta',
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 12,
@@ -182,7 +182,7 @@ class _ProfissionalHome extends StatelessWidget {
                               CircleAvatar(
                                 radius: 26,
                                 backgroundColor:
-                                    Colors.white.withValues(alpha: 0.25),
+                                    Colors.white.withOpacity(0.25),
                                 child: Text(
                                   nome.isNotEmpty
                                       ? nome[0].toUpperCase()
@@ -220,16 +220,16 @@ class _ProfissionalHome extends StatelessWidget {
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(colors: [
-                        AppTheme.secondary.withValues(alpha: 0.15),
-                        AppTheme.primary.withValues(alpha: 0.1)
+                        AppTheme.secondary.withOpacity(0.15),
+                        AppTheme.primary.withOpacity(0.1)
                       ]),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                          color: AppTheme.secondary.withValues(alpha: 0.3)),
+                          color: AppTheme.secondary.withOpacity(0.3)),
                     ),
                     child: const Row(
                       children: [
-                        Text('ðŸš€', style: TextStyle(fontSize: 32)),
+                        Text('🚀', style: TextStyle(fontSize: 32)),
                         SizedBox(width: 14),
                         Expanded(
                           child: Column(
@@ -242,7 +242,7 @@ class _ProfissionalHome extends StatelessWidget {
                                       color: AppTheme.textPrimary)),
                               SizedBox(height: 4),
                               Text(
-                                'As funcionalidades do profissional serÃ£o disponibilizadas em breve.',
+                                'As funcionalidades do profissional serão disponibilizadas em breve.',
                                 style: TextStyle(
                                     fontSize: 12,
                                     color: AppTheme.textSecondary,
@@ -255,7 +255,7 @@ class _ProfissionalHome extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Acesso RÃ¡pido',
+                  const Text('Acesso Rápido',
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -279,7 +279,7 @@ class _ProfissionalHome extends StatelessWidget {
                           color: AppTheme.secondary),
                       _QuickCard(
                           icon: Icons.bar_chart_rounded,
-                          label: 'RelatÃ³rios',
+                          label: 'Relatórios',
                           color: Color(0xFF9C27B0)),
                       _QuickCard(
                           icon: Icons.person_rounded,
@@ -305,7 +305,7 @@ class _ProfissionalHome extends StatelessWidget {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title:
             const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua sessÃ£o?'),
+        content: const Text('Deseja encerrar sua sessão?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -325,7 +325,7 @@ class _ProfissionalHome extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€ Quick Card (profissional) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Quick Card (profissional) ────────────────────────────────────────────────
 
 class _QuickCard extends StatelessWidget {
   final IconData icon;
@@ -345,7 +345,7 @@ class _QuickCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   blurRadius: 12,
                   offset: const Offset(0, 4)),
             ],
@@ -358,7 +358,7 @@ class _QuickCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
+                  color: color.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, color: color, size: 26),
@@ -378,7 +378,7 @@ class _QuickCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: AppTheme.warning.withValues(alpha: 0.9),
+              color: AppTheme.warning.withOpacity(0.9),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Text('Em breve',

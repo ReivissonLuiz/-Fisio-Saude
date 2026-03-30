@@ -1,6 +1,6 @@
-﻿/// patient_register_screen.dart
-/// Tela de cadastro de Paciente com todos os campos obrigatÃ³rios e opcionais,
-/// mÃ¡scaras de CPF/telefone/CEP e aceite de termos de uso (LGPD).
+/// patient_register_screen.dart
+/// Tela de cadastro de Paciente com todos os campos obrigatórios e opcionais,
+/// máscaras de CPF/telefone/CEP e aceite de termos de uso (LGPD).
 library;
 
 import 'package:flutter/material.dart';
@@ -40,7 +40,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   String? _errorMsg;
   String? _successMsg;
 
-  // MÃ¡scaras
+  // Máscaras
   final _cpfMask = MaskTextInputFormatter(
       mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
   final _telMask = MaskTextInputFormatter(
@@ -74,11 +74,11 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_aceitaTermos) {
       setState(() => _errorMsg =
-          'VocÃª deve aceitar os Termos de Uso e PolÃ­tica de Privacidade.');
+          'Você deve aceitar os Termos de Uso e Política de Privacidade.');
       return;
     }
     if (_generoSelecionado == null) {
-      setState(() => _errorMsg = 'Por favor, selecione o seu GÃªnero.');
+      setState(() => _errorMsg = 'Por favor, selecione o seu Gênero.');
       return;
     }
     setState(() {
@@ -118,7 +118,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Cadastro â€” Paciente'),
+          title: const Text('Cadastro — Paciente'),
           leading: const BackButton()),
       body: SafeArea(
         child: Center(
@@ -131,13 +131,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // CabeÃ§alho
+                    // Cabeçalho
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.primary.withValues(alpha: 0.1),
+                            color: AppTheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(Icons.person_2_rounded,
@@ -160,13 +160,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    // â”€â”€â”€ Campos obrigatÃ³rios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Campos obrigatórios ────────────────────────────────
                     const SectionLabel('Dados Pessoais'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
                       label: 'Nome completo *',
-                      hint: 'JoÃ£o da Silva',
+                      hint: 'João da Silva',
                       controller: _nomeCtrl,
                       prefixIcon: const Icon(Icons.person_outline),
                       validator: (v) => (v == null || v.trim().length < 3)
@@ -183,9 +183,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       prefixIcon: const Icon(Icons.email_outlined),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Informe um e-mail.';
-                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
-                          return 'E-mail invÃ¡lido.';
-                        }
+                        if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v))
+                          return 'E-mail inválido.';
                         return null;
                       },
                     ),
@@ -201,7 +200,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       validator: (v) {
                         if (v == null ||
                             _cpfMask.getUnmaskedText().length != 11) {
-                          return 'CPF invÃ¡lido.';
+                          return 'CPF inválido.';
                         }
                         return null;
                       },
@@ -210,7 +209,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
 
                     CustomTextField(
                       label: 'RG *',
-                      hint: 'Apenas nÃºmeros e letras...',
+                      hint: 'Apenas números e letras...',
                       controller: _rgCtrl,
                       keyboardType: TextInputType.text,
                       prefixIcon: const Icon(Icons.badge_outlined),
@@ -225,7 +224,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
 
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
-                        labelText: 'GÃªnero *',
+                        labelText: 'Gênero *',
                         prefixIcon: Icon(Icons.people_outline),
                       ),
                       value: _generoSelecionado,
@@ -247,7 +246,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       inputFormatters: [_nascMask],
                       prefixIcon: const Icon(Icons.cake_outlined),
                       validator: (v) => (v == null || v.length != 10)
-                          ? 'Data invÃ¡lida.'
+                          ? 'Data inválida.'
                           : null,
                     ),
                     const SizedBox(height: 14),
@@ -261,13 +260,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       prefixIcon: const Icon(Icons.phone_outlined),
                       validator: (v) =>
                           (v == null || _telMask.getUnmaskedText().length < 10)
-                              ? 'Telefone invÃ¡lido.'
+                              ? 'Telefone inválido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Campos opcionais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                    const SectionLabel('EndereÃ§o (opcional)'),
+                    // ─── Campos opcionais ───────────────────────────────────
+                    const SectionLabel('Endereço (opcional)'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
@@ -280,13 +279,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Senha ──────────────────────────────────────────────
                     const SectionLabel('Senha de acesso'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
                       label: 'Senha *',
-                      hint: 'MÃ­nimo 6 caracteres',
+                      hint: 'Mínimo 6 caracteres',
                       controller: _senhaCtrl,
                       obscureText: _obscureSenha,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -302,7 +301,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       onChanged: (_) => setState(() {}),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Crie uma senha.';
-                        if (v.length < 6) return 'MÃ­nimo 6 caracteres.';
+                        if (v.length < 6) return 'Mínimo 6 caracteres.';
                         return null;
                       },
                     ),
@@ -325,18 +324,16 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                             () => _obscureConfirmar = !_obscureConfirmar),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) {
+                        if (v == null || v.isEmpty)
                           return 'Confirme sua senha.';
-                        }
-                        if (v != _senhaCtrl.text) {
-                          return 'As senhas nÃ£o coincidem.';
-                        }
+                        if (v != _senhaCtrl.text)
+                          return 'As senhas não coincidem.';
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
 
-                    // â”€â”€â”€ Aceite de termos (LGPD) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Aceite de termos (LGPD) ────────────────────────────
                     TermsCheckbox(
                       value: _aceitaTermos,
                       onChanged: (v) => setState(() {
@@ -346,13 +343,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Mensagens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Mensagens ───────────────────────────────────────────
                     if (_errorMsg != null)
                       FeedbackBox(message: _errorMsg!, isError: true),
                     if (_successMsg != null)
                       FeedbackBox(message: _successMsg!, isError: false),
 
-                    // â”€â”€â”€ BotÃ£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // ─── Botão ───────────────────────────────────────────────
                     PrimaryButton(
                         label: 'Criar conta',
                         onPressed: _register,
@@ -369,7 +366,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   }
 }
 
-// â”€â”€â”€ Widgets auxiliares â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Widgets auxiliares ───────────────────────────────────────────────────────
 
 class SectionLabel extends StatelessWidget {
   final String label;
@@ -426,7 +423,7 @@ class TermsCheckbox extends StatelessWidget {
                           fontWeight: FontWeight.w600)),
                   TextSpan(text: ' e a '),
                   TextSpan(
-                      text: 'PolÃ­tica de Privacidade',
+                      text: 'Política de Privacidade',
                       style: TextStyle(
                           color: AppTheme.primary,
                           fontWeight: FontWeight.w600)),
@@ -455,9 +452,9 @@ class FeedbackBox extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         children: [

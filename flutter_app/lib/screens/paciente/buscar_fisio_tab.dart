@@ -1,5 +1,5 @@
-﻿/// buscar_fisio_tab.dart
-/// Aba "Buscar Fisio" â€” lista e pesquisa de profissionais ativos â€” +FÃ­sio +SaÃºde
+/// buscar_fisio_tab.dart
+/// Aba "Buscar Fisio" — lista e pesquisa de profissionais ativos — +Físio +Saúde
 library;
 
 import 'package:flutter/material.dart';
@@ -72,7 +72,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // â”€â”€â”€ Header + busca â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Header + busca ──────────────────────────────────────────────
         Container(
           decoration: const BoxDecoration(
             gradient: AppTheme.primaryGradient,
@@ -91,13 +91,13 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              const Text('Encontre um profissional para vocÃª',
+              const Text('Encontre um profissional para você',
                   style: TextStyle(color: Colors.white70, fontSize: 13)),
               const SizedBox(height: 14),
               TextFormField(
                 controller: _searchCtrl,
                 decoration: InputDecoration(
-                  hintText: 'Buscar por nome ou especialidadeâ€¦',
+                  hintText: 'Buscar por nome ou especialidade…',
                   hintStyle:
                       const TextStyle(color: AppTheme.textHint, fontSize: 14),
                   prefixIcon: const Icon(Icons.search_rounded,
@@ -126,7 +126,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
           ),
         ),
 
-        // â”€â”€â”€ Lista â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ─── Lista ───────────────────────────────────────────────────────
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator())
@@ -218,7 +218,7 @@ class _ProfissionalCard extends StatelessWidget {
         border: Border.all(color: AppTheme.divider),
         boxShadow: [
           BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.05),
+              color: AppTheme.primary.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 3)),
         ],
@@ -229,7 +229,7 @@ class _ProfissionalCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: corAvatar.withValues(alpha: 0.15),
+              backgroundColor: corAvatar.withOpacity(0.15),
               child: Text(
                 nome[0].toUpperCase(),
                 style: TextStyle(
@@ -261,7 +261,7 @@ class _ProfissionalCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.08),
+                          color: AppTheme.primary.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text('CREFITO: $crefito',
@@ -295,7 +295,7 @@ class _ProfissionalCard extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content:
-                              Text('Agendamento disponÃ­vel em breve! ðŸš€')),
+                              Text('Agendamento disponível em breve! 🚀')),
                     );
                   },
                   tooltip: 'Agendar',
