@@ -49,6 +49,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       MaskTextInputFormatter(mask: '#####-###', filter: {'#': RegExp(r'\d')});
   final _nascMask =
       MaskTextInputFormatter(mask: '##/##/####', filter: {'#': RegExp(r'\d')});
+  final _rgMask =
+      MaskTextInputFormatter(mask: '##.###.###-#', filter: {'#': RegExp(r'\d')});
 
   final _api = ApiService();
 
@@ -210,9 +212,10 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
 
                     CustomTextField(
                       label: 'RG *',
-                      hint: 'Apenas números e letras...',
+                      hint: '00.000.000-0',
                       controller: _rgCtrl,
-                      keyboardType: TextInputType.text,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [_rgMask],
                       prefixIcon: const Icon(Icons.badge_outlined),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
@@ -246,9 +249,21 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [_nascMask],
                       prefixIcon: const Icon(Icons.cake_outlined),
-                      validator: (v) => (v == null || v.length != 10)
-                          ? 'Data inválida.'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.length != 10) return 'Data inválida.';
+                        try {
+                          final p = v.split('/');
+                          final dataNasc = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
+                          final hoje = DateTime.now();
+                          var idade = hoje.year - dataNasc.year;
+                          if (hoje.month < dataNasc.month || (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) idade--;
+                          if (idade < 1) return 'Idade mínima é 1 ano.';
+                          if (idade > 150) return 'Idade máxima é 150 anos.';
+                        } catch (e) {
+                          return 'Data inválida.';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
 
