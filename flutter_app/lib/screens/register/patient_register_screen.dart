@@ -29,7 +29,6 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   final _senhaCtrl = TextEditingController();
   final _confirmarCtrl = TextEditingController();
   final _cepCtrl = TextEditingController();
-  final _rgCtrl = TextEditingController();
 
   String? _generoSelecionado;
 
@@ -49,8 +48,6 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       MaskTextInputFormatter(mask: '#####-###', filter: {'#': RegExp(r'\d')});
   final _nascMask =
       MaskTextInputFormatter(mask: '##/##/####', filter: {'#': RegExp(r'\d')});
-  final _rgMask =
-      MaskTextInputFormatter(mask: '##.###.###-#', filter: {'#': RegExp(r'\d')});
 
   final _api = ApiService();
 
@@ -65,7 +62,6 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       _senhaCtrl,
       _confirmarCtrl,
       _cepCtrl,
-      _rgCtrl
     ]) {
       c.dispose();
     }
@@ -93,7 +89,6 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       'nome': _nomeCtrl.text.trim(),
       'email': _emailCtrl.text.trim(),
       'cpf': _cpfCtrl.text.trim(),
-      'rg': _rgCtrl.text.trim(),
       'genero': _generoSelecionado,
       'dataNascimento': _nascCtrl.text.trim(),
       'telefone': _telCtrl.text.trim(),
@@ -107,10 +102,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      setState(() => _successMsg = result['message']);
-      await Future.delayed(const Duration(seconds: 2));
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/register-success',
+        (r) => false,
+        arguments: 'Paciente',
+      );
     } else {
       setState(() => _errorMsg = result['message']);
     }
@@ -204,22 +202,6 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                         if (v == null ||
                             _cpfMask.getUnmaskedText().length != 11) {
                           return 'CPF inválido.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    CustomTextField(
-                      label: 'RG *',
-                      hint: '00.000.000-0',
-                      controller: _rgCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [_rgMask],
-                      prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Informe seu RG.';
                         }
                         return null;
                       },

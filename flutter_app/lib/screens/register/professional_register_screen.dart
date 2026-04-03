@@ -113,10 +113,13 @@ class _ProfessionalRegisterScreenState
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      setState(() => _successMsg = result['message']);
-      await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/register-success',
+        (r) => false,
+        arguments: 'Profissional',
+      );
     } else {
       setState(() => _errorMsg = result['message']);
     }

@@ -16,6 +16,7 @@ import 'screens/forgot_password/reset_password_screen.dart';
 import 'screens/register/profile_selection_screen.dart';
 import 'screens/register/patient_register_screen.dart';
 import 'screens/register/professional_register_screen.dart';
+import 'screens/register/register_success_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,12 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
         '/register-patient': (context) => const PatientRegisterScreen(),
         '/register-professional': (context) =>
             const ProfessionalRegisterScreen(),
+        '/register-success': (context) {
+          final tipo =
+              ModalRoute.of(context)!.settings.arguments as String? ??
+                  'Paciente';
+          return RegisterSuccessScreen(tipoConta: tipo);
+        },
       },
     );
   }

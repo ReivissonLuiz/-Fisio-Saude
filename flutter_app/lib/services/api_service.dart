@@ -100,7 +100,6 @@ class ApiService {
             'nome': (data['nome'] as String).trim(),
             'email': email,
             'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-            'rg': (data['rg'] as String).trim(),
             'data_nasc': (data['dataNascimento'] as String).split('/').reversed.join('-'),
             'telefone':
                 (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
