@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -40,8 +40,8 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar RemoçÍo'),
-        content: Text('Deseja realmente remover "$nome"? Esta açÍo nÍo pode ser desfeita.'),
+        title: const Text('Confirmar Remoção'),
+        content: Text('Deseja realmente remover "$nome"? Esta ação não pode ser desfeita.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           ElevatedButton(
@@ -70,7 +70,7 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('GestÍo de Dados', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Gestão de Dados', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
         bottom: PreferredSize(

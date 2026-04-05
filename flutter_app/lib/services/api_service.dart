@@ -595,7 +595,7 @@ class ApiService {
   /// Busca todos os pacientes para o painel ADM.
   Future<Map<String, dynamic>> getAllPacientes() async {
     try {
-      final res = await _sb.from('paciente').select().order('nome');
+      final res = await _sb.from('paciente').select().eq('ativo', true).order('nome');
       return {'success': true, 'data': res};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao carregar pacientes.'};
@@ -605,7 +605,7 @@ class ApiService {
   /// Busca todos os profissionais para o painel ADM.
   Future<Map<String, dynamic>> getAllProfissionais() async {
     try {
-      final res = await _sb.from('profissional').select().order('nome');
+      final res = await _sb.from('profissional').select().eq('ativo', true).order('nome');
       return {'success': true, 'data': res};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao carregar profissionais.'};
@@ -633,12 +633,13 @@ class ApiService {
   }
 
   /// Remove (ou desativa) um registro de qualquer tabela.
+  /// Implementamos soft-delete para evitar conflitos de Foreign Keys (400 Bad Request).
   Future<Map<String, dynamic>> deleteRecord(String table, String id) async {
     try {
-      await _sb.from(table).delete().eq('id', id);
+      await _sb.from(table).update({'ativo': false}).eq('id', id);
       return {'success': true};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao remover registro.'};
+      return {'success': false, 'message': 'Erro ao desativar registro.'};
     }
   }
 
