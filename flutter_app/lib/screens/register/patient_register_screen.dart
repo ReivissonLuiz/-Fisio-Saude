@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/password_strength_indicator.dart';
@@ -197,13 +198,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cpfMask],
                       prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) {
-                        if (v == null ||
-                            _cpfMask.getUnmaskedText().length != 11) {
-                          return 'CPF inválido.';
-                        }
-                        return null;
-                      },
+                      validator: (_) =>
+                          Validators.cpf(_cpfMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 14),
 
@@ -274,6 +270,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cepMask],
                       prefixIcon: const Icon(Icons.location_on_outlined),
+                      validator: (_) => Validators.cepOpcional(
+                          _cepCtrl.text, _cepMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 20),
 

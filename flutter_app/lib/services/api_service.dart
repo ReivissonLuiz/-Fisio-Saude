@@ -598,20 +598,20 @@ class ApiService {
 
   // --- Administrador: Gestão --------------------------------------------------
 
-  /// Busca todos os pacientes para o painel ADM.
+  /// Busca todos os pacientes para o painel ADM (ativos e inativos).
   Future<Map<String, dynamic>> getAllPacientes() async {
     try {
-      final res = await _sb.from('paciente').select().eq('ativo', true).order('nome');
+      final res = await _sb.from('paciente').select().order('nome');
       return {'success': true, 'data': res};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao carregar pacientes.'};
     }
   }
 
-  /// Busca todos os profissionais para o painel ADM.
+  /// Busca todos os profissionais para o painel ADM (ativos e inativos).
   Future<Map<String, dynamic>> getAllProfissionais() async {
     try {
-      final res = await _sb.from('profissional').select().eq('ativo', true).order('nome');
+      final res = await _sb.from('profissional').select().order('nome');
       return {'success': true, 'data': res};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao carregar profissionais.'};
@@ -650,12 +650,81 @@ class ApiService {
       return {'success': true};
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
-        // Isso acontece se 0 linhas foram afetadas (possível bloqueio de RLS do Supabase)
         return {'success': false, 'message': 'Operação recusada pelo banco (Verifique as políticas RLS).'};
       }
       return {'success': false, 'message': e.message};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao desativar registro.'};
+    }
+  }
+
+  /// Desativa um paciente ou profissional: marca ativo = false.
+  /// O registro permanece no banco visível apenas para ADMs.
+  Future<Map<String, dynamic>> deactivateRecord(String table, String id) async {
+    try {
+      await _sb.from(table).update({'ativo': false}).eq('id', id).select().single();
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        return {'success': false, 'message': 'Operação recusada pelo banco (verifique as políticas RLS).'};
+      }
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao desativar registro.'};
+    }
+  }
+
+  /// Reativa um paciente ou profissional: marca ativo = true.
+  Future<Map<String, dynamic>> reactivateRecord(String table, String id) async {
+    try {
+      await _sb.from(table).update({'ativo': true}).eq('id', id).select().single();
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao reativar registro.'};
+    }
+  }
+
+  /// Exclusão permanente: remove da tabela `login`, da tabela principal e do Supabase Auth.
+  /// A remoção do Auth é feita via Edge Function `delete-auth-user` (usa service_role key).
+  Future<Map<String, dynamic>> permanentDeleteRecord(String table, String id) async {
+    try {
+      final loginField = table == 'paciente' ? 'id_paciente' : 'id_profissional';
+
+      // 1. Busca o supabase_user_id ANTES de deletar (precisamos para excluir do Auth)
+      final loginData = await _sb
+          .from('login')
+          .select('supabase_user_id')
+          .eq(loginField, id)
+          .maybeSingle();
+
+      final supabaseUserId = loginData?['supabase_user_id'] as String?;
+
+      // 2. Remove vínculo na tabela login
+      await _sb.from('login').delete().eq(loginField, id);
+
+      // 3. Remove o registro principal
+      await _sb.from(table).delete().eq('id', id);
+
+      // 4. Remove do Supabase Auth via Edge Function (service_role key no servidor)
+      if (supabaseUserId != null && supabaseUserId.isNotEmpty) {
+        try {
+          await _sb.functions.invoke(
+            'delete-auth-user',
+            body: {'user_id': supabaseUserId},
+          );
+        } catch (_) {
+          // Auth cleanup falhou, mas dados do banco já foram removidos.
+          // Retorna sucesso parcial para não bloquear o fluxo do ADM.
+        }
+      }
+
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao excluir registro permanentemente.'};
     }
   }
 

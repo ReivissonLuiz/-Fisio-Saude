@@ -1,4 +1,4 @@
-﻿/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
+/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
 /// incluindo CREFITO e especialização, com aceite de termos LGPD.
 library;
 
@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/password_strength_indicator.dart';
@@ -234,10 +235,8 @@ class _ProfessionalRegisterScreenState
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cpfMask],
                       prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) =>
-                          (v == null || _cpfMask.getUnmaskedText().length != 11)
-                              ? 'CPF inválido.'
-                              : null,
+                      validator: (_) =>
+                          Validators.cpf(_cpfMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 14),
 
