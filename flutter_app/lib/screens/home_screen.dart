@@ -1,4 +1,4 @@
-﻿/// Tela principal pós-login do +Fisio +Saúde.
+/// Tela principal pós-login do +Fisio +Saúde.
 /// Paciente → BottomNavigationBar com 4 abas funcionais.
 /// Profissional → Dashboard com cards de acesso rápido (em breve).
 library;
@@ -64,10 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // --- Visão do Administrador (3 Menus) ------------------------------
     if (_isAdmin) {
       final adminTabs = [
-        AdminDashboardTab(adminId: _adminId ?? ''),
+        AdminDashboardTab(key: UniqueKey(), adminId: _adminId ?? ''),
         _ProfissionalViewTabs(profissionalId: _profissionalId, nome: _nome),
         _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
-        const AdminManagementTab(),
+        AdminManagementTab(key: UniqueKey()),
         PerfilProfissionalTab(
             profissionalId: _adminId ?? '', // Usando adminId como ID de referência
             nome: _nome,

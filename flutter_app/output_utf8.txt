@@ -1,0 +1,28 @@
+﻿--- Pacientes Ativos ---
+[{"id":"5e317fb2-6be7-486b-b1ad-495f2f43536d","nome":"Paciente Volunt├írio 1","ativo":true}, 
+ {"id":"4454cdc2-f37f-4b99-8d31-cf16076ab463","nome":"Paciente Volunt├írio 2","ativo":true}, 
+ {"id":"e6e66d6a-b28d-498e-9370-bd19a0eae9cc","nome":"Paciente Volunt├írio 3","ativo":true}, 
+ {"id":"e0d840ca-47c1-4632-b9b9-7333ba575969","nome":"Paciente Volunt├írio 4","ativo":true}, 
+ {"id":"c8307383-42f1-48b5-8d43-7e0f9a8d895b","nome":"Paciente Volunt├írio 5","ativo":true}, 
+ {"id":"e03f8056-5e3e-4859-9312-d424aceea56f","nome":"Paciente Volunt├írio 6","ativo":true}, 
+ {"id":"ca8579e9-33d4-43f6-8b79-da05a8d28727","nome":"Paciente Volunt├írio 7","ativo":true}, 
+ {"id":"7ff1066f-d81f-4d45-816b-00088ffddc27","nome":"Paciente Volunt├írio 8","ativo":true}, 
+ {"id":"6d0af844-32f3-4f8a-af3e-693835a407a6","nome":"Paciente Volunt├írio 9","ativo":true}, 
+ {"id":"ba092af4-8d91-4f26-9e78-369b31211cfd","nome":"Paciente Volunt├írio 10","ativo":true}, 
+ {"id":"27979e10-090e-484a-933a-23abfb761e08","nome":"Paciente Volunt├írio 11","ativo":true}, 
+ {"id":"c27324e2-351d-44b7-b176-3267057de07a","nome":"Paciente Volunt├írio 12","ativo":true}, 
+ {"id":"92b92a63-6991-44bd-9307-38f3f659fd90","nome":"Paciente Volunt├írio 13","ativo":true}, 
+ {"id":"c9acc468-f727-4fe3-8df2-a3b54cb907bf","nome":"Paciente Volunt├írio 14","ativo":true}, 
+ {"id":"7fe779df-be6e-445a-8f93-4ea96f2b2165","nome":"Paciente Volunt├írio 15","ativo":true}, 
+ {"id":"c50eeb3c-9508-4b0c-a6c6-88360915f977","nome":"Paciente Volunt├írio 16","ativo":true}, 
+ {"id":"3319fb5c-c521-4f58-90d4-e39c88bb6c82","nome":"Paciente Volunt├írio 17","ativo":true}, 
+ {"id":"f25d4682-2e6e-416b-b800-234cd86232eb","nome":"Paciente Volunt├írio 18","ativo":true}, 
+ {"id":"7636e8e0-d86f-4054-bbd7-127eb58f205f","nome":"Paciente Volunt├írio 19","ativo":true}, 
+ {"id":"2b5e18d4-4fa0-45d8-ad6a-74c0a3f5b6ca","nome":"Paciente Volunt├írio 20","ativo":true}]
+
+--- Atualizando Paciente 5e317fb2-6be7-486b-b1ad-495f2f43536d para ativo=false ---
+Update Status: 200
+Update Body: []
+
+--- Verificando Paciente ---
+[{"id":"5e317fb2-6be7-486b-b1ad-495f2f43536d","nome":"Paciente Volunt├írio 1","ativo":true}]

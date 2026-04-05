@@ -56,8 +56,10 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     if (confirmar == true) {
       final res = await _api.deleteRecord(table, id);
       if (res['success'] && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('"$nome" removido.')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('"$nome" removido.'), backgroundColor: AppTheme.primary));
         _loadData();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Falha ao remover'), backgroundColor: AppTheme.error));
       }
     }
   }

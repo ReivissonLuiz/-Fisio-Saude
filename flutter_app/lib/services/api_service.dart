@@ -1,4 +1,4 @@
-﻿/// supabase_service.dart  (antigo api_service.dart)
+/// supabase_service.dart  (antigo api_service.dart)
 /// Serviço de comunicação com o Supabase — +Fisio +Saúde
 ///
 /// Substitui completamente a camada Node.js (localhost:3000).
@@ -391,6 +391,7 @@ class ApiService {
 
   /// Busca os dados completos do paciente pelo ID.
   Future<Map<String, dynamic>> getPaciente(String pacienteId) async {
+    if (pacienteId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       final data = await _sb
           .from('paciente')
@@ -444,6 +445,7 @@ class ApiService {
 
   /// Busca o histórico de sintomas de um paciente, do mais recente ao mais antigo.
   Future<Map<String, dynamic>> getSintomas(String pacienteId) async {
+    if (pacienteId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       final data = await _sb
           .from('registro_sintomas')
@@ -495,6 +497,7 @@ class ApiService {
 
   /// Busca as consultas do paciente com dados do profissional.
   Future<Map<String, dynamic>> getConsultas(String pacienteId) async {
+    if (pacienteId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       final data = await _sb
           .from('consulta')
@@ -514,6 +517,7 @@ class ApiService {
 
   /// Busca os dados completos do profissional pelo ID.
   Future<Map<String, dynamic>> getProfissional(String profissionalId) async {
+    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       final data = await _sb
           .from('profissional')
@@ -550,6 +554,7 @@ class ApiService {
 
   /// Busca as consultas do profissional com dados do paciente.
   Future<Map<String, dynamic>> getConsultasProfissional(String profissionalId) async {
+    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       final data = await _sb
           .from('consulta')
@@ -566,6 +571,7 @@ class ApiService {
 
   /// Busca a lista única de pacientes que já tiveram consulta com este profissional.
   Future<Map<String, dynamic>> getPacientesDoProfissional(String profissionalId) async {
+    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       // 1. Busca todas as consultas do profissional
       final consultas = await _sb
@@ -636,8 +642,18 @@ class ApiService {
   /// Implementamos soft-delete para evitar conflitos de Foreign Keys (400 Bad Request).
   Future<Map<String, dynamic>> deleteRecord(String table, String id) async {
     try {
-      await _sb.from(table).update({'ativo': false}).eq('id', id);
+      if (table == 'consulta' || table == 'registro_sintomas') {
+        await _sb.from(table).delete().eq('id', id).select().single();
+      } else {
+        await _sb.from(table).update({'ativo': false}).eq('id', id).select().single();
+      }
       return {'success': true};
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        // Isso acontece se 0 linhas foram afetadas (possível bloqueio de RLS do Supabase)
+        return {'success': false, 'message': 'Operação recusada pelo banco (Verifique as políticas RLS).'};
+      }
+      return {'success': false, 'message': e.message};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao desativar registro.'};
     }
