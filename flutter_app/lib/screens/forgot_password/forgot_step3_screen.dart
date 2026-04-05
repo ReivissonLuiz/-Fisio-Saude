@@ -1,4 +1,4 @@
-﻿/// forgot_step3_screen.dart
+/// forgot_step3_screen.dart
 /// Passo 3: O usuÃ¡rio define uma nova senha com indicador de forÃ§a.
 library;
 
@@ -71,7 +71,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Senha redefinida com sucesso! FaÃ§a login.'),
+          content: Text('Senha redefinida com sucesso! Faça login.'),
           backgroundColor: AppTheme.accent,
         ),
       );
@@ -134,12 +134,12 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                         if (v == null || v.isEmpty) {
                           return 'Informe a nova senha.';
                         }
-                        if (v.length < 6) return 'MÃ­nimo de 6 caracteres.';
+                        if (v.length < 6) return 'Mínimo de 6 caracteres.';
                         return null;
                       },
                     ),
 
-                    // Indicador de forÃ§a
+                    // Indicador de força
                     PasswordStrengthIndicator(password: _novaSenhaCtrl.text),
                     const SizedBox(height: 16),
 
@@ -165,7 +165,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                           return 'Confirme a nova senha.';
                         }
                         if (v != _novaSenhaCtrl.text) {
-                          return 'As senhas nÃ£o coincidem.';
+                          return 'As senhas não coincidem.';
                         }
                         return null;
                       },

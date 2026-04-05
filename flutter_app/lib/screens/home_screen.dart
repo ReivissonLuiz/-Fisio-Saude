@@ -28,15 +28,15 @@ class _HomeScreenState extends State<HomeScreen> {
   int _tabIndex = 0;
   final _api = ApiService();
 
-  late final Map<String, dynamic> _args;
-  late final String _nome;
-  late final String _tipo;
-  late final String _email;
-  late final String? _pacienteId;
-  late final String? _profissionalId;
-  late final String? _adminId;
-  late final bool _isProfissional;
-  late final bool _isAdmin;
+  Map<String, dynamic> _args = {};
+  String _nome = 'Usuário';
+  String _tipo = 'Paciente';
+  String _email = '';
+  String? _pacienteId;
+  String? _profissionalId;
+  String? _adminId;
+  bool _isProfissional = false;
+  bool _isAdmin = false;
 
   @override
   void didChangeDependencies() {

@@ -93,7 +93,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
       _startCooldown();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('CÃ³digo reenviado!'),
+            content: Text('Código reenviado!'),
             backgroundColor: AppTheme.accent),
       );
     }
@@ -124,7 +124,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enviamos um cÃ³digo de 6 dÃ­gitos para $_email.',
+                      'Enviamos um código de 6 dígitos para $_email.',
                       style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14),
                     ),
@@ -141,7 +141,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                                 color: AppTheme.warning.withValues(alpha: 0.4)),
                           ),
                           child: Text(
-                            'Modo Dev â€” CÃ³digo: $_devCode',
+                            'Modo Dev — Código: $_devCode',
                             style: const TextStyle(
                                 fontSize: 13,
                                 color: AppTheme.warning,
@@ -180,7 +180,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                       ),
                       validator: (v) {
                         if (v == null || v.length != 6) {
-                          return 'Digite o cÃ³digo de 6 dÃ­gitos.';
+                          return 'Digite o código de 6 dígitos.';
                         }
                         return null;
                       },
@@ -191,7 +191,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                     if (_errorMsg != null) ErrorBox(message: _errorMsg!),
 
                     PrimaryButton(
-                        label: 'Verificar cÃ³digo',
+                        label: 'Verificar código',
                         onPressed: _verifyCode,
                         isLoading: _isLoading),
                     const SizedBox(height: 24),
@@ -202,8 +202,8 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         onPressed: _resendCooldown > 0 ? null : _resendCode,
                         child: Text(
                           _resendCooldown > 0
-                              ? 'Reenviar cÃ³digo em ${_resendCooldown}s'
-                              : 'Reenviar cÃ³digo',
+                              ? 'Reenviar código em ${_resendCooldown}s'
+                              : 'Reenviar código',
                           style: TextStyle(
                             color: _resendCooldown > 0
                                 ? AppTheme.textHint
