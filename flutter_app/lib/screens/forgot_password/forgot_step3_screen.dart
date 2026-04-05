@@ -1,5 +1,5 @@
-/// forgot_step3_screen.dart
-/// Passo 3: O usuário define uma nova senha com indicador de força.
+﻿/// forgot_step3_screen.dart
+/// Passo 3: O usuÃ¡rio define uma nova senha com indicador de forÃ§a.
 library;
 
 import 'package:flutter/material.dart';
@@ -71,7 +71,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Senha redefinida com sucesso! Faça login.'),
+          content: Text('Senha redefinida com sucesso! FaÃ§a login.'),
           backgroundColor: AppTheme.accent,
         ),
       );
@@ -115,7 +115,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                     // Campo nova senha
                     CustomTextField(
                       label: 'Nova senha',
-                      hint: '••••••••',
+                      hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                       controller: _novaSenhaCtrl,
                       obscureText: _obscureNova,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -134,19 +134,19 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                         if (v == null || v.isEmpty) {
                           return 'Informe a nova senha.';
                         }
-                        if (v.length < 6) return 'Mínimo de 6 caracteres.';
+                        if (v.length < 6) return 'MÃ­nimo de 6 caracteres.';
                         return null;
                       },
                     ),
 
-                    // Indicador de força
+                    // Indicador de forÃ§a
                     PasswordStrengthIndicator(password: _novaSenhaCtrl.text),
                     const SizedBox(height: 16),
 
                     // Campo confirmar senha
                     CustomTextField(
                       label: 'Confirmar nova senha',
-                      hint: '••••••••',
+                      hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                       controller: _confirmarCtrl,
                       obscureText: _obscureConfirmar,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -165,7 +165,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                           return 'Confirme a nova senha.';
                         }
                         if (v != _novaSenhaCtrl.text) {
-                          return 'As senhas não coincidem.';
+                          return 'As senhas nÃ£o coincidem.';
                         }
                         return null;
                       },

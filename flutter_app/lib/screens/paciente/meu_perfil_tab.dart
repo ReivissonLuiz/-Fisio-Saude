@@ -1,5 +1,5 @@
 /// meu_perfil_tab.dart
-/// Aba "Meu Perfil" — visualização e edição dos dados do paciente — +Físio +Saúde
+/// Aba "Meu Perfil" â€” visualizaÃ§Ã£o e ediÃ§Ã£o dos dados do paciente â€” +FÃ­sio +SaÃºde
 library;
 
 import 'package:flutter/material.dart';
@@ -147,7 +147,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ── Avatar e nome ──────────────────────────────────────────────
+            // â”€â”€ Avatar e nome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -183,7 +183,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('🧑 Paciente',
+                    child: const Text('Paciente',
                         style:
                             TextStyle(color: Colors.white, fontSize: 12)),
                   ),
@@ -192,13 +192,13 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 20),
 
-            // ── Feedbacks ──────────────────────────────────────────────────
+            // â”€â”€ Feedbacks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (_successMsg != null)
               _FeedbackBanner(message: _successMsg!, isError: false),
             if (_errorMsg != null)
               _FeedbackBanner(message: _errorMsg!, isError: true),
 
-            // ── Dados não editáveis ────────────────────────────────────────
+            // â”€â”€ Dados nÃ£o editÃ¡veis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _SectionCard(
               title: 'Informações da Conta',
               icon: Icons.lock_outline,
@@ -219,7 +219,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 14),
 
-            // ── Dados editáveis ───────────────────────────────────────────
+            // â”€â”€ Dados editÃ¡veis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _SectionCard(
               title: 'Dados Pessoais',
               icon: Icons.person_outline,
@@ -328,7 +328,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 24),
 
-            // ── Botão Sair ────────────────────────────────────────────────
+            // â”€â”€ BotÃ£o Sair â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -367,7 +367,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
   }
 }
 
-// ─── Widgets auxiliares ───────────────────────────────────────────────────────
+// â”€â”€â”€ Widgets auxiliares â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SectionCard extends StatelessWidget {
   final String title;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -95,16 +95,16 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
                   padding: const EdgeInsets.all(20),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _buildSection('Informações Pessoais', [
+                      _buildSection('InformaÃ§Ãµes Pessoais', [
                         _buildInfoTile(Icons.assignment_ind_rounded, 'CREFITO', _perfilData?['crefito'] ?? '-'),
                         _buildInfoTile(Icons.email_outlined, 'E-mail', widget.email),
-                        _buildInfoTile(Icons.phone_outlined, 'Telefone', _perfilData?['telefone'] ?? 'Não informado'),
+                        _buildInfoTile(Icons.phone_outlined, 'Telefone', _perfilData?['telefone'] ?? 'NÃ£o informado'),
                         _buildInfoTile(Icons.work_outline_rounded, 'Especialidade', _perfilData?['especialidade'] ?? 'Fisioterapia'),
                       ]),
                       const SizedBox(height: 16),
-                      _buildSection('Configurações', [
+                      _buildSection('ConfiguraÃ§Ãµes', [
                         _buildMenuTile(Icons.edit_note_rounded, 'Editar Perfil', () {}),
-                        _buildMenuTile(Icons.notifications_none_rounded, 'Notificações', () {}),
+                        _buildMenuTile(Icons.notifications_none_rounded, 'NotificaÃ§Ãµes', () {}),
                         _buildMenuTile(Icons.help_outline_rounded, 'Ajuda e Suporte', () {}),
                       ]),
                       const SizedBox(height: 32),
@@ -211,7 +211,7 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua sessão?'),
+        content: const Text('Deseja encerrar sua sessÃ£o?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(

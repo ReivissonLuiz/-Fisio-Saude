@@ -1,5 +1,5 @@
 /// home_screen.dart
-/// Tela principal pós-login do +Físio +Saúde.
+/// Tela principal pós-login do +Fisio +Saúde.
 /// Paciente → BottomNavigationBar com 4 abas funcionais.
 /// Profissional → Dashboard com cards de acesso rápido (em breve).
 library;
@@ -47,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _nome = _args['nome'] as String? ?? 'Usuário';
     _tipo = _args['tipo'] as String? ?? 'Paciente';
     _email = _args['email'] as String? ?? '';
+    _pacienteId = _args['id_paciente'] as String?;
     _profissionalId = _args['id_profissional'] as String?;
     _adminId = _args['id_administrador'] as String?;
     _isProfissional = _tipo == 'Profissional';
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ── Visão do Administrador (3 Menus) ───────────────────────────────────
+    // â”€â”€ VisÃ£o do Administrador (3 Menus) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (_isAdmin) {
       final adminTabs = [
         AdminDashboardTab(adminId: _adminId ?? ''),
@@ -97,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // ── Visão do Profissional (Menu Profissional + Paciente) ──────────────────
+    // â”€â”€ VisÃ£o do Profissional (Menu Profissional + Paciente) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (_isProfissional) {
       final profTabs = [
         ProfissionalHomeTab(profissionalId: _profissionalId ?? '', nome: _nome),
@@ -127,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // ── Visão do Paciente (Original) ─────────────────────────────────────────
+    // â”€â”€ VisÃ£o do Paciente (Original) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final patientTabs = [
       PacienteHomeTab(pacienteId: _pacienteId ?? '', nome: _nome),
       const BuscarFisioTab(),
@@ -157,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Helpers de Visão Multi-função ─────────────────────────────────────────────
+// â”€â”€ Helpers de VisÃ£o Multi-funÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ProfissionalViewTabs extends StatelessWidget {
   final String? profissionalId;
@@ -166,7 +167,7 @@ class _ProfissionalViewTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (profissionalId == null) return const Center(child: Text('Acesso profissional não disponível.'));
+    if (profissionalId == null) return const Center(child: Text('Acesso profissional nÃ£o disponÃ­vel.'));
     return Column(
       children: [
         const Padding(

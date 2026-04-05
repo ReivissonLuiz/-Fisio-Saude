@@ -48,14 +48,14 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               children: [
                 const Spacer(flex: 2),
-                // ─── Logo e Nome ───────────────────────────────────────────
+                // â”€â”€â”€ Logo e Nome â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 FadeTransition(
                   opacity: _fadeAnim,
                   child: SlideTransition(
                     position: _slideAnim,
                     child: Column(
                       children: [
-                        // Ícone do app
+                        // Ãcone do app
                         Container(
                           width: 110,
                           height: 110,
@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen>
                         const SizedBox(height: 28),
                         // Nome do app
                         const Text(
-                          '+Físio +Saúde',
+                          '+Fisio +Saúde',
                           style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const Spacer(flex: 3),
-                // ─── Botões ────────────────────────────────────────────────
+                // â”€â”€â”€ BotÃµes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 FadeTransition(
                   opacity: _fadeAnim,
                   child: Center(
@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen>
                       constraints: const BoxConstraints(maxWidth: 400),
                       child: Column(
                         children: [
-                          // Botão Entrar
+                          // BotÃ£o Entrar
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                           const SizedBox(height: 14),
-                          // Botão Cadastrar-se
+                          // BotÃ£o Cadastrar-se
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -160,7 +160,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 40),
-                // Rodapé
+                // RodapÃ©
                 Text(
                   'Plataforma de suporte fisioterapêutico',
                   style: TextStyle(

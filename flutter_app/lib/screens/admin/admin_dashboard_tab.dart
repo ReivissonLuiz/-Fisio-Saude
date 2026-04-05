@@ -66,7 +66,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Métricas de Crescimento (BI)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text('MÃ©tricas de Crescimento (BI)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   
                   // Grid de KPIs
@@ -86,12 +86,12 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                   ),
                   const SizedBox(height: 32),
                   
-                  // Seção Insights
+                  // SeÃ§Ã£o Insights
                   const Text('Recentes e Insights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   const _InsightItem(
                     title: 'Aumento de 12% em registros',
-                    description: 'Comparado ao mês anterior, houve um aumento na criação de contas de profissionais.',
+                    description: 'Comparado ao mÃªs anterior, houve um aumento na criaÃ§Ã£o de contas de profissionais.',
                     icon: Icons.trending_up_rounded,
                     color: Colors.green,
                   ),

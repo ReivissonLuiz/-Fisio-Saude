@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -118,7 +118,7 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
           const SizedBox(height: 16),
           Text(
             _searchController.text.isEmpty
-                ? 'Você ainda não tem pacientes vinculados.'
+                ? 'VocÃª ainda nÃ£o tem pacientes vinculados.'
                 : 'Nenhum paciente encontrado.',
             style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
           ),
@@ -135,8 +135,8 @@ class _PacienteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nome = paciente['nome'] ?? 'Nome não cadastrado';
-    final email = paciente['email'] ?? 'E-mail não informado';
+    final nome = paciente['nome'] ?? 'Nome nÃ£o cadastrado';
+    final email = paciente['email'] ?? 'E-mail nÃ£o informado';
     final telefone = paciente['telefone'] ?? 'Sem telefone';
 
     return Container(

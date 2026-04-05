@@ -1,5 +1,5 @@
 /// buscar_fisio_tab.dart
-/// Aba "Buscar Fisio" — lista e pesquisa de profissionais ativos — +Físio +Saúde
+/// Aba "Buscar Fisio" — lista e pesquisa de profissionais ativos — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
@@ -72,7 +72,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ─── Header + busca ──────────────────────────────────────────────
+        // â”€â”€â”€ Header + busca â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Container(
           decoration: const BoxDecoration(
             gradient: AppTheme.primaryGradient,
@@ -97,7 +97,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
               TextFormField(
                 controller: _searchCtrl,
                 decoration: InputDecoration(
-                  hintText: 'Buscar por nome ou especialidade…',
+                  hintText: 'Buscar por nome ou especialidade...',
                   hintStyle:
                       const TextStyle(color: AppTheme.textHint, fontSize: 14),
                   prefixIcon: const Icon(Icons.search_rounded,
@@ -126,7 +126,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
           ),
         ),
 
-        // ─── Lista ───────────────────────────────────────────────────────
+        // â”€â”€â”€ Lista â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator())
@@ -295,7 +295,7 @@ class _ProfissionalCard extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content:
-                              Text('Agendamento disponível em breve! 🚀')),
+                              Text('Agendamento disponível em breve!')),
                     );
                   },
                   tooltip: 'Agendar',

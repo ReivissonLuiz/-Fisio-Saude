@@ -1,4 +1,3 @@
-/// forgot_step2_screen.dart
 /// Passo 2: O usuário insere o código de 6 dígitos recebido por e-mail.
 /// Inclui cooldown de 60s para reenvio e validação de código inválido/expirado.
 library;
@@ -94,7 +93,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
       _startCooldown();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Código reenviado!'),
+            content: Text('CÃ³digo reenviado!'),
             backgroundColor: AppTheme.accent),
       );
     }
@@ -125,11 +124,11 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Enviamos um código de 6 dígitos para $_email.',
+                      'Enviamos um cÃ³digo de 6 dÃ­gitos para $_email.',
                       style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14),
                     ),
-                    // Em desenvolvimento, mostra o código gerado
+                    // Em desenvolvimento, mostra o cÃ³digo gerado
                     if (_devCode != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
@@ -142,7 +141,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                                 color: AppTheme.warning.withValues(alpha: 0.4)),
                           ),
                           child: Text(
-                            '🛠 Modo Dev — Código: $_devCode',
+                            'Modo Dev â€” CÃ³digo: $_devCode',
                             style: const TextStyle(
                                 fontSize: 13,
                                 color: AppTheme.warning,
@@ -151,7 +150,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         ),
                       ),
                     const SizedBox(height: 32),
-                    // Campo código
+                    // Campo cÃ³digo
                     TextFormField(
                       controller: _codeCtrl,
                       keyboardType: TextInputType.number,
@@ -181,7 +180,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                       ),
                       validator: (v) {
                         if (v == null || v.length != 6) {
-                          return 'Digite o código de 6 dígitos.';
+                          return 'Digite o cÃ³digo de 6 dÃ­gitos.';
                         }
                         return null;
                       },
@@ -192,7 +191,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                     if (_errorMsg != null) ErrorBox(message: _errorMsg!),
 
                     PrimaryButton(
-                        label: 'Verificar código',
+                        label: 'Verificar cÃ³digo',
                         onPressed: _verifyCode,
                         isLoading: _isLoading),
                     const SizedBox(height: 24),
@@ -203,8 +202,8 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         onPressed: _resendCooldown > 0 ? null : _resendCode,
                         child: Text(
                           _resendCooldown > 0
-                              ? 'Reenviar código em ${_resendCooldown}s'
-                              : 'Reenviar código',
+                              ? 'Reenviar cÃ³digo em ${_resendCooldown}s'
+                              : 'Reenviar cÃ³digo',
                           style: TextStyle(
                             color: _resendCooldown > 0
                                 ? AppTheme.textHint

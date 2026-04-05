@@ -1,5 +1,5 @@
-/// minha_saude_tab.dart
-/// Aba "Minha Saúde" — registro e histórico de sintomas — +Físio +Saúde
+﻿/// minha_saude_tab.dart
+/// Aba "Minha SaÃºde" â€” registro e histÃ³rico de sintomas â€” +FÃ­sio +SaÃºde
 library;
 
 import 'package:flutter/material.dart';
@@ -57,7 +57,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
   }
 
   String _dorMedia() {
-    if (_sintomas.isEmpty) return '—';
+    if (_sintomas.isEmpty) return 'â€”';
     final niveis = _sintomas.map((s) => s['nivel_dor'] as int? ?? 0).toList();
     final media = niveis.reduce((a, b) => a + b) / niveis.length;
     return media.toStringAsFixed(1);
@@ -98,7 +98,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                     Icon(Icons.monitor_heart_rounded,
                         color: Colors.white, size: 24),
                     SizedBox(width: 10),
-                    Text('Minha Saúde',
+                    Text('Minha SaÃºde',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -117,12 +117,12 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                         icon: Icons.list_alt_rounded),
                     const SizedBox(width: 10),
                     _MiniStat(
-                        label: 'Este mês',
+                        label: 'Este mÃªs',
                         value: '${_sintomasestesMes()}',
                         icon: Icons.calendar_today_rounded),
                     const SizedBox(width: 10),
                     _MiniStat(
-                        label: 'Dor média',
+                        label: 'Dor mÃ©dia',
                         value: _dorMedia(),
                         icon: Icons.analytics_rounded),
                   ],
@@ -149,7 +149,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                                     fontWeight: FontWeight.w500)),
                             SizedBox(height: 6),
                             Text(
-                                'Use o botão abaixo para registrar\ncomo você está sentindo.',
+                                'Use o botÃ£o abaixo para registrar\ncomo vocÃª estÃ¡ sentindo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: AppTheme.textHint, fontSize: 13)),
@@ -194,7 +194,6 @@ class _SintomaCard extends StatelessWidget {
         : nivel <= 6
             ? AppTheme.warning
             : AppTheme.error;
-    final emoji = nivel <= 3 ? '😊' : nivel <= 6 ? '😐' : '😣';
 
     return Container(
       decoration: BoxDecoration(
@@ -217,7 +216,7 @@ class _SintomaCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(emoji, style: const TextStyle(fontSize: 18)),
+                  const Icon(Icons.sentiment_neutral_rounded, size: 18, color: AppTheme.textSecondary),
                   Text('$nivel/10',
                       style: TextStyle(
                           color: cor,
@@ -289,10 +288,10 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
   bool _loading = false;
 
   static const _regioes = [
-    'Cervical (pescoço)', 'Ombro direito', 'Ombro esquerdo',
-    'Coluna lombar', 'Coluna torácica', 'Quadril',
-    'Joelho direito', 'Joelho esquerdo', 'Tornozelo / pé',
-    'Braço / cotovelo', 'Punho / mão', 'Outra região',
+    'Cervical (pescoÃ§o)', 'Ombro direito', 'Ombro esquerdo',
+    'Coluna lombar', 'Coluna torÃ¡cica', 'Quadril',
+    'Joelho direito', 'Joelho esquerdo', 'Tornozelo / pÃ©',
+    'BraÃ§o / cotovelo', 'Punho / mÃ£o', 'Outra regiÃ£o',
   ];
 
   @override
@@ -315,13 +314,13 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
     if (result['success'] == true) {
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('✅ Sintoma registrado!'),
+        content: Text('Sintoma registrado!'),
         backgroundColor: AppTheme.accent,
       ));
     } else {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('❌ ${result['message'] ?? 'Erro ao registrar.'}'),
+        content: Text(result['message'] ?? 'Erro ao registrar.'),
         backgroundColor: AppTheme.error,
       ));
     }
@@ -379,7 +378,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Nível de dor',
+                    const Text('NÃ­vel de dor',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
@@ -422,14 +421,14 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text('Região do corpo',
+                    const Text('RegiÃ£o do corpo',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _regiaoSelecionada,
                       decoration: InputDecoration(
-                        hintText: 'Selecione a região',
+                        hintText: 'Selecione a regiÃ£o',
                         prefixIcon: const Icon(Icons.location_on_outlined),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -444,7 +443,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                           setState(() => _regiaoSelecionada = v),
                     ),
                     const SizedBox(height: 18),
-                    const Text('Descrição',
+                    const Text('DescriÃ§Ã£o',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
@@ -453,7 +452,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                       maxLines: 4,
                       decoration: InputDecoration(
                         hintText:
-                            'Descreva como está se sentindo, quando começou…',
+                            'Descreva como estÃ¡ se sentindo, quando comeÃ§ouâ€¦',
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),

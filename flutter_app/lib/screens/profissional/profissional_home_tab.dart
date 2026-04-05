@@ -82,7 +82,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Olá, ${widget.nome.split(' ').first}! 👋',
+                                'Olá, ${widget.nome.split(' ').first}!',
                                 style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -95,7 +95,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                                   color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: const Text('🩺 Painel do Profissional',
+                                child: const Text('Painel do Profissional',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 11,

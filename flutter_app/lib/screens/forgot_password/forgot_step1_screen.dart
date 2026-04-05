@@ -1,4 +1,3 @@
-/// forgot_step1_screen.dart
 /// Passo 1: usuário informa o e-mail e recebe link de recuperação no e-mail.
 /// O Supabase envia um e-mail real com link de redefinição de senha.
 library;
@@ -84,7 +83,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     );
   }
 
-  // ── Tela de confirmação após envio ────────────────────────────────────────
+  // â”€â”€ Tela de confirmaÃ§Ã£o apÃ³s envio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildConfirmacao() {
     return Column(
@@ -115,7 +114,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
               color: AppTheme.textSecondary, fontSize: 15, height: 1.5),
         ),
         const SizedBox(height: 28),
-        // Card com instruções
+        // Card com instruÃ§Ãµes
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -171,7 +170,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           ),
         ),
         const SizedBox(height: 28),
-        // Botão reenviar
+        // BotÃ£o reenviar
         OutlinedButton.icon(
           onPressed: () => setState(() {
             _enviado = false;
@@ -197,7 +196,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     );
   }
 
-  // ── Formulário de e-mail ──────────────────────────────────────────────────
+  // â”€â”€ FormulÃ¡rio de e-mail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildFormulario() {
     return Form(
@@ -205,7 +204,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ícone
+          // Ãcone
           Center(
             child: Container(
               width: 72,
@@ -268,7 +267,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
   }
 }
 
-// ─── Widgets compartilhados entre as telas de recuperação ─────────────────────
+// â”€â”€â”€ Widgets compartilhados entre as telas de recuperaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _InstrucaoItem extends StatelessWidget {
   final String numero;

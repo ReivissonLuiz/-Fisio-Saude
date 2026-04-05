@@ -1,6 +1,6 @@
 /// main.dart
-/// Ponto de entrada do app +Físio +Saúde.
-/// Configura tema, rotas e listener global de autenticação (recovery de senha).
+/// Ponto de entrada do app +FÃ­sio +SaÃºde.
+/// Configura tema, rotas e listener global de autenticaÃ§Ã£o (recovery de senha).
 library;
 
 import 'dart:async';
@@ -47,10 +47,10 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
   @override
   void initState() {
     super.initState();
-    // Ouve eventos globais de autenticação do Supabase
+    // Ouve eventos globais de autenticaÃ§Ã£o do Supabase
     _authSubscription =
         Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      // Quando o usuário clica no link de recuperação do e-mail,
+      // Quando o usuÃ¡rio clica no link de recuperaÃ§Ã£o do e-mail,
       // o Supabase emite este evento com type=recovery
       if (data.event == AuthChangeEvent.passwordRecovery) {
         _navigatorKey.currentState?.pushNamedAndRemoveUntil(
@@ -70,7 +70,7 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '+Físio +Saúde',
+      title: '+Fisio +Saúde',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       navigatorKey: _navigatorKey,

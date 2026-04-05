@@ -1,5 +1,5 @@
 ﻿/// supabase_service.dart  (antigo api_service.dart)
-/// Serviço de comunicação com o Supabase — +Físio +Saúde
+/// Serviço de comunicação com o Supabase — +Fisio +Saúde
 ///
 /// Substitui completamente a camada Node.js (localhost:3000).
 /// Usa o Supabase Auth SDK para login, registro e recuperação de senha.
@@ -16,7 +16,7 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // ─── Sessão atual ─────────────────────────────────────────────────────────
+  // --- Sessão atual ---------------------------------------------------------
 
   /// Retorna o usuário autenticado atual, ou null se não logado.
   User? get currentUser => _sb.auth.currentUser;
@@ -24,7 +24,7 @@ class ApiService {
   /// Stream que emite eventos de mudança de autenticação.
   Stream<AuthState> get authStateChanges => _sb.auth.onAuthStateChange;
 
-  // ─── Auth: Login ──────────────────────────────────────────────────────────
+  // --- Auth: Login ----------------------------------------------------------
 
   /// Realiza login com e-mail e senha via Supabase Auth.
   /// Retorna { success, user, token, tipo, message }
@@ -73,7 +73,7 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Registro de Paciente ───────────────────────────────────────────
+  // --- Auth: Registro de Paciente -------------------------------------------
 
   /// Registra paciente no Supabase Auth e grava dados na tabela `paciente`.
   Future<Map<String, dynamic>> registerPatient(
@@ -141,7 +141,7 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Registro de Profissional ───────────────────────────────────────
+  // --- Auth: Registro de Profissional ---------------------------------------
 
   /// Registra profissional no Auth e grava dados na tabela `profissional`.
   /// O profissional é ativado imediatamente (sem aprovação de administrador).
@@ -228,7 +228,7 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Registro de Administrador ─────────────────────────────────────
+  // --- Auth: Registro de Administrador -------------------------------------
 
   /// Registra administrador no Auth e grava dados na tabela `administrador`.
   Future<Map<String, dynamic>> registerAdmin(Map<String, dynamic> data) async {
@@ -292,7 +292,7 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Esqueci Minha Senha ────────────────────────────────────────────
+  // --- Auth: Esqueci Minha Senha --------------------------------------------
 
   /// Envia e-mail real de recuperação de senha via Supabase.
   /// O link no e-mail redireciona para a tela de redefinição de senha do app.
@@ -318,7 +318,7 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Verificar Código OTP (Passo 2) ─────────────────────────────────
+  // --- Auth: Verificar Código OTP (Passo 2) ---------------------------------
 
   /// Verifica o token OTP enviado por e-mail pelo Supabase.
   Future<Map<String, dynamic>> verifyCode(String email, String code) async {
@@ -342,7 +342,7 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Redefinir Senha (Passo 3) ──────────────────────────────────────
+  // --- Auth: Redefinir Senha (Passo 3) --------------------------------------
 
   /// Atualiza a senha do usuário após OTP verificado.
   Future<Map<String, dynamic>> resetPassword({
@@ -381,13 +381,13 @@ class ApiService {
     }
   }
 
-  // ─── Auth: Logout ─────────────────────────────────────────────────────────
+  // --- Auth: Logout ---------------------------------------------------------
 
   Future<void> logout() async {
     await _sb.auth.signOut();
   }
 
-  // ─── Paciente: Perfil ─────────────────────────────────────────────────────
+  // --- Paciente: Perfil -----------------------------------------------------
 
   /// Busca os dados completos do paciente pelo ID.
   Future<Map<String, dynamic>> getPaciente(String pacienteId) async {
@@ -423,7 +423,7 @@ class ApiService {
     }
   }
 
-  // ─── Paciente: Sintomas ───────────────────────────────────────────────────
+  // --- Paciente: Sintomas ---------------------------------------------------
 
   /// Registra um novo sintoma do paciente.
   Future<Map<String, dynamic>> registrarSintoma(
@@ -459,7 +459,7 @@ class ApiService {
     }
   }
 
-  // ─── Profissionais: Busca ─────────────────────────────────────────────────
+  // --- Profissionais: Busca -------------------------------------------------
 
   /// Lista todos os profissionais ativos para busca pelo paciente.
   Future<Map<String, dynamic>> getProfissionais({String? termoBusca}) async {
@@ -491,7 +491,7 @@ class ApiService {
     }
   }
 
-  // ─── Paciente: Consultas ──────────────────────────────────────────────────
+  // --- Paciente: Consultas --------------------------------------------------
 
   /// Busca as consultas do paciente com dados do profissional.
   Future<Map<String, dynamic>> getConsultas(String pacienteId) async {
@@ -510,7 +510,7 @@ class ApiService {
     }
   }
 
-  // ─── Profissional: Perfil ──────────────────────────────────────────────────
+  // --- Profissional: Perfil --------------------------------------------------
 
   /// Busca os dados completos do profissional pelo ID.
   Future<Map<String, dynamic>> getProfissional(String profissionalId) async {
@@ -546,7 +546,7 @@ class ApiService {
     }
   }
 
-  // ─── Profissional: Consultas e Pacientes ───────────────────────────────────
+  // --- Profissional: Consultas e Pacientes -----------------------------------
 
   /// Busca as consultas do profissional com dados do paciente.
   Future<Map<String, dynamic>> getConsultasProfissional(String profissionalId) async {
@@ -590,7 +590,7 @@ class ApiService {
     }
   }
 
-  // ─── Administrador: Gestão ──────────────────────────────────────────────────
+  // --- Administrador: Gestão --------------------------------------------------
 
   /// Busca todos os pacientes para o painel ADM.
   Future<Map<String, dynamic>> getAllPacientes() async {

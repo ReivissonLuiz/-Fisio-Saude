@@ -1,4 +1,3 @@
-/// professional_register_screen.dart
 /// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
 /// incluindo CREFITO e especialização, com aceite de termos LGPD.
 library;
@@ -42,7 +41,7 @@ class _ProfessionalRegisterScreenState
   String? _errorMsg;
   String? _successMsg;
 
-  // Máscaras
+  // MÃ¡scaras
   final _cpfMask = MaskTextInputFormatter(
       mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
   final _telMask = MaskTextInputFormatter(
@@ -53,16 +52,16 @@ class _ProfessionalRegisterScreenState
   final _api = ApiService();
 
   static const List<String> _especializacoes = [
-    'Fisioterapia Ortopédica e Traumatológica',
-    'Fisioterapia Neurológica',
+    'Fisioterapia OrtopÃ©dica e TraumatolÃ³gica',
+    'Fisioterapia NeurolÃ³gica',
     'Fisioterapia Esportiva',
-    'Fisioterapia Cardiorrespiratória',
-    'Fisioterapia em Saúde da Mulher',
-    'Fisioterapia Pediátrica',
-    'Fisioterapia Geriátrica',
-    'Fisioterapia Aquática',
+    'Fisioterapia CardiorrespiratÃ³ria',
+    'Fisioterapia em SaÃºde da Mulher',
+    'Fisioterapia PediÃ¡trica',
+    'Fisioterapia GeriÃ¡trica',
+    'Fisioterapia AquÃ¡tica',
     'Fisioterapia Dermato-Funcional',
-    'RPG — Reeducação Postural Global',
+    'RPG â€” ReeducaÃ§Ã£o Postural Global',
     'Outra',
   ];
 
@@ -87,7 +86,7 @@ class _ProfessionalRegisterScreenState
     if (!_formKey.currentState!.validate()) return;
     if (!_aceitaTermos) {
       setState(() => _errorMsg =
-          'Você deve aceitar os Termos de Uso e Política de Privacidade.');
+          'VocÃª deve aceitar os Termos de Uso e PolÃ­tica de Privacidade.');
       return;
     }
     setState(() {
@@ -142,7 +141,7 @@ class _ProfessionalRegisterScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Cabeçalho
+                    // CabeÃ§alho
                     Row(
                       children: [
                         Container(
@@ -187,7 +186,7 @@ class _ProfessionalRegisterScreenState
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Seu cadastro é ativado imediatamente. Você já pode fazer login após o registro.',
+                              'Seu cadastro Ã© ativado imediatamente. VocÃª jÃ¡ pode fazer login apÃ³s o registro.',
                               style: TextStyle(
                                   fontSize: 12, color: AppTheme.accent),
                             ),
@@ -197,7 +196,7 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 28),
 
-                    // ─── Dados Pessoais ─────────────────────────────────────
+                    // â”€â”€â”€ Dados Pessoais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const SectionLabel('Dados Pessoais'),
                     const SizedBox(height: 12),
 
@@ -251,12 +250,12 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.phone_outlined),
                       validator: (v) =>
                           (v == null || _telMask.getUnmaskedText().length < 10)
-                              ? 'Telefone inválido.'
+                              ? 'Telefone invÃ¡lido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // ─── Dados Profissionais ────────────────────────────────
+                    // â”€â”€â”€ Dados Profissionais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const SectionLabel('Dados Profissionais'),
                     const SizedBox(height: 12),
 
@@ -271,11 +270,11 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 14),
 
-                    // Dropdown de especialização
+                    // Dropdown de especializaÃ§Ã£o
                     DropdownButtonFormField<String>(
                       value: _especializacaoSelecionada,
                       decoration: InputDecoration(
-                        labelText: 'Especialização / Área de atuação *',
+                        labelText: 'EspecializaÃ§Ã£o / Ãrea de atuaÃ§Ã£o *',
                         prefixIcon: const Icon(Icons.category_outlined),
                         filled: true,
                         fillColor: Colors.white,
@@ -296,13 +295,13 @@ class _ProfessionalRegisterScreenState
                       onChanged: (v) =>
                           setState(() => _especializacaoSelecionada = v),
                       validator: (v) => (v == null || v.isEmpty)
-                          ? 'Selecione uma especialização.'
+                          ? 'Selecione uma especializaÃ§Ã£o.'
                           : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // ─── Endereço ───────────────────────────────────────────
-                    const SectionLabel('Endereço'),
+                    // â”€â”€â”€ EndereÃ§o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    const SectionLabel('EndereÃ§o'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
@@ -314,18 +313,18 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.location_on_outlined),
                       validator: (v) =>
                           (v == null || _cepMask.getUnmaskedText().length != 8)
-                              ? 'CEP inválido.'
+                              ? 'CEP invÃ¡lido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // ─── Senha ──────────────────────────────────────────────
+                    // â”€â”€â”€ Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const SectionLabel('Senha de acesso'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
                       label: 'Senha *',
-                      hint: 'Mínimo 6 caracteres',
+                      hint: 'MÃ­nimo 6 caracteres',
                       controller: _senhaCtrl,
                       obscureText: _obscureSenha,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -341,7 +340,7 @@ class _ProfessionalRegisterScreenState
                       onChanged: (_) => setState(() {}),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Crie uma senha.';
-                        if (v.length < 6) return 'Mínimo 6 caracteres.';
+                        if (v.length < 6) return 'MÃ­nimo 6 caracteres.';
                         return null;
                       },
                     ),
@@ -368,14 +367,14 @@ class _ProfessionalRegisterScreenState
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas não coincidem.';
+                          return 'As senhas nÃ£o coincidem.';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
 
-                    // ─── Aceite de termos (LGPD) ────────────────────────────
+                    // â”€â”€â”€ Aceite de termos (LGPD) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     TermsCheckbox(
                       value: _aceitaTermos,
                       onChanged: (v) => setState(() {

@@ -1,4 +1,3 @@
-/// reset_password_screen.dart
 /// Tela de redefinição de senha acessada via link do e-mail do Supabase.
 ///
 /// O Supabase envia um e-mail com um link do tipo:
@@ -39,12 +38,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   void initState() {
     super.initState();
-    // Verifica se já há uma sessão de recovery ativa (usuário já clicou no link)
+    // Verifica se jÃ¡ hÃ¡ uma sessÃ£o de recovery ativa (usuÃ¡rio jÃ¡ clicou no link)
     final currentSession = Supabase.instance.client.auth.currentSession;
     if (currentSession != null) {
       setState(() => _sessionReady = true);
     } else {
-      // Aguarda o evento de recovery emitido quando o link é processado
+      // Aguarda o evento de recovery emitido quando o link Ã© processado
       _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
         if (data.event == AuthChangeEvent.passwordRecovery ||
             data.event == AuthChangeEvent.signedIn) {
@@ -77,12 +76,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (!mounted) return;
 
       if (response.user != null) {
-        // Faz logout para forçar novo login com a nova senha
+        // Faz logout para forÃ§ar novo login com a nova senha
         await Supabase.instance.client.auth.signOut();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Senha redefinida com sucesso! Faça login.'),
+            content: Text('Senha redefinida com sucesso! Faça login.'),
             backgroundColor: AppTheme.accent,
             duration: Duration(seconds: 3),
           ),
@@ -141,7 +140,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-  // ── Aguardando processamento do link ──────────────────────────────────────
+  // â”€â”€ Aguardando processamento do link â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildAguardando() {
     return Column(
@@ -151,7 +150,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         const CircularProgressIndicator(),
         const SizedBox(height: 24),
         const Text(
-          'Verificando seu link…',
+          'Verificando seu link...',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
@@ -171,7 +170,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-  // ── Formulário de nova senha ──────────────────────────────────────────────
+  // â”€â”€ FormulÃ¡rio de nova senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildFormulario() {
     return Form(
@@ -179,7 +178,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ícone
+          // Ãcone
           Center(
             child: Container(
               width: 72,
@@ -210,7 +209,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           // Campo nova senha
           CustomTextField(
             label: 'Nova senha',
-            hint: '••••••••',
+            hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
             controller: _novaSenhaCtrl,
             obscureText: _obscureNova,
             prefixIcon: const Icon(Icons.lock_outline),
@@ -236,7 +235,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           // Campo confirmar
           CustomTextField(
             label: 'Confirmar nova senha',
-            hint: '••••••••',
+            hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
             controller: _confirmarCtrl,
             obscureText: _obscureConfirmar,
             prefixIcon: const Icon(Icons.lock_outline),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
@@ -248,7 +248,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
                           const SizedBox(width: 12),
                           const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.textSecondary),
                           const SizedBox(width: 4),
-                          const Text('Consultório', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                          const Text('ConsultÃ³rio', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
                         ],
                       ),
                     ],
@@ -278,7 +278,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                     ),
-                    child: const Text('Prontuário', style: TextStyle(fontSize: 12)),
+                    child: const Text('ProntuÃ¡rio', style: TextStyle(fontSize: 12)),
                   ),
                 ],
               ],

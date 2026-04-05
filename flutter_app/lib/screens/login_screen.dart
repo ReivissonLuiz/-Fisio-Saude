@@ -1,4 +1,3 @@
-/// login_screen.dart
 /// Tela de login com validação em tempo real, controle de tentativas
 /// e navegação para recuperação de senha e cadastro.
 library;
@@ -56,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
           'email': result['user']['email'],
           'id_paciente': result['user']['id_paciente'],
           'id_profissional': result['user']['id_profissional'],
+          'id_administrador': result['user']['id_administrador'],
         },
       );
     } else {
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       const SizedBox(height: 48),
 
-                      // ─── Cabeçalho ────────────────────────────────────────
+                      // â”€â”€â”€ CabeÃ§alho â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       Center(
                         child: Column(
                           children: [
@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 40),
 
-                      // ─── Campo Email ──────────────────────────────────────
+                      // â”€â”€â”€ Campo Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       CustomTextField(
                         label: 'E-mail',
                         hint: 'seu@email.com',
@@ -141,10 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // ─── Campo Senha ──────────────────────────────────────
+                      // â”€â”€â”€ Campo Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       CustomTextField(
                         label: 'Senha',
-                        hint: '••••••••',
+                        hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                         controller: _senhaCtrl,
                         obscureText: _obscureSenha,
                         prefixIcon: const Icon(Icons.lock_outline,
@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // ─── Link Esqueci senha ───────────────────────────────
+                      // â”€â”€â”€ Link Esqueci senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // ─── Mensagem de Erro ─────────────────────────────────
+                      // â”€â”€â”€ Mensagem de Erro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       if (_errorMessage != null)
                         Container(
                           width: double.infinity,
@@ -213,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                      // ─── Botão Entrar ─────────────────────────────────────
+                      // â”€â”€â”€ BotÃ£o Entrar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       PrimaryButton(
                         label: 'Entrar',
                         onPressed: _doLogin,
@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 28),
 
-                      // ─── Link Cadastro ────────────────────────────────────
+                      // â”€â”€â”€ Link Cadastro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,

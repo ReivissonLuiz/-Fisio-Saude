@@ -1,5 +1,5 @@
 /// app_theme.dart
-/// Define o tema visual do app +Físio +Saúde.
+/// Define o tema visual do app +Fisio +Saúde.
 /// Paleta: tons de azul e verde, fontes Poppins (Google Fonts).
 library;
 
@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // ─── Cores Principais ──────────────────────────────────────────────────────
+  // ——— Cores Principais —————————————————————————————————————————————————
   static const Color primary = Color(0xFF1A73E8); // Azul principal
   static const Color primaryDark = Color(0xFF1557B0); // Azul escuro
   static const Color secondary = Color(0xFF00BFA5); // Verde-teal
@@ -15,7 +15,7 @@ class AppTheme {
   static const Color accent = Color(0xFF4CAF50); // Verde sucesso
 
   static const Color background = Color(0xFFF5F7FA); // Fundo claro
-  static const Color surface = Color(0xFFFFFFFF); // Cartões brancos
+  static const Color surface = Color(0xFFFFFFFF); // CartÃµes brancos
   static const Color error = Color(0xFFE53935); // Vermelho erro
   static const Color warning = Color(0xFFFFA726); // Laranja aviso
 
@@ -24,7 +24,7 @@ class AppTheme {
   static const Color textHint = Color(0xFFB0BEC5);
   static const Color divider = Color(0xFFE8EEF4);
 
-  // ─── Gradientes ───────────────────────────────────────────────────────────
+  // â”€â”€â”€ Gradientes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -37,7 +37,7 @@ class AppTheme {
     colors: [Color(0xFF0D47A1), Color(0xFF00796B)],
   );
 
-  // ─── ThemeData ────────────────────────────────────────────────────────────
+  // â”€â”€â”€ ThemeData â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
