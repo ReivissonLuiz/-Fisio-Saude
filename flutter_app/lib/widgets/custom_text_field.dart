@@ -1,5 +1,5 @@
-﻿/// widgets/custom_text_field.dart
-/// Campo de texto reutilizÃ¡vel com validaÃ§Ã£o, mÃ¡scara e Ã­cones.
+/// widgets/custom_text_field.dart
+/// Campo de texto reutilizável com validação, máscara e ícones.
 library;
 
 import 'package:flutter/material.dart';

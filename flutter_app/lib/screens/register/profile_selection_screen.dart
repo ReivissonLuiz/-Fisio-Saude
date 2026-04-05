@@ -1,5 +1,5 @@
-﻿/// profile_selection_screen.dart
-/// Tela de seleÃ§Ã£o de perfil: o usuÃ¡rio escolhe entre Paciente ou Fisioterapeuta.
+/// profile_selection_screen.dart
+/// Tela de seleção de perfil: o usuário escolhe entre Paciente ou Fisioterapeuta.
 library;
 
 import 'package:flutter/material.dart';
@@ -20,12 +20,12 @@ class ProfileSelectionScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Qual Ã© o seu perfil?',
+                'Qual é o seu perfil?',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Selecione como vocÃª quer usar o +Fisio +SaÃºde.',
+                'Selecione como você quer usar o +Fisio +Saúde.',
                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 15),
               ),
               const SizedBox(height: 40),
@@ -35,7 +35,7 @@ class ProfileSelectionScreen extends StatelessWidget {
                 icon: Icons.person_2_rounded,
                 title: 'Paciente',
                 description:
-                    'Busque fisioterapeutas, agende sessÃµes e acompanhe sua recuperaÃ§Ã£o.',
+                    'Busque fisioterapeutas, agende sessões e acompanhe sua recuperação.',
                 color: AppTheme.primary,
                 onTap: () => Navigator.pushNamed(context, '/register-patient'),
               ),
@@ -46,7 +46,7 @@ class ProfileSelectionScreen extends StatelessWidget {
                 icon: Icons.medical_services_rounded,
                 title: 'Fisioterapeuta',
                 description:
-                    'Gerencie seus pacientes, consultas e evoluÃ§Ã£o clÃ­nica.',
+                    'Gerencie seus pacientes, consultas e evolução clínica.',
                 color: AppTheme.secondary,
                 onTap: () =>
                     Navigator.pushNamed(context, '/register-professional'),
@@ -68,7 +68,7 @@ class ProfileSelectionScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('JÃ¡ tem conta? ',
+                    const Text('Já tem conta? ',
                         style: TextStyle(color: AppTheme.textSecondary)),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, '/login'),

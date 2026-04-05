@@ -15,7 +15,7 @@ class AppTheme {
   static const Color accent = Color(0xFF4CAF50); // Verde sucesso
 
   static const Color background = Color(0xFFF5F7FA); // Fundo claro
-  static const Color surface = Color(0xFFFFFFFF); // CartÃµes brancos
+  static const Color surface = Color(0xFFFFFFFF); // Cartões brancos
   static const Color error = Color(0xFFE53935); // Vermelho erro
   static const Color warning = Color(0xFFFFA726); // Laranja aviso
 

@@ -1,5 +1,5 @@
-﻿/// widgets/primary_button.dart
-/// BotÃ£o principal reutilizÃ¡vel com estado de loading.
+/// widgets/primary_button.dart
+/// Botão principal reutilizável com estado de loading.
 library;
 
 import 'package:flutter/material.dart';

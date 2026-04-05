@@ -62,7 +62,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       color: AppTheme.primary,
       child: CustomScrollView(
         slivers: [
-          // â”€â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // --- Header ------------------------------------------------------
           SliverToBoxAdapter(
             child: Container(
               decoration: const BoxDecoration(
@@ -132,7 +132,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
               padding: const EdgeInsets.all(20),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // â”€â”€ PrÃ³xima Consulta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // --- Próxima Consulta -------------------------------------------
                   const _SectionTitle(
                       title: 'Próxima Consulta',
                       icon: Icons.calendar_month_rounded),
@@ -140,15 +140,15 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _proximaConsulta(),
                   const SizedBox(height: 24),
 
-                  // â”€â”€ Ãšltimo Sintoma Registrado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // --- Último Sintoma Registrado -----------------------------------
                   const _SectionTitle(
-                      title: 'Ãšltimo Sintoma Registrado',
+                      title: 'Último Sintoma Registrado',
                       icon: Icons.monitor_heart_rounded),
                   const SizedBox(height: 10),
                   _ultimoSintoma(),
                   const SizedBox(height: 24),
 
-                  // â”€â”€ Resumo RÃ¡pido â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // --- Resumo Rápido -----------------------------------------------
                   const _SectionTitle(
                       title: 'Resumo', icon: Icons.bar_chart_rounded),
                   const SizedBox(height: 10),
@@ -270,12 +270,12 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       return const _EmptyCard(
         icon: Icons.monitor_heart_outlined,
         message: 'Nenhum sintoma registrado.',
-        sub: 'Use a aba SaÃºde para registrar seus sintomas.',
+        sub: 'Use a aba Saúde para registrar seus sintomas.',
       );
     }
     final s = _sintomas.first;
     final nivel = s['nivel_dor'] as int? ?? 0;
-    final descricao = s['descricao'] as String? ?? 'Sem descriÃ§Ã£o';
+    final descricao = s['descricao'] as String? ?? 'Sem descrição';
     final regiao = s['regiao'] as String?;
     final dataHora = s['data_hora'] as String? ?? '';
     final dt = DateTime.tryParse(dataHora);
@@ -324,7 +324,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
                 if (regiao != null)
-                  Text('RegiÃ£o: $regiao',
+                  Text('Região: $regiao',
                       style: const TextStyle(
                           fontSize: 12, color: AppTheme.textSecondary)),
                 Text(dtFormatada,
@@ -339,7 +339,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
   }
 }
 
-// â”€â”€â”€ Widgets auxiliares â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Widgets auxiliares -----------------------------------------------------
 
 class _SectionTitle extends StatelessWidget {
   final String title;

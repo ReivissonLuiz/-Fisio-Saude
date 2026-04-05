@@ -52,16 +52,16 @@ class _ProfessionalRegisterScreenState
   final _api = ApiService();
 
   static const List<String> _especializacoes = [
-    'Fisioterapia OrtopÃ©dica e TraumatolÃ³gica',
-    'Fisioterapia NeurolÃ³gica',
+    'Fisioterapia Ortopédica e Traumatológica',
+    'Fisioterapia Neurológica',
     'Fisioterapia Esportiva',
-    'Fisioterapia CardiorrespiratÃ³ria',
-    'Fisioterapia em SaÃºde da Mulher',
-    'Fisioterapia PediÃ¡trica',
-    'Fisioterapia GeriÃ¡trica',
-    'Fisioterapia AquÃ¡tica',
+    'Fisioterapia Cardiorrespiratória',
+    'Fisioterapia em Saúde da Mulher',
+    'Fisioterapia Pediátrica',
+    'Fisioterapia Geriátrica',
+    'Fisioterapia Aquática',
     'Fisioterapia Dermato-Funcional',
-    'RPG â€” ReeducaÃ§Ã£o Postural Global',
+    'RPG — Reeducação Postural Global',
     'Outra',
   ];
 
@@ -86,7 +86,7 @@ class _ProfessionalRegisterScreenState
     if (!_formKey.currentState!.validate()) return;
     if (!_aceitaTermos) {
       setState(() => _errorMsg =
-          'VocÃª deve aceitar os Termos de Uso e PolÃ­tica de Privacidade.');
+          'Você deve aceitar os Termos de Uso e Política de Privacidade.');
       return;
     }
     setState(() {
@@ -186,7 +186,7 @@ class _ProfessionalRegisterScreenState
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Seu cadastro Ã© ativado imediatamente. VocÃª jÃ¡ pode fazer login apÃ³s o registro.',
+                              'Seu cadastro é ativado imediatamente. Você já pode fazer login após o registro.',
                               style: TextStyle(
                                   fontSize: 12, color: AppTheme.accent),
                             ),
@@ -250,7 +250,7 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.phone_outlined),
                       validator: (v) =>
                           (v == null || _telMask.getUnmaskedText().length < 10)
-                              ? 'Telefone invÃ¡lido.'
+                              ? 'Telefone inválido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
@@ -295,7 +295,7 @@ class _ProfessionalRegisterScreenState
                       onChanged: (v) =>
                           setState(() => _especializacaoSelecionada = v),
                       validator: (v) => (v == null || v.isEmpty)
-                          ? 'Selecione uma especializaÃ§Ã£o.'
+                          ? 'Selecione uma especialização.'
                           : null,
                     ),
                     const SizedBox(height: 20),
@@ -313,7 +313,7 @@ class _ProfessionalRegisterScreenState
                       prefixIcon: const Icon(Icons.location_on_outlined),
                       validator: (v) =>
                           (v == null || _cepMask.getUnmaskedText().length != 8)
-                              ? 'CEP invÃ¡lido.'
+                              ? 'CEP inválido.'
                               : null,
                     ),
                     const SizedBox(height: 20),
@@ -324,7 +324,7 @@ class _ProfessionalRegisterScreenState
 
                     CustomTextField(
                       label: 'Senha *',
-                      hint: 'MÃ­nimo 6 caracteres',
+                      hint: 'Mínimo 6 caracteres',
                       controller: _senhaCtrl,
                       obscureText: _obscureSenha,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -340,7 +340,7 @@ class _ProfessionalRegisterScreenState
                       onChanged: (_) => setState(() {}),
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Crie uma senha.';
-                        if (v.length < 6) return 'MÃ­nimo 6 caracteres.';
+                        if (v.length < 6) return 'Mínimo 6 caracteres.';
                         return null;
                       },
                     ),
@@ -367,7 +367,7 @@ class _ProfessionalRegisterScreenState
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas nÃ£o coincidem.';
+                          return 'As senhas não coincidem.';
                         }
                         return null;
                       },

@@ -57,7 +57,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_aceitaTermos) {
-      setState(() => _errorMsg = 'VocÃª deve aceitar os Termos.');
+      setState(() => _errorMsg = 'Você deve aceitar os Termos.');
       return;
     }
     setState(() {
@@ -91,7 +91,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cadastro â€” ADM'), leading: const BackButton()),
+      appBar: AppBar(title: const Text('Cadastro — ADM'), leading: const BackButton()),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -180,7 +180,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                         icon: Icon(_obscureConfirmar ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                         onPressed: () => setState(() => _obscureConfirmar = !_obscureConfirmar),
                       ),
-                      validator: (v) => (v != _senhaCtrl.text) ? 'As senhas nÃ£o coincidem.' : null,
+                      validator: (v) => (v != _senhaCtrl.text) ? 'As senhas não coincidem.' : null,
                     ),
                     const SizedBox(height: 24),
                     TermsCheckbox(
