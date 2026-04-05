@@ -14,7 +14,7 @@ class ProfileSelectionScreen extends StatelessWidget {
       appBar:
           AppBar(title: const Text('Criar Conta'), leading: const BackButton()),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +63,7 @@ class ProfileSelectionScreen extends StatelessWidget {
                 onTap: () => Navigator.pushNamed(context, '/register-admin'),
               ),
 
-              const Spacer(),
+              const SizedBox(height: 40),
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

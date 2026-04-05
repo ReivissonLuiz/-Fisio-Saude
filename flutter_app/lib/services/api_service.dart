@@ -1,4 +1,4 @@
-/// supabase_service.dart  (antigo api_service.dart)
+﻿/// supabase_service.dart  (antigo api_service.dart)
 /// Serviço de comunicação com o Supabase — +Físio +Saúde
 ///
 /// Substitui completamente a camada Node.js (localhost:3000).
@@ -282,12 +282,12 @@ class ApiService {
       }
       return {
         'success': false,
-        'message': 'Erro ao salvar dados. Tente novamente.'
+        'message': e.message,
       };
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': e.toString(),
       };
     }
   }
