@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Sua reabilitaçÍo, em boas mÍos.',
+                          'Sua reabilitação, em boas mãos.',
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.white.withValues(alpha: 0.85),
@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen>
                       constraints: const BoxConstraints(maxWidth: 400),
                       child: Column(
                         children: [
-                          // BotÍo Entrar
+                          // Botão Entrar
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                           const SizedBox(height: 14),
-                          // BotÍo Cadastrar-se
+                          // Botão Cadastrar-se
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -177,4 +177,5 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
 

@@ -149,7 +149,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                                     fontWeight: FontWeight.w500)),
                             SizedBox(height: 6),
                             Text(
-                                'Use o botÍo abaixo para registrar\ncomo você está sentindo.',
+                                'Use o Botão abaixo para registrar\ncomo você está sentindo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: AppTheme.textHint, fontSize: 13)),
@@ -291,7 +291,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
     'Cervical (pescoço)', 'Ombro direito', 'Ombro esquerdo',
     'Coluna lombar', 'Coluna torácica', 'Quadril',
     'Joelho direito', 'Joelho esquerdo', 'Tornozelo / pé',
-    'Braço / cotovelo', 'Punho / mÍo', 'Outra regiÍo',
+    'Braço / cotovelo', 'Punho / mão', 'Outra Região',
   ];
 
   @override
@@ -421,14 +421,14 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text('RegiÍo do corpo',
+                    const Text('Região do corpo',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _regiaoSelecionada,
                       decoration: InputDecoration(
-                        hintText: 'Selecione a regiÍo',
+                        hintText: 'Selecione a Região',
                         prefixIcon: const Icon(Icons.location_on_outlined),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -443,7 +443,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                           setState(() => _regiaoSelecionada = v),
                     ),
                     const SizedBox(height: 18),
-                    const Text('DescriçÍo',
+                    const Text('Descrição',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
@@ -528,4 +528,7 @@ class _MiniStat extends StatelessWidget {
     );
   }
 }
+
+
+
 

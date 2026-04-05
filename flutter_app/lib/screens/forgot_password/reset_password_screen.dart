@@ -1,4 +1,4 @@
-﻿/// Tela de redefiniçÍo de senha acessada via link do e-mail do Supabase.
+﻿/// Tela de redefinição de senha acessada via link do e-mail do Supabase.
 ///
 /// O Supabase envia um e-mail com um link do tipo:
 ///   https://SEU_PROJETO.supabase.co/auth/v1/verify?token=...&type=recovery&redirect_to=...
@@ -38,7 +38,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   void initState() {
     super.initState();
-    // Verifica se já há uma sessÍo de recovery ativa (usuário já clicou no link)
+    // Verifica se já há uma Sessão de recovery ativa (usuário já clicou no link)
     final currentSession = Supabase.instance.client.auth.currentSession;
     if (currentSession != null) {
       setState(() => _sessionReady = true);
@@ -90,7 +90,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       } else {
         setState(() {
           _isLoading = false;
-          _errorMsg = 'NÍo foi possível redefinir a senha. Tente novamente.';
+          _errorMsg = 'Não foi possível redefinir a senha. Tente novamente.';
         });
       }
     } on AuthException catch (e) {
@@ -103,7 +103,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMsg = 'Erro inesperado. Verifique sua conexÍo.';
+        _errorMsg = 'Erro inesperado. Verifique sua conexão.';
       });
     }
   }
@@ -113,7 +113,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return 'A senha deve ter no mínimo 6 caracteres.';
     }
     if (msg.contains('same password')) {
-      return 'A nova senha nÍo pode ser igual à anterior.';
+      return 'A nova senha Não pode ser igual à anterior.';
     }
     return 'Erro: $msg';
   }
@@ -155,7 +155,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Aguarde um instante enquanto validamos sua sessÍo de recuperaçÍo.',
+          'Aguarde um instante enquanto validamos sua Sessão de recuperação.',
           textAlign: TextAlign.center,
           style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
         ),
@@ -251,7 +251,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
             validator: (v) {
               if (v == null || v.isEmpty) return 'Confirme a nova senha.';
-              if (v != _novaSenhaCtrl.text) return 'As senhas nÍo coincidem.';
+              if (v != _novaSenhaCtrl.text) return 'As senhas Não coincidem.';
               return null;
             },
           ),
@@ -291,4 +291,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 }
+
+
 

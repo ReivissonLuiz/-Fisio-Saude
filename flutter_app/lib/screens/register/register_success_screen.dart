@@ -1,6 +1,6 @@
 ﻿/// register_success_screen.dart
 /// Tela exibida após o cadastro ser criado com sucesso.
-/// Informa ao usuário que um e-mail de confirmaçÍo foi enviado.
+/// Informa ao usuário que um e-mail de confirmação foi enviado.
 library;
 
 import 'package:flutter/material.dart';
@@ -64,7 +64,7 @@ class RegisterSuccessScreen extends StatelessWidget {
 
                   // --- Mensagem principal --------------------------------------
                   const Text(
-                    'Enviamos um e-mail de confirmaçÍo para você.',
+                    'Enviamos um e-mail de confirmação para você.',
                     style: TextStyle(
                       fontSize: 16,
                       color: AppTheme.textSecondary,
@@ -103,7 +103,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
-                            'NÍo encontrou o e-mail? Verifique a pasta de Spam ou Lixo Eletrônico.',
+                            'Não encontrou o e-mail? Verifique a pasta de Spam ou Lixo Eletrônico.',
                             style: TextStyle(
                                 fontSize: 12, color: AppTheme.textSecondary),
                           ),
@@ -113,7 +113,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
 
-                  // --- BotÍo ir para login ---------------------------------------
+                  // --- Botão ir para login ---------------------------------------
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -144,5 +144,6 @@ class RegisterSuccessScreen extends StatelessWidget {
     );
   }
 }
+
 
 

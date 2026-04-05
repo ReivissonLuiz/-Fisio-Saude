@@ -98,7 +98,7 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
                       _buildSection('Informações Pessoais', [
                         _buildInfoTile(Icons.assignment_ind_rounded, 'CREFITO', _perfilData?['crefito'] ?? '-'),
                         _buildInfoTile(Icons.email_outlined, 'E-mail', widget.email),
-                        _buildInfoTile(Icons.phone_outlined, 'Telefone', _perfilData?['telefone'] ?? 'NÍo informado'),
+                        _buildInfoTile(Icons.phone_outlined, 'Telefone', _perfilData?['telefone'] ?? 'Não informado'),
                         _buildInfoTile(Icons.work_outline_rounded, 'Especialidade', _perfilData?['especialidade'] ?? 'Fisioterapia'),
                       ]),
                       const SizedBox(height: 16),
@@ -211,7 +211,7 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua sessÍo?'),
+        content: const Text('Deseja encerrar sua Sessão?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(
@@ -227,4 +227,5 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
     );
   }
 }
+
 

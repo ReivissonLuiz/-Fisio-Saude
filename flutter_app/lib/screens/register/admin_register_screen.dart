@@ -150,7 +150,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                     ),
                     const SizedBox(height: 14),
                     CustomTextField(
-                      label: 'Cargo / FunçÍo *',
+                      label: 'Cargo / Função *',
                       controller: _cargoCtrl,
                       hint: 'Ex: Gerente Técnico',
                       prefixIcon: const Icon(Icons.work_outline),
@@ -180,7 +180,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                         icon: Icon(_obscureConfirmar ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                         onPressed: () => setState(() => _obscureConfirmar = !_obscureConfirmar),
                       ),
-                      validator: (v) => (v != _senhaCtrl.text) ? 'As senhas nÍo coincidem.' : null,
+                      validator: (v) => (v != _senhaCtrl.text) ? 'As senhas Não coincidem.' : null,
                     ),
                     const SizedBox(height: 24),
                     TermsCheckbox(
@@ -205,4 +205,5 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
     );
   }
 }
+
 

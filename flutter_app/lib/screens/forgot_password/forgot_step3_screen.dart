@@ -165,7 +165,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                           return 'Confirme a nova senha.';
                         }
                         if (v != _novaSenhaCtrl.text) {
-                          return 'As senhas nÍo coincidem.';
+                          return 'As senhas Não coincidem.';
                         }
                         return null;
                       },
@@ -190,4 +190,5 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
     );
   }
 }
+
 

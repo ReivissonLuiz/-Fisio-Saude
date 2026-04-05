@@ -1,5 +1,5 @@
 ﻿/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
-/// incluindo CREFITO e especializaçÍo, com aceite de termos LGPD.
+/// incluindo CREFITO e especialização, com aceite de termos LGPD.
 library;
 
 import 'package:flutter/material.dart';
@@ -61,7 +61,7 @@ class _ProfessionalRegisterScreenState
     'Fisioterapia Geriátrica',
     'Fisioterapia Aquática',
     'Fisioterapia Dermato-Funcional',
-    'RPG — ReeducaçÍo Postural Global',
+    'RPG — Reeducação Postural Global',
     'Outra',
   ];
 
@@ -270,11 +270,11 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 14),
 
-                    // Dropdown de especializaçÍo
+                    // Dropdown de especialização
                     DropdownButtonFormField<String>(
                       value: _especializacaoSelecionada,
                       decoration: InputDecoration(
-                        labelText: 'EspecializaçÍo / Írea de atuaçÍo *',
+                        labelText: 'Especialização / Írea de atuação *',
                         prefixIcon: const Icon(Icons.category_outlined),
                         filled: true,
                         fillColor: Colors.white,
@@ -295,7 +295,7 @@ class _ProfessionalRegisterScreenState
                       onChanged: (v) =>
                           setState(() => _especializacaoSelecionada = v),
                       validator: (v) => (v == null || v.isEmpty)
-                          ? 'Selecione uma especializaçÍo.'
+                          ? 'Selecione uma especialização.'
                           : null,
                     ),
                     const SizedBox(height: 20),
@@ -367,7 +367,7 @@ class _ProfessionalRegisterScreenState
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas nÍo coincidem.';
+                          return 'As senhas Não coincidem.';
                         }
                         return null;
                       },
@@ -406,4 +406,5 @@ class _ProfessionalRegisterScreenState
     );
   }
 }
+
 

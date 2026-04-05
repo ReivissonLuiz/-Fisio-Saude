@@ -275,7 +275,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
     }
     final s = _sintomas.first;
     final nivel = s['nivel_dor'] as int? ?? 0;
-    final descricao = s['descricao'] as String? ?? 'Sem descriçÍo';
+    final descricao = s['descricao'] as String? ?? 'Sem descrição';
     final regiao = s['regiao'] as String?;
     final dataHora = s['data_hora'] as String? ?? '';
     final dt = DateTime.tryParse(dataHora);
@@ -324,7 +324,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
                 if (regiao != null)
-                  Text('RegiÍo: $regiao',
+                  Text('Região: $regiao',
                       style: const TextStyle(
                           fontSize: 12, color: AppTheme.textSecondary)),
                 Text(dtFormatada,
@@ -446,4 +446,6 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+
+
 

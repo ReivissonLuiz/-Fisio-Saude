@@ -1,5 +1,5 @@
 ﻿/// Passo 2: O usuário insere o código de 6 dígitos recebido por e-mail.
-/// Inclui cooldown de 60s para reenvio e validaçÍo de código inválido/expirado.
+/// Inclui cooldown de 60s para reenvio e validação de código inválido/expirado.
 library;
 
 import 'dart:async';
@@ -223,4 +223,5 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
     );
   }
 }
+
 

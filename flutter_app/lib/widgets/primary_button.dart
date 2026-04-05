@@ -1,5 +1,5 @@
 ﻿/// widgets/primary_button.dart
-/// BotÍo principal reutilizável com estado de loading.
+/// Botão principal reutilizável com estado de loading.
 library;
 
 import 'package:flutter/material.dart';
@@ -64,4 +64,5 @@ class PrimaryButton extends StatelessWidget {
     );
   }
 }
+
 

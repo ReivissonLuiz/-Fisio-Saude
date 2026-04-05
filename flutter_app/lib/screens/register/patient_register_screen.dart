@@ -165,7 +165,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
 
                     CustomTextField(
                       label: 'Nome completo *',
-                      hint: 'JoÍo da Silva',
+                      hint: 'João da Silva',
                       controller: _nomeCtrl,
                       prefixIcon: const Icon(Icons.person_outline),
                       validator: (v) => (v == null || v.trim().length < 3)
@@ -325,7 +325,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas nÍo coincidem.';
+                          return 'As senhas Não coincidem.';
                         }
                         return null;
                       },
@@ -348,7 +348,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     if (_successMsg != null)
                       FeedbackBox(message: _successMsg!, isError: false),
 
-                    // --- BotÍo -----------------------------------------------------
+                    // --- Botão -----------------------------------------------------
                     PrimaryButton(
                         label: 'Criar conta',
                         onPressed: _register,
@@ -467,4 +467,6 @@ class FeedbackBox extends StatelessWidget {
     );
   }
 }
+
+
 

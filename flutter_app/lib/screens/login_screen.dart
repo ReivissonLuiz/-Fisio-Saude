@@ -1,5 +1,5 @@
-﻿/// Tela de login com validaçÍo em tempo real, controle de tentativas
-/// e navegaçÍo para recuperaçÍo de senha e cadastro.
+﻿/// Tela de login com validação em tempo real, controle de tentativas
+/// e navegação para recuperação de senha e cadastro.
 library;
 
 import 'package:flutter/material.dart';
@@ -213,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                      // --- BotÍo Entrar -----------------------------------------------
+                      // --- Botão Entrar -----------------------------------------------
                       PrimaryButton(
                         label: 'Entrar',
                         onPressed: _doLogin,
@@ -227,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text(
-                              'NÍo tenho conta? ',
+                              'Não tenho conta? ',
                               style: TextStyle(color: AppTheme.textSecondary),
                             ),
                             GestureDetector(
@@ -256,5 +256,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
 
 

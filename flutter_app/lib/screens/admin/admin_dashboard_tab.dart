@@ -79,7 +79,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Painel ADM (BI Real)', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Painel ADM', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [

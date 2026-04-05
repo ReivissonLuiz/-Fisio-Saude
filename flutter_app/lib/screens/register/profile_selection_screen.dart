@@ -1,5 +1,5 @@
 ﻿/// profile_selection_screen.dart
-/// Tela de seleçÍo de perfil: o usuário escolhe entre Paciente ou Fisioterapeuta.
+/// Tela de seleção de perfil: o usuário escolhe entre Paciente ou Fisioterapeuta.
 library;
 
 import 'package:flutter/material.dart';
@@ -35,7 +35,7 @@ class ProfileSelectionScreen extends StatelessWidget {
                 icon: Icons.person_2_rounded,
                 title: 'Paciente',
                 description:
-                    'Busque fisioterapeutas, agende sessões e acompanhe sua recuperaçÍo.',
+                    'Busque fisioterapeutas, agende sessões e acompanhe sua recuperação.',
                 color: AppTheme.primary,
                 onTap: () => Navigator.pushNamed(context, '/register-patient'),
               ),
@@ -46,7 +46,7 @@ class ProfileSelectionScreen extends StatelessWidget {
                 icon: Icons.medical_services_rounded,
                 title: 'Fisioterapeuta',
                 description:
-                    'Gerencie seus pacientes, consultas e evoluçÍo clínica.',
+                    'Gerencie seus pacientes, consultas e evolução clínica.',
                 color: AppTheme.secondary,
                 onTap: () =>
                     Navigator.pushNamed(context, '/register-professional'),
@@ -171,4 +171,5 @@ class _ProfileCard extends StatelessWidget {
     );
   }
 }
+
 
