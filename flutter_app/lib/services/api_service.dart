@@ -60,6 +60,7 @@ class ApiService {
           'tipo': loginData?['tipo_usuario'] ?? 'Paciente',
           'id_paciente': loginData?['id_paciente'],
           'id_profissional': loginData?['id_profissional'],
+          'id_administrador': loginData?['id_administrador'],
         },
       };
     } on AuthException catch (e) {
@@ -162,7 +163,7 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela profissional (ativo imediatamente)
+      // 2. Gravar dados na tabela profissional
       final profResp = await _sb
           .from('profissional')
           .insert({
@@ -173,7 +174,89 @@ class ApiService {
             'especialidade': (data['especializacao'] as String).trim(),
             'telefone':
                 (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'ativo': true, // Ativado automaticamente — sem aprovação
+            'ativo': true,
+          })
+          .select()
+          .single();
+
+      // 3. Profissional também é Paciente: Criar registro na tabela paciente
+      // Usamos dados padrão ou fornecidos (se adicionarmos campos na tela)
+      final pacienteResp = await _sb
+          .from('paciente')
+          .insert({
+            'nome': (data['nome'] as String).trim(),
+            'email': email,
+            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
+            'data_nasc': data['dataNasc'] ?? '1990-01-01', // Valor padrão
+            'telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'genero': data['genero'] ?? 'Não informado',
+            'ativo': true,
+          })
+          .select()
+          .single();
+
+      // 4. Criar vínculo na tabela login (conectando ambos os IDs)
+      await _sb.from('login').insert({
+        'supabase_user_id': user.id,
+        'email': email,
+        'tipo_usuario': 'Profissional',
+        'id_profissional': profResp['id'],
+        'id_paciente': pacienteResp['id'],
+      });
+
+      return {
+        'success': true,
+        'message': 'Cadastro realizado com sucesso! Você já pode fazer login.',
+        'profissional_id': profResp['id'],
+        'paciente_id': pacienteResp['id'],
+      };
+    } on AuthException catch (e) {
+      return {'success': false, 'message': _traduzirErroAuth(e.message)};
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') {
+        return {'success': false, 'message': 'E-mail ou CPF já cadastrado.'};
+      }
+      return {
+        'success': false,
+        'message': 'Erro ao salvar dados. Tente novamente.'
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique sua internet.'
+      };
+    }
+  }
+
+  // ─── Auth: Registro de Administrador ─────────────────────────────────────
+
+  /// Registra administrador no Auth e grava dados na tabela `administrador`.
+  Future<Map<String, dynamic>> registerAdmin(Map<String, dynamic> data) async {
+    try {
+      final email = (data['email'] as String).trim().toLowerCase();
+      final senha = data['senha'] as String;
+
+      // 1. Criar conta no Auth
+      final response = await _sb.auth.signUp(
+        email: email,
+        password: senha,
+        data: {'nome': data['nome'], 'tipo': 'Administrador'},
+      );
+
+      final user = response.user;
+      if (user == null) {
+        return {'success': false, 'message': 'Não foi possível criar a conta.'};
+      }
+
+      // 2. Gravar dados na tabela administrador
+      final admResp = await _sb
+          .from('administrador')
+          .insert({
+            'nome': (data['nome'] as String).trim(),
+            'email': email,
+            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
+            'cargo': data['cargo'] ?? 'Diretor',
+            'ativo': true,
           })
           .select()
           .single();
@@ -182,14 +265,14 @@ class ApiService {
       await _sb.from('login').insert({
         'supabase_user_id': user.id,
         'email': email,
-        'tipo_usuario': 'Profissional',
-        'id_profissional': profResp['id'],
+        'tipo_usuario': 'Administrador',
+        'id_administrador': admResp['id'],
       });
 
       return {
         'success': true,
-        'message': 'Cadastro realizado com sucesso! Você já pode fazer login.',
-        'profissional_id': profResp['id'],
+        'message': 'Administrador cadastrado com sucesso!',
+        'id_administrador': admResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
@@ -507,7 +590,37 @@ class ApiService {
     }
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  // ─── Administrador: Gestão ──────────────────────────────────────────────────
+
+  /// Busca todos os pacientes para o painel ADM.
+  Future<Map<String, dynamic>> getAllPacientes() async {
+    try {
+      final res = await _sb.from('paciente').select().order('nome');
+      return {'success': true, 'data': res};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar pacientes.'};
+    }
+  }
+
+  /// Busca todos os profissionais para o painel ADM.
+  Future<Map<String, dynamic>> getAllProfissionais() async {
+    try {
+      final res = await _sb.from('profissional').select().order('nome');
+      return {'success': true, 'data': res};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar profissionais.'};
+    }
+  }
+
+  /// Remove (ou desativa) um registro de qualquer tabela.
+  Future<Map<String, dynamic>> deleteRecord(String table, String id) async {
+    try {
+      await _sb.from(table).delete().eq('id', id);
+      return {'success': true};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao remover registro.'};
+    }
+  }
 
   /// Traduz mensagens de erro do Supabase Auth para português.
   String _traduzirErroAuth(String message) {

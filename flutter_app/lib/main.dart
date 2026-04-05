@@ -17,6 +17,7 @@ import 'screens/register/profile_selection_screen.dart';
 import 'screens/register/patient_register_screen.dart';
 import 'screens/register/professional_register_screen.dart';
 import 'screens/register/register_success_screen.dart';
+import 'screens/register/admin_register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,6 +85,7 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
         '/register-patient': (context) => const PatientRegisterScreen(),
         '/register-professional': (context) =>
             const ProfessionalRegisterScreen(),
+        '/register-admin': (context) => const AdminRegisterScreen(),
         '/register-success': (context) {
           final tipo =
               ModalRoute.of(context)!.settings.arguments as String? ??

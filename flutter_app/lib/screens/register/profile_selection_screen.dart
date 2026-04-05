@@ -51,6 +51,17 @@ class ProfileSelectionScreen extends StatelessWidget {
                 onTap: () =>
                     Navigator.pushNamed(context, '/register-professional'),
               ),
+              const SizedBox(height: 20),
+
+              // Card Administrador
+              _ProfileCard(
+                icon: Icons.admin_panel_settings_rounded,
+                title: 'Administrador (ADM)',
+                description:
+                    'Gerencie a base de dados, profissionais, pacientes e veja BI.',
+                color: Colors.purple,
+                onTap: () => Navigator.pushNamed(context, '/register-admin'),
+              ),
 
               const Spacer(),
               Center(

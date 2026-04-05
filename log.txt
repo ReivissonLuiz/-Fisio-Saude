@@ -1,0 +1,15 @@
+﻿d37767d style: recupera integridade do UTF-8 e aplica lints autom├íticos novamente
+20d0de4 Revert "style: resolve todos os lints pendentes (deprecia├º├Áes e formata├º├Áes)"
+6b95991 fix(web): adiciona meta tag de viewport para corrigir escala e zoom em dispositivos m├│veis e painel devtools
+dd10465 style: resolve todos os lints pendentes (deprecia├º├Áes e formata├º├Áes)
+57b0f4f fix(auth): corrige formato da data de nascimento para ISO e aplica AppTheme unificado ao dropdown e inputs do registro
+f888fad feat(auth): adiciona os campos RG e Genero obrigatorios no cadastro de paciente para sanar erro de constraint NOT NULL do bd
+d3c8899 fix(api): adiciona parametro redirectTo em forgotPassword omitido no commit anterior
+08a0bae fix(ci): remove flag obsoleta --web-renderer canvaskit para compatibilidade com Flutter 3.27+
+28d97a5 fix(auth): implementa deteccao dinamica da url base para redirecionamento do email de recuperacao de senha no ambiente web
+52d7fa6 feat(auth): recuperacao de senha via link de e-mail real
+88f1299 feat(paciente): telas funcionais + profissional sem aprovacao de admin
+cf1ebcc feat(kaggle): integracao Heart Disease Dataset com Supabase
+ca2602a fix: melhorar mensagem de erro de rate limit do Supabase Auth
+50fb4a9 chore: remover banco de dados legado em TXT
+94b3df3 fix: corrigir widget_test.dart e workflow de deploy

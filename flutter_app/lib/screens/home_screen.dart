@@ -12,9 +12,10 @@ import 'paciente/buscar_fisio_tab.dart';
 import 'paciente/minha_saude_tab.dart';
 import 'paciente/meu_perfil_tab.dart';
 import 'profissional/profissional_home_tab.dart';
-import 'profissional/meus_pacientes_tab.dart';
 import 'profissional/agenda_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
+import 'admin/admin_dashboard_tab.dart';
+import 'admin/admin_management_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,7 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
   late final String _email;
   late final String? _pacienteId;
   late final String? _profissionalId;
-  late final bool _isPaciente;
+  late final String? _adminId;
+  late final bool _isProfissional;
+  late final bool _isAdmin;
 
   @override
   void didChangeDependencies() {
@@ -44,9 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _nome = _args['nome'] as String? ?? 'Usuário';
     _tipo = _args['tipo'] as String? ?? 'Paciente';
     _email = _args['email'] as String? ?? '';
-    _pacienteId = _args['id_paciente'] as String?;
     _profissionalId = _args['id_profissional'] as String?;
-    _isPaciente = _tipo == 'Paciente';
+    _adminId = _args['id_administrador'] as String?;
+    _isProfissional = _tipo == 'Profissional';
+    _isAdmin = _tipo == 'Administrador';
   }
 
   Future<void> _logout() async {
@@ -57,18 +61,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ── Visão do Profissional — abas ──────────────────────────────────────────
-    if (!_isPaciente) {
-      final profTabs = [
-        ProfissionalHomeTab(
-            profissionalId: _profissionalId ?? '', nome: _nome),
-        MeusPacientesTab(profissionalId: _profissionalId ?? ''),
-        AgendaTab(profissionalId: _profissionalId ?? ''),
+    // ── Visão do Administrador (3 Menus) ───────────────────────────────────
+    if (_isAdmin) {
+      final adminTabs = [
+        AdminDashboardTab(adminId: _adminId ?? ''),
+        _ProfissionalViewTabs(profissionalId: _profissionalId, nome: _nome),
+        _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
+        const AdminManagementTab(),
         PerfilProfissionalTab(
-            profissionalId: _profissionalId ?? '',
+            profissionalId: _adminId ?? '', // Usando adminId como ID de referência
             nome: _nome,
             email: _email,
             onLogout: _logout),
+      ];
+
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        body: SafeArea(child: adminTabs[_tabIndex]),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _tabIndex,
+          onDestinationSelected: (i) => setState(() => _tabIndex = i),
+          backgroundColor: Colors.white,
+          indicatorColor: Colors.purple.withValues(alpha: 0.12),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+          destinations: const [
+            NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics_rounded, color: Colors.purple), label: 'Dashboard'),
+            NavigationDestination(icon: Icon(Icons.medical_services_outlined), selectedIcon: Icon(Icons.medical_services_rounded, color: AppTheme.secondary), label: 'Profissional'),
+            NavigationDestination(icon: Icon(Icons.people_outline_rounded), selectedIcon: Icon(Icons.people_alt_rounded, color: AppTheme.primary), label: 'Paciente'),
+            NavigationDestination(icon: Icon(Icons.settings_suggest_outlined), selectedIcon: Icon(Icons.settings_suggest_rounded, color: Colors.orange), label: 'Gestão'),
+            NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent), label: 'Perfil'),
+          ],
+        ),
+      );
+    }
+
+    // ── Visão do Profissional (Menu Profissional + Paciente) ──────────────────
+    if (_isProfissional) {
+      final profTabs = [
+        ProfissionalHomeTab(profissionalId: _profissionalId ?? '', nome: _nome),
+        AgendaTab(profissionalId: _profissionalId ?? ''),
+        _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
+        PerfilProfissionalTab(profissionalId: _profissionalId ?? '', nome: _nome, email: _email, onLogout: _logout),
       ];
 
       return Scaffold(
@@ -83,44 +118,21 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 0,
           labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
           destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined),
-              selectedIcon:
-                  Icon(Icons.dashboard_rounded, color: AppTheme.primary),
-              label: 'Início',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.people_outline_rounded),
-              selectedIcon:
-                  Icon(Icons.people_alt_rounded, color: AppTheme.secondary),
-              label: 'Pacientes',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.calendar_month_outlined),
-              selectedIcon: Icon(Icons.calendar_month_rounded,
-                  color: Color(0xFF9C27B0)),
-              label: 'Agenda',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent),
-              label: 'Perfil',
-            ),
+            NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard_rounded, color: AppTheme.primary), label: 'Início'),
+            NavigationDestination(icon: Icon(Icons.event_note_outlined), selectedIcon: Icon(Icons.event_note_rounded, color: Color(0xFF9C27B0)), label: 'Agenda'),
+            NavigationDestination(icon: Icon(Icons.health_and_safety_outlined), selectedIcon: Icon(Icons.health_and_safety_rounded, color: AppTheme.primary), label: 'Sou Paciente'),
+            NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent), label: 'Perfil'),
           ],
         ),
       );
     }
 
-    // ── Visão do Paciente — abas ──────────────────────────────────────────────
+    // ── Visão do Paciente (Original) ─────────────────────────────────────────
     final patientTabs = [
       PacienteHomeTab(pacienteId: _pacienteId ?? '', nome: _nome),
       const BuscarFisioTab(),
       MinhaSaudeTab(pacienteId: _pacienteId ?? ''),
-      MeuPerfilTab(
-          pacienteId: _pacienteId ?? '',
-          nome: _nome,
-          email: _email,
-          onLogout: _logout),
+      MeuPerfilTab(pacienteId: _pacienteId ?? '', nome: _nome, email: _email, onLogout: _logout),
     ];
 
     return Scaffold(
@@ -135,29 +147,54 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded, color: AppTheme.primary),
-            label: 'Início',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search_rounded, color: AppTheme.primary),
-            label: 'Buscar Fisio',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.monitor_heart_outlined),
-            selectedIcon:
-                Icon(Icons.monitor_heart_rounded, color: Color(0xFFE91E63)),
-            label: 'Saúde',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent),
-            label: 'Meu Perfil',
-          ),
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded, color: AppTheme.primary), label: 'Início'),
+          NavigationDestination(icon: Icon(Icons.search_outlined), selectedIcon: Icon(Icons.search_rounded, color: AppTheme.primary), label: 'Buscar Fisio'),
+          NavigationDestination(icon: Icon(Icons.monitor_heart_outlined), selectedIcon: Icon(Icons.monitor_heart_rounded, color: Color(0xFFE91E63)), label: 'Saúde'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent), label: 'Meu Perfil'),
         ],
       ),
+    );
+  }
+}
+
+// ── Helpers de Visão Multi-função ─────────────────────────────────────────────
+
+class _ProfissionalViewTabs extends StatelessWidget {
+  final String? profissionalId;
+  final String nome;
+  const _ProfissionalViewTabs({required this.profissionalId, required this.nome});
+
+  @override
+  Widget build(BuildContext context) {
+    if (profissionalId == null) return const Center(child: Text('Acesso profissional não disponível.'));
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('Visão de Fisioterapeuta', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.secondary)),
+        ),
+        Expanded(child: AgendaTab(profissionalId: profissionalId!)),
+      ],
+    );
+  }
+}
+
+class _PacienteViewTabs extends StatelessWidget {
+  final String? pacienteId;
+  final String nome;
+  const _PacienteViewTabs({required this.pacienteId, required this.nome});
+
+  @override
+  Widget build(BuildContext context) {
+    if (pacienteId == null) return const Center(child: Text('Acesso paciente não disponível.'));
+    return const Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('Visão de Paciente', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
+        ),
+        Expanded(child: BuscarFisioTab()),
+      ],
     );
   }
 }
