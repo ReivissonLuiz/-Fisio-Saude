@@ -218,7 +218,7 @@ class _ProfissionalCard extends StatelessWidget {
         border: Border.all(color: AppTheme.divider),
         boxShadow: [
           BoxShadow(
-              color: AppTheme.primary.withOpacity(0.05),
+              color: AppTheme.primary.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 3)),
         ],
@@ -229,7 +229,7 @@ class _ProfissionalCard extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: corAvatar.withOpacity(0.15),
+              backgroundColor: corAvatar.withValues(alpha: 0.15),
               child: Text(
                 nome[0].toUpperCase(),
                 style: TextStyle(
@@ -261,7 +261,7 @@ class _ProfissionalCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.08),
+                          color: AppTheme.primary.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text('CREFITO: $crefito',

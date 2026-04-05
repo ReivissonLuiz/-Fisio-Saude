@@ -38,9 +38,9 @@ class RegisterSuccessScreen extends StatelessWidget {
                       height: 110,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppTheme.accent.withOpacity(0.12),
+                        color: AppTheme.accent.withValues(alpha: 0.12),
                         border: Border.all(
-                            color: AppTheme.accent.withOpacity(0.4), width: 2),
+                            color: AppTheme.accent.withValues(alpha: 0.4), width: 2),
                       ),
                       child: const Icon(
                         Icons.mark_email_read_outlined,
@@ -63,7 +63,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // ── Mensagem principal ─────────────────────────────────
-                  Text(
+                  const Text(
                     'Enviamos um e-mail de confirmação para você.',
                     style: TextStyle(
                       fontSize: 16,
@@ -78,7 +78,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                     isPaciente
                         ? 'Acesse sua caixa de entrada e clique no link para ativar sua conta de Paciente antes de fazer login.'
                         : 'Acesse sua caixa de entrada e clique no link para ativar sua conta de Fisioterapeuta antes de fazer login.',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                       height: 1.6,
@@ -91,15 +91,15 @@ class RegisterSuccessScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.06),
+                      color: AppTheme.primary.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: AppTheme.primary.withOpacity(0.2)),
+                          color: AppTheme.primary.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.info_outline,
-                            color: AppTheme.primary.withOpacity(0.7), size: 18),
+                            color: AppTheme.primary.withValues(alpha: 0.7), size: 18),
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(

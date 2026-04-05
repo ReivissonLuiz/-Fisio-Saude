@@ -211,9 +211,9 @@ class _SintomaCard extends StatelessWidget {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                  color: cor.withOpacity(0.1),
+                  color: cor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: cor.withOpacity(0.3))),
+                  border: Border.all(color: cor.withValues(alpha: 0.3))),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -386,9 +386,9 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: cor.withOpacity(0.06),
+                        color: cor.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: cor.withOpacity(0.3)),
+                        border: Border.all(color: cor.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         children: [
@@ -414,7 +414,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                             value: _nivelDor,
                             min: 0, max: 10, divisions: 10,
                             activeColor: cor,
-                            inactiveColor: cor.withOpacity(0.2),
+                            inactiveColor: cor.withValues(alpha: 0.2),
                             label: '$nivel',
                             onChanged: (v) => setState(() => _nivelDor = v),
                           ),
@@ -509,7 +509,7 @@ class _MiniStat extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(

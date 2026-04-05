@@ -427,6 +427,86 @@ class ApiService {
     }
   }
 
+  // ─── Profissional: Perfil ──────────────────────────────────────────────────
+
+  /// Busca os dados completos do profissional pelo ID.
+  Future<Map<String, dynamic>> getProfissional(String profissionalId) async {
+    try {
+      final data = await _sb
+          .from('profissional')
+          .select()
+          .eq('id', profissionalId)
+          .single();
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Atualiza os dados editáveis do profissional.
+  Future<Map<String, dynamic>> updateProfissional(
+      String profissionalId, Map<String, dynamic> dados) async {
+    try {
+      final data = await _sb
+          .from('profissional')
+          .update(dados)
+          .eq('id', profissionalId)
+          .select()
+          .single();
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  // ─── Profissional: Consultas e Pacientes ───────────────────────────────────
+
+  /// Busca as consultas do profissional com dados do paciente.
+  Future<Map<String, dynamic>> getConsultasProfissional(String profissionalId) async {
+    try {
+      final data = await _sb
+          .from('consulta')
+          .select('*, paciente(nome, email, telefone, data_nasc, genero)')
+          .eq('id_profissional', profissionalId)
+          .order('data_hora', ascending: true);
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Busca a lista única de pacientes que já tiveram consulta com este profissional.
+  Future<Map<String, dynamic>> getPacientesDoProfissional(String profissionalId) async {
+    try {
+      // 1. Busca todas as consultas do profissional
+      final consultas = await _sb
+          .from('consulta')
+          .select('id_paciente, paciente(id, nome, email, telefone, cpf, data_nasc)')
+          .eq('id_profissional', profissionalId);
+      
+      // 2. Filtra para obter pacientes únicos
+      final Map<String, dynamic> pacientesUnicos = {};
+      for (var item in (consultas as List)) {
+        final pac = item['paciente'];
+        if (pac != null && !pacientesUnicos.containsKey(pac['id'])) {
+          pacientesUnicos[pac['id']] = pac;
+        }
+      }
+
+      return {'success': true, 'data': pacientesUnicos.values.toList()};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   /// Traduz mensagens de erro do Supabase Auth para português.

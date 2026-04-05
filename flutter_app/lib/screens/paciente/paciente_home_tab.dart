@@ -80,7 +80,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: Colors.white.withOpacity(0.25),
+                        backgroundColor: Colors.white.withValues(alpha: 0.25),
                         child: Text(
                           widget.nome.isNotEmpty
                               ? widget.nome[0].toUpperCase()
@@ -209,19 +209,19 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primary.withOpacity(0.08),
-            AppTheme.secondary.withOpacity(0.08)
+            AppTheme.primary.withValues(alpha: 0.08),
+            AppTheme.secondary.withValues(alpha: 0.08)
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.12),
+              color: AppTheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(Icons.calendar_month_rounded,
@@ -251,7 +251,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.secondary.withOpacity(0.12),
+              color: AppTheme.secondary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text('Agendada',
@@ -302,7 +302,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: corNivel.withOpacity(0.12),
+              color: corNivel.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
@@ -425,7 +425,7 @@ class _StatCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 22),

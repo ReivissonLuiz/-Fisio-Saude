@@ -60,10 +60,10 @@ class _SplashScreenState extends State<SplashScreen>
                           width: 110,
                           height: 110,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                           ),
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
                           'Sua reabilitação, em boas mãos.',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withValues(alpha: 0.85),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -164,7 +164,7 @@ class _SplashScreenState extends State<SplashScreen>
                 Text(
                   'Plataforma de suporte fisioterapêutico',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 12,
                   ),
                 ),

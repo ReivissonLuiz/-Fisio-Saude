@@ -136,10 +136,10 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.warning.withOpacity(0.1),
+                            color: AppTheme.warning.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppTheme.warning.withOpacity(0.4)),
+                                color: AppTheme.warning.withValues(alpha: 0.4)),
                           ),
                           child: Text(
                             '🛠 Modo Dev — Código: $_devCode',

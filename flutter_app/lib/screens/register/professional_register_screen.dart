@@ -148,7 +148,7 @@ class _ProfessionalRegisterScreenState
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppTheme.secondary.withOpacity(0.1),
+                            color: AppTheme.secondary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(Icons.medical_services_rounded,
@@ -175,10 +175,10 @@ class _ProfessionalRegisterScreenState
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.accent.withOpacity(0.1),
+                        color: AppTheme.accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: AppTheme.accent.withOpacity(0.4)),
+                            color: AppTheme.accent.withValues(alpha: 0.4)),
                       ),
                       child: const Row(
                         children: [
