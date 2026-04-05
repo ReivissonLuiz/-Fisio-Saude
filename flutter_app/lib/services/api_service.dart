@@ -1,9 +1,9 @@
-﻿/// supabase_service.dart  (antigo api_service.dart)
-/// Serviço de comunicação com o Supabase — +Fisio +Saúde
+/// supabase_service.dart  (antigo api_service.dart)
+/// Serviço de comunicaçÍo com o Supabase — +Fisio +Saúde
 ///
 /// Substitui completamente a camada Node.js (localhost:3000).
-/// Usa o Supabase Auth SDK para login, registro e recuperação de senha.
-/// Os dados de paciente/profissional são gravados diretamente nas tabelas.
+/// Usa o Supabase Auth SDK para login, registro e recuperaçÍo de senha.
+/// Os dados de paciente/profissional sÍo gravados diretamente nas tabelas.
 library;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -16,12 +16,12 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // --- Sessão atual ---------------------------------------------------------
+  // --- SessÍo atual ---------------------------------------------------------
 
-  /// Retorna o usuário autenticado atual, ou null se não logado.
+  /// Retorna o usuário autenticado atual, ou null se nÍo logado.
   User? get currentUser => _sb.auth.currentUser;
 
-  /// Stream que emite eventos de mudança de autenticação.
+  /// Stream que emite eventos de mudança de autenticaçÍo.
   Stream<AuthState> get authStateChanges => _sb.auth.onAuthStateChange;
 
   // --- Auth: Login ----------------------------------------------------------
@@ -68,7 +68,7 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÍo. Verifique sua internet.'
       };
     }
   }
@@ -91,7 +91,7 @@ class ApiService {
 
       final user = response.user;
       if (user == null) {
-        return {'success': false, 'message': 'Não foi possível criar a conta.'};
+        return {'success': false, 'message': 'NÍo foi possível criar a conta.'};
       }
 
       // 2. Gravar dados na tabela paciente
@@ -136,7 +136,7 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÍo. Verifique sua internet.'
       };
     }
   }
@@ -144,7 +144,7 @@ class ApiService {
   // --- Auth: Registro de Profissional ---------------------------------------
 
   /// Registra profissional no Auth e grava dados na tabela `profissional`.
-  /// O profissional é ativado imediatamente (sem aprovação de administrador).
+  /// O profissional é ativado imediatamente (sem aprovaçÍo de administrador).
   Future<Map<String, dynamic>> registerProfessional(
       Map<String, dynamic> data) async {
     try {
@@ -160,7 +160,7 @@ class ApiService {
 
       final user = response.user;
       if (user == null) {
-        return {'success': false, 'message': 'Não foi possível criar a conta.'};
+        return {'success': false, 'message': 'NÍo foi possível criar a conta.'};
       }
 
       // 2. Gravar dados na tabela profissional
@@ -180,16 +180,16 @@ class ApiService {
           .single();
 
       // 3. Profissional também é Paciente: Criar registro na tabela paciente
-      // Usamos dados padrão ou fornecidos (se adicionarmos campos na tela)
+      // Usamos dados padrÍo ou fornecidos (se adicionarmos campos na tela)
       final pacienteResp = await _sb
           .from('paciente')
           .insert({
             'nome': (data['nome'] as String).trim(),
             'email': email,
             'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': data['dataNasc'] ?? '1990-01-01', // Valor padrão
+            'data_nasc': data['dataNasc'] ?? '1990-01-01', // Valor padrÍo
             'telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'genero': data['genero'] ?? 'Não informado',
+            'genero': data['genero'] ?? 'NÍo informado',
             'ativo': true,
           })
           .select()
@@ -223,7 +223,7 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÍo. Verifique sua internet.'
       };
     }
   }
@@ -245,7 +245,7 @@ class ApiService {
 
       final user = response.user;
       if (user == null) {
-        return {'success': false, 'message': 'Não foi possível criar a conta.'};
+        return {'success': false, 'message': 'NÍo foi possível criar a conta.'};
       }
 
       // 2. Gravar dados na tabela administrador
@@ -294,8 +294,8 @@ class ApiService {
 
   // --- Auth: Esqueci Minha Senha --------------------------------------------
 
-  /// Envia e-mail real de recuperação de senha via Supabase.
-  /// O link no e-mail redireciona para a tela de redefinição de senha do app.
+  /// Envia e-mail real de recuperaçÍo de senha via Supabase.
+  /// O link no e-mail redireciona para a tela de redefiniçÍo de senha do app.
   Future<Map<String, dynamic>> forgotPassword(String email,
       {String? redirectTo}) async {
     try {
@@ -313,7 +313,7 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÍo. Verifique sua internet.'
       };
     }
   }
@@ -337,7 +337,7 @@ class ApiService {
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÍo. Verifique sua internet.'
       };
     }
   }
@@ -352,7 +352,7 @@ class ApiService {
     required String confirmarSenha,
   }) async {
     if (novaSenha != confirmarSenha) {
-      return {'success': false, 'message': 'As senhas não coincidem.'};
+      return {'success': false, 'message': 'As senhas nÍo coincidem.'};
     }
     if (novaSenha.length < 6) {
       return {
@@ -369,14 +369,14 @@ class ApiService {
       }
       return {
         'success': false,
-        'message': 'Não foi possível redefinir a senha.'
+        'message': 'NÍo foi possível redefinir a senha.'
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erro de conexão. Verifique sua internet.'
+        'message': 'Erro de conexÍo. Verifique sua internet.'
       };
     }
   }
@@ -401,7 +401,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -419,7 +419,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -438,7 +438,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -455,7 +455,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -487,7 +487,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -506,7 +506,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -524,7 +524,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -542,7 +542,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -560,7 +560,7 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
@@ -586,11 +586,11 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
+      return {'success': false, 'message': 'Erro de conexÍo.'};
     }
   }
 
-  // --- Administrador: Gestão --------------------------------------------------
+  // --- Administrador: GestÍo --------------------------------------------------
 
   /// Busca todos os pacientes para o painel ADM.
   Future<Map<String, dynamic>> getAllPacientes() async {
@@ -609,6 +609,26 @@ class ApiService {
       return {'success': true, 'data': res};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao carregar profissionais.'};
+    }
+  }
+
+  /// Busca todas as consultas para o painel ADM.
+  Future<Map<String, dynamic>> getAllConsultas() async {
+    try {
+      final res = await _sb.from('consulta').select().order('data_hora');
+      return {'success': true, 'data': res};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar consultas globais.'};
+    }
+  }
+
+  /// Busca todos os sintomas globais para BI ADM.
+  Future<Map<String, dynamic>> getAllSintomasGlobais() async {
+    try {
+      final res = await _sb.from('registro_sintomas').select().order('data_hora', ascending: false);
+      return {'success': true, 'data': res};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar sintomas globais.'};
     }
   }
 
@@ -654,3 +674,4 @@ class ApiService {
     return 'Erro: $message';
   }
 }
+

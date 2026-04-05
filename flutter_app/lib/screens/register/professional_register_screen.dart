@@ -1,5 +1,5 @@
-/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
-/// incluindo CREFITO e especialização, com aceite de termos LGPD.
+﻿/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
+/// incluindo CREFITO e especializaçÍo, com aceite de termos LGPD.
 library;
 
 import 'package:flutter/material.dart';
@@ -41,7 +41,7 @@ class _ProfessionalRegisterScreenState
   String? _errorMsg;
   String? _successMsg;
 
-  // MÃ¡scaras
+  // Máscaras
   final _cpfMask = MaskTextInputFormatter(
       mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
   final _telMask = MaskTextInputFormatter(
@@ -61,7 +61,7 @@ class _ProfessionalRegisterScreenState
     'Fisioterapia Geriátrica',
     'Fisioterapia Aquática',
     'Fisioterapia Dermato-Funcional',
-    'RPG — Reeducação Postural Global',
+    'RPG — ReeducaçÍo Postural Global',
     'Outra',
   ];
 
@@ -141,7 +141,7 @@ class _ProfessionalRegisterScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // CabeÃ§alho
+                    // Cabeçalho
                     Row(
                       children: [
                         Container(
@@ -196,7 +196,7 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 28),
 
-                    // â”€â”€â”€ Dados Pessoais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // --- Dados Pessoais --------------------------------------------
                     const SectionLabel('Dados Pessoais'),
                     const SizedBox(height: 12),
 
@@ -255,7 +255,7 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Dados Profissionais â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // --- Dados Profissionais ---------------------------------------
                     const SectionLabel('Dados Profissionais'),
                     const SizedBox(height: 12),
 
@@ -270,11 +270,11 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 14),
 
-                    // Dropdown de especializaÃ§Ã£o
+                    // Dropdown de especializaçÍo
                     DropdownButtonFormField<String>(
                       value: _especializacaoSelecionada,
                       decoration: InputDecoration(
-                        labelText: 'EspecializaÃ§Ã£o / Ãrea de atuaÃ§Ã£o *',
+                        labelText: 'EspecializaçÍo / Írea de atuaçÍo *',
                         prefixIcon: const Icon(Icons.category_outlined),
                         filled: true,
                         fillColor: Colors.white,
@@ -295,13 +295,13 @@ class _ProfessionalRegisterScreenState
                       onChanged: (v) =>
                           setState(() => _especializacaoSelecionada = v),
                       validator: (v) => (v == null || v.isEmpty)
-                          ? 'Selecione uma especialização.'
+                          ? 'Selecione uma especializaçÍo.'
                           : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ EndereÃ§o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                    const SectionLabel('EndereÃ§o'),
+                    // --- Endereço --------------------------------------------------
+                    const SectionLabel('Endereço'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
@@ -318,7 +318,7 @@ class _ProfessionalRegisterScreenState
                     ),
                     const SizedBox(height: 20),
 
-                    // â”€â”€â”€ Senha â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // --- Senha -----------------------------------------------------
                     const SectionLabel('Senha de acesso'),
                     const SizedBox(height: 12),
 
@@ -367,14 +367,14 @@ class _ProfessionalRegisterScreenState
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas não coincidem.';
+                          return 'As senhas nÍo coincidem.';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
 
-                    // â”€â”€â”€ Aceite de termos (LGPD) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // --- Aceite de termos (LGPD) -----------------------------------
                     TermsCheckbox(
                       value: _aceitaTermos,
                       onChanged: (v) => setState(() {
@@ -406,3 +406,4 @@ class _ProfessionalRegisterScreenState
     );
   }
 }
+

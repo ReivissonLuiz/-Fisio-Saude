@@ -1,4 +1,4 @@
-/// app_theme.dart
+﻿/// app_theme.dart
 /// Define o tema visual do app +Fisio +Saúde.
 /// Paleta: tons de azul e verde, fontes Poppins (Google Fonts).
 library;
@@ -24,7 +24,7 @@ class AppTheme {
   static const Color textHint = Color(0xFFB0BEC5);
   static const Color divider = Color(0xFFE8EEF4);
 
-  // â”€â”€â”€ Gradientes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Gradientes -----------------------------------------------------------
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -37,7 +37,7 @@ class AppTheme {
     colors: [Color(0xFF0D47A1), Color(0xFF00796B)],
   );
 
-  // â”€â”€â”€ ThemeData â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- ThemeData ------------------------------------------------------------
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -131,3 +131,4 @@ class AppTheme {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-/// minha_saude_tab.dart
+﻿/// minha_saude_tab.dart
 /// Aba "Minha Saúde" — registro e histórico de sintomas — +Fisio +Saúde
 library;
 
@@ -149,7 +149,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                                     fontWeight: FontWeight.w500)),
                             SizedBox(height: 6),
                             Text(
-                                'Use o botão abaixo para registrar\ncomo você está sentindo.',
+                                'Use o botÍo abaixo para registrar\ncomo você está sentindo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: AppTheme.textHint, fontSize: 13)),
@@ -291,7 +291,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
     'Cervical (pescoço)', 'Ombro direito', 'Ombro esquerdo',
     'Coluna lombar', 'Coluna torácica', 'Quadril',
     'Joelho direito', 'Joelho esquerdo', 'Tornozelo / pé',
-    'Braço / cotovelo', 'Punho / mão', 'Outra região',
+    'Braço / cotovelo', 'Punho / mÍo', 'Outra regiÍo',
   ];
 
   @override
@@ -421,14 +421,14 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text('Região do corpo',
+                    const Text('RegiÍo do corpo',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _regiaoSelecionada,
                       decoration: InputDecoration(
-                        hintText: 'Selecione a região',
+                        hintText: 'Selecione a regiÍo',
                         prefixIcon: const Icon(Icons.location_on_outlined),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
@@ -443,7 +443,7 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
                           setState(() => _regiaoSelecionada = v),
                     ),
                     const SizedBox(height: 18),
-                    const Text('Descrição',
+                    const Text('DescriçÍo',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 8),
@@ -528,3 +528,4 @@ class _MiniStat extends StatelessWidget {
     );
   }
 }
+

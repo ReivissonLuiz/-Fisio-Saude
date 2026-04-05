@@ -1,5 +1,5 @@
-/// Passo 1: usuário informa o e-mail e recebe link de recuperação no e-mail.
-/// O Supabase envia um e-mail real com link de redefinição de senha.
+﻿/// Passo 1: usuário informa o e-mail e recebe link de recuperaçÍo no e-mail.
+/// O Supabase envia um e-mail real com link de redefiniçÍo de senha.
 library;
 
 import 'package:flutter/material.dart';
@@ -83,7 +83,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     );
   }
 
-  // â”€â”€ Tela de confirmaÃ§Ã£o apÃ³s envio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Tela de confirmaçÍo após envio ------------------------------------------
 
   Widget _buildConfirmacao() {
     return Column(
@@ -108,13 +108,13 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Enviamos um link de recuperação para:\n${_emailCtrl.text.trim()}',
+          'Enviamos um link de recuperaçÍo para:\n${_emailCtrl.text.trim()}',
           textAlign: TextAlign.center,
           style: const TextStyle(
               color: AppTheme.textSecondary, fontSize: 15, height: 1.5),
         ),
         const SizedBox(height: 28),
-        // Card com instruÃ§Ãµes
+        // Card com instruções
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(18),
@@ -136,7 +136,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
               ),
               const _InstrucaoItem(
                 numero: '2',
-                texto: 'Clique no botão "Redefinir minha senha"',
+                texto: 'Clique no botÍo "Redefinir minha senha"',
               ),
               const _InstrucaoItem(
                 numero: '3',
@@ -161,7 +161,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Não encontrou o e-mail? Verifique a pasta de spam ou lixo eletrônico.',
+                  'NÍo encontrou o e-mail? Verifique a pasta de spam ou lixo eletrônico.',
                   style: TextStyle(
                       fontSize: 12, color: AppTheme.warning, height: 1.4),
                 ),
@@ -170,7 +170,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           ),
         ),
         const SizedBox(height: 28),
-        // BotÃ£o reenviar
+        // BotÍo reenviar
         OutlinedButton.icon(
           onPressed: () => setState(() {
             _enviado = false;
@@ -196,7 +196,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
     );
   }
 
-  // â”€â”€ FormulÃ¡rio de e-mail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Formulário de e-mail ---------------------------------------------------
 
   Widget _buildFormulario() {
     return Form(
@@ -204,7 +204,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ãcone
+          // Ícone
           Center(
             child: Container(
               width: 72,
@@ -245,7 +245,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
           const SizedBox(height: 24),
           if (_errorMsg != null) ErrorBox(message: _errorMsg!),
           PrimaryButton(
-            label: 'Enviar link de recuperação',
+            label: 'Enviar link de recuperaçÍo',
             onPressed: _sendLink,
             isLoading: _isLoading,
           ),
@@ -267,7 +267,7 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
   }
 }
 
-// â”€â”€â”€ Widgets compartilhados entre as telas de recuperaÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Widgets compartilhados entre as telas de recuperaçÍo -------------------
 
 class _InstrucaoItem extends StatelessWidget {
   final String numero;
@@ -425,3 +425,4 @@ class SuccessBox extends StatelessWidget {
     );
   }
 }
+

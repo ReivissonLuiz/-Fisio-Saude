@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import 'paciente_detalhes_screen.dart';
 
 class MeusPacientesTab extends StatefulWidget {
   final String profissionalId;
@@ -100,7 +101,10 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemBuilder: (context, index) {
                           final p = _pacientesFiltrados[index];
-                          return _PacienteTile(paciente: p);
+                          return _PacienteTile(
+                            paciente: p,
+                            profissionalId: widget.profissionalId,
+                          );
                         },
                       ),
           ),
@@ -118,7 +122,7 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
           const SizedBox(height: 16),
           Text(
             _searchController.text.isEmpty
-                ? 'VocÃª ainda nÃ£o tem pacientes vinculados.'
+                ? 'Você ainda nÍo tem pacientes vinculados.'
                 : 'Nenhum paciente encontrado.',
             style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
           ),
@@ -130,13 +134,17 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
 
 class _PacienteTile extends StatelessWidget {
   final dynamic paciente;
+  final String profissionalId;
 
-  const _PacienteTile({required this.paciente});
+  const _PacienteTile({
+    required this.paciente,
+    required this.profissionalId,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final nome = paciente['nome'] ?? 'Nome nÃ£o cadastrado';
-    final email = paciente['email'] ?? 'E-mail nÃ£o informado';
+    final nome = paciente['nome'] ?? 'Nome nÍo cadastrado';
+    final email = paciente['email'] ?? 'E-mail nÍo informado';
     final telefone = paciente['telefone'] ?? 'Sem telefone';
 
     return Container(
@@ -186,9 +194,18 @@ class _PacienteTile extends StatelessWidget {
         ),
         trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
         onTap: () {
-          // Navegar para detalhes do paciente
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PacienteDetalhesScreen(
+                pacienteDados: paciente,
+                profissionalId: profissionalId,
+              ),
+            ),
+          );
         },
       ),
     );
   }
 }
+

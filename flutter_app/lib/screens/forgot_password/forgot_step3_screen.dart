@@ -1,5 +1,5 @@
-/// forgot_step3_screen.dart
-/// Passo 3: O usuÃ¡rio define uma nova senha com indicador de forÃ§a.
+﻿/// forgot_step3_screen.dart
+/// Passo 3: O usuário define uma nova senha com indicador de força.
 library;
 
 import 'package:flutter/material.dart';
@@ -115,7 +115,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                     // Campo nova senha
                     CustomTextField(
                       label: 'Nova senha',
-                      hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                      hint: '••••••••',
                       controller: _novaSenhaCtrl,
                       obscureText: _obscureNova,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -146,7 +146,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                     // Campo confirmar senha
                     CustomTextField(
                       label: 'Confirmar nova senha',
-                      hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                      hint: '••••••••',
                       controller: _confirmarCtrl,
                       obscureText: _obscureConfirmar,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -165,7 +165,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                           return 'Confirme a nova senha.';
                         }
                         if (v != _novaSenhaCtrl.text) {
-                          return 'As senhas não coincidem.';
+                          return 'As senhas nÍo coincidem.';
                         }
                         return null;
                       },
@@ -190,3 +190,4 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-/// buscar_fisio_tab.dart
+﻿/// buscar_fisio_tab.dart
 /// Aba "Buscar Fisio" — lista e pesquisa de profissionais ativos — +Fisio +Saúde
 library;
 
@@ -72,7 +72,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // â”€â”€â”€ Header + busca â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // --- Header + busca ----------------------------------------------
         Container(
           decoration: const BoxDecoration(
             gradient: AppTheme.primaryGradient,
@@ -126,7 +126,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
           ),
         ),
 
-        // â”€â”€â”€ Lista â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // --- Lista -------------------------------------------------------
         Expanded(
           child: _loading
               ? const Center(child: CircularProgressIndicator())
@@ -308,3 +308,4 @@ class _ProfissionalCard extends StatelessWidget {
     );
   }
 }
+

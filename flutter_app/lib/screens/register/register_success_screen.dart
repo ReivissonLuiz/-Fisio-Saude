@@ -1,6 +1,6 @@
-/// register_success_screen.dart
+﻿/// register_success_screen.dart
 /// Tela exibida após o cadastro ser criado com sucesso.
-/// Informa ao usuário que um e-mail de confirmação foi enviado.
+/// Informa ao usuário que um e-mail de confirmaçÍo foi enviado.
 library;
 
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ class RegisterSuccessScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // â”€â”€ Ãcone animado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // -- Ícone animado --------------------------------------
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: 1.0),
                     duration: const Duration(milliseconds: 600),
@@ -62,9 +62,9 @@ class RegisterSuccessScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // â”€â”€ Mensagem principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // --- Mensagem principal --------------------------------------
                   const Text(
-                    'Enviamos um e-mail de confirmação para você.',
+                    'Enviamos um e-mail de confirmaçÍo para você.',
                     style: TextStyle(
                       fontSize: 16,
                       color: AppTheme.textSecondary,
@@ -87,7 +87,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // â”€â”€ Aviso sobre spam â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // --- Aviso sobre spam -----------------------------------------
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -103,7 +103,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
-                            'Não encontrou o e-mail? Verifique a pasta de Spam ou Lixo Eletrônico.',
+                            'NÍo encontrou o e-mail? Verifique a pasta de Spam ou Lixo Eletrônico.',
                             style: TextStyle(
                                 fontSize: 12, color: AppTheme.textSecondary),
                           ),
@@ -113,7 +113,7 @@ class RegisterSuccessScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
 
-                  // --- Botão ir para login ---------------------------------------
+                  // --- BotÍo ir para login ---------------------------------------
                   SizedBox(
                     width: double.infinity,
                     height: 52,
@@ -144,3 +144,5 @@ class RegisterSuccessScreen extends StatelessWidget {
     );
   }
 }
+
+

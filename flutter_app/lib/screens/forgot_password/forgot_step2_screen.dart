@@ -1,5 +1,5 @@
-/// Passo 2: O usuário insere o código de 6 dígitos recebido por e-mail.
-/// Inclui cooldown de 60s para reenvio e validação de código inválido/expirado.
+﻿/// Passo 2: O usuário insere o código de 6 dígitos recebido por e-mail.
+/// Inclui cooldown de 60s para reenvio e validaçÍo de código inválido/expirado.
 library;
 
 import 'dart:async';
@@ -128,7 +128,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                       style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14),
                     ),
-                    // Em desenvolvimento, mostra o cÃ³digo gerado
+                    // Em desenvolvimento, mostra o código gerado
                     if (_devCode != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
@@ -150,7 +150,7 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
                         ),
                       ),
                     const SizedBox(height: 32),
-                    // Campo cÃ³digo
+                    // Campo código
                     TextFormField(
                       controller: _codeCtrl,
                       keyboardType: TextInputType.number,
@@ -223,3 +223,4 @@ class _ForgotStep2ScreenState extends State<ForgotStep2Screen> {
     );
   }
 }
+

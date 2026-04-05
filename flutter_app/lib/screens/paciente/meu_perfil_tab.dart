@@ -1,5 +1,5 @@
-/// meu_perfil_tab.dart
-/// Aba "Meu Perfil" — visualização e edição dos dados do paciente — +Fisio +Saúde
+﻿/// meu_perfil_tab.dart
+/// Aba "Meu Perfil" — visualizaçÍo e ediçÍo dos dados do paciente — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
@@ -38,7 +38,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
   String? _errorMsg;
 
   static const _generos = [
-    'Masculino', 'Feminino', 'Não-binário', 'Prefiro não informar', 'Outro'
+    'Masculino', 'Feminino', 'NÍo-binário', 'Prefiro nÍo informar', 'Outro'
   ];
   String? _generoSelecionado;
 
@@ -109,7 +109,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua sessão?'),
+        content: const Text('Deseja encerrar sua sessÍo?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -198,7 +198,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             if (_errorMsg != null)
               _FeedbackBanner(message: _errorMsg!, isError: true),
 
-            // --- Dados não editáveis -----------------------------------------
+            // --- Dados nÍo editáveis -----------------------------------------
             _SectionCard(
               title: 'Informações da Conta',
               icon: Icons.lock_outline,
@@ -245,12 +245,12 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                               ?.isNotEmpty ==
                           true
                           ? _paciente!['telefone'] as String
-                          : 'Não informado',
+                          : 'NÍo informado',
                       icon: Icons.phone_outlined),
                   _InfoRow(
                       label: 'Gênero',
                       value: (_paciente?['genero'] as String?) ??
-                          'Não informado',
+                          'NÍo informado',
                       icon: Icons.people_outline),
                 ] else ...[
                   CustomTextField(
@@ -328,7 +328,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             ),
             const SizedBox(height: 24),
 
-            // --- Botão Sair --------------------------------------------------
+            // --- BotÍo Sair --------------------------------------------------
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -487,3 +487,4 @@ class _FeedbackBanner extends StatelessWidget {
     );
   }
 }
+

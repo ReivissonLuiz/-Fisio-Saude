@@ -1,4 +1,4 @@
-/// splash_screen.dart
+﻿/// splash_screen.dart
 /// Tela de boas-vindas com logo, nome do app e botões de acesso.
 library;
 
@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Sua reabilitação, em boas mãos.',
+                          'Sua reabilitaçÍo, em boas mÍos.',
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.white.withValues(alpha: 0.85),
@@ -106,7 +106,7 @@ class _SplashScreenState extends State<SplashScreen>
                       constraints: const BoxConstraints(maxWidth: 400),
                       child: Column(
                         children: [
-                          // Botão Entrar
+                          // BotÍo Entrar
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                           const SizedBox(height: 14),
-                          // Botão Cadastrar-se
+                          // BotÍo Cadastrar-se
                           SizedBox(
                             width: double.infinity,
                             height: 52,
@@ -177,3 +177,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+

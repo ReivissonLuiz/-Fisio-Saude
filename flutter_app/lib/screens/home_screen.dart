@@ -1,5 +1,4 @@
-/// home_screen.dart
-/// Tela principal pós-login do +Fisio +Saúde.
+﻿/// Tela principal pós-login do +Fisio +Saúde.
 /// Paciente → BottomNavigationBar com 4 abas funcionais.
 /// Profissional → Dashboard com cards de acesso rápido (em breve).
 library;
@@ -62,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // â”€â”€ VisÃ£o do Administrador (3 Menus) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- VisÍo do Administrador (3 Menus) ------------------------------
     if (_isAdmin) {
       final adminTabs = [
         AdminDashboardTab(adminId: _adminId ?? ''),
@@ -91,14 +90,14 @@ class _HomeScreenState extends State<HomeScreen> {
             NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics_rounded, color: Colors.purple), label: 'Dashboard'),
             NavigationDestination(icon: Icon(Icons.medical_services_outlined), selectedIcon: Icon(Icons.medical_services_rounded, color: AppTheme.secondary), label: 'Profissional'),
             NavigationDestination(icon: Icon(Icons.people_outline_rounded), selectedIcon: Icon(Icons.people_alt_rounded, color: AppTheme.primary), label: 'Paciente'),
-            NavigationDestination(icon: Icon(Icons.settings_suggest_outlined), selectedIcon: Icon(Icons.settings_suggest_rounded, color: Colors.orange), label: 'Gestão'),
+            NavigationDestination(icon: Icon(Icons.settings_suggest_outlined), selectedIcon: Icon(Icons.settings_suggest_rounded, color: Colors.orange), label: 'GestÍo'),
             NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent), label: 'Perfil'),
           ],
         ),
       );
     }
 
-    // â”€â”€ VisÃ£o do Profissional (Menu Profissional + Paciente) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- VisÍo do Profissional (Menu Profissional + Paciente) ----------
     if (_isProfissional) {
       final profTabs = [
         ProfissionalHomeTab(profissionalId: _profissionalId ?? '', nome: _nome),
@@ -128,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    // â”€â”€ VisÃ£o do Paciente (Original) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- VisÍo do Paciente (Original) ----------------------------------
     final patientTabs = [
       PacienteHomeTab(pacienteId: _pacienteId ?? '', nome: _nome),
       const BuscarFisioTab(),
@@ -158,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// â”€â”€ Helpers de VisÃ£o Multi-funÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Helpers de VisÍo Multi-funçÍo ------------------------------------------
 
 class _ProfissionalViewTabs extends StatelessWidget {
   final String? profissionalId;
@@ -167,12 +166,12 @@ class _ProfissionalViewTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (profissionalId == null) return const Center(child: Text('Acesso profissional nÃ£o disponÃ­vel.'));
+    if (profissionalId == null) return const Center(child: Text('Acesso profissional nÍo disponível.'));
     return Column(
       children: [
         const Padding(
           padding: EdgeInsets.all(16),
-          child: Text('Visão de Fisioterapeuta', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.secondary)),
+          child: Text('VisÍo de Fisioterapeuta', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.secondary)),
         ),
         Expanded(child: AgendaTab(profissionalId: profissionalId!)),
       ],
@@ -187,16 +186,17 @@ class _PacienteViewTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (pacienteId == null) return const Center(child: Text('Acesso paciente não disponível.'));
+    if (pacienteId == null) return const Center(child: Text('Acesso paciente nÍo disponível.'));
     return const Column(
       children: [
         Padding(
           padding: EdgeInsets.all(16),
-          child: Text('Visão de Paciente', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
+          child: Text('VisÍo de Paciente', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
         ),
         Expanded(child: BuscarFisioTab()),
       ],
     );
   }
 }
+
 

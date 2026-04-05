@@ -95,16 +95,16 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
                   padding: const EdgeInsets.all(20),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _buildSection('InformaÃ§Ãµes Pessoais', [
+                      _buildSection('Informações Pessoais', [
                         _buildInfoTile(Icons.assignment_ind_rounded, 'CREFITO', _perfilData?['crefito'] ?? '-'),
                         _buildInfoTile(Icons.email_outlined, 'E-mail', widget.email),
-                        _buildInfoTile(Icons.phone_outlined, 'Telefone', _perfilData?['telefone'] ?? 'NÃ£o informado'),
+                        _buildInfoTile(Icons.phone_outlined, 'Telefone', _perfilData?['telefone'] ?? 'NÍo informado'),
                         _buildInfoTile(Icons.work_outline_rounded, 'Especialidade', _perfilData?['especialidade'] ?? 'Fisioterapia'),
                       ]),
                       const SizedBox(height: 16),
-                      _buildSection('ConfiguraÃ§Ãµes', [
+                      _buildSection('Configurações', [
                         _buildMenuTile(Icons.edit_note_rounded, 'Editar Perfil', () {}),
-                        _buildMenuTile(Icons.notifications_none_rounded, 'NotificaÃ§Ãµes', () {}),
+                        _buildMenuTile(Icons.notifications_none_rounded, 'Notificações', () {}),
                         _buildMenuTile(Icons.help_outline_rounded, 'Ajuda e Suporte', () {}),
                       ]),
                       const SizedBox(height: 32),
@@ -211,7 +211,7 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua sessÃ£o?'),
+        content: const Text('Deseja encerrar sua sessÍo?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(
@@ -227,3 +227,4 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
     );
   }
 }
+

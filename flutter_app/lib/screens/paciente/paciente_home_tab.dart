@@ -1,4 +1,4 @@
-/// paciente_home_tab.dart
+﻿/// paciente_home_tab.dart
 /// Aba "Início" do dashboard do paciente — +Fisio +Saúde
 library;
 
@@ -275,7 +275,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
     }
     final s = _sintomas.first;
     final nivel = s['nivel_dor'] as int? ?? 0;
-    final descricao = s['descricao'] as String? ?? 'Sem descrição';
+    final descricao = s['descricao'] as String? ?? 'Sem descriçÍo';
     final regiao = s['regiao'] as String?;
     final dataHora = s['data_hora'] as String? ?? '';
     final dt = DateTime.tryParse(dataHora);
@@ -324,7 +324,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
                 if (regiao != null)
-                  Text('Região: $regiao',
+                  Text('RegiÍo: $regiao',
                       style: const TextStyle(
                           fontSize: 12, color: AppTheme.textSecondary)),
                 Text(dtFormatada,
@@ -446,3 +446,4 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+

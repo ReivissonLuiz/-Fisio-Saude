@@ -1,5 +1,5 @@
-/// widgets/custom_text_field.dart
-/// Campo de texto reutilizável com validação, máscara e ícones.
+﻿/// widgets/custom_text_field.dart
+/// Campo de texto reutilizável com validaçÍo, máscara e ícones.
 library;
 
 import 'package:flutter/material.dart';
@@ -57,3 +57,4 @@ class CustomTextField extends StatelessWidget {
     );
   }
 }
+
