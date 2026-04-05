@@ -1,4 +1,4 @@
-﻿/// Tela de cadastro de Paciente com todos os campos obrigatórios e opcionais,
+/// Tela de cadastro de Paciente com todos os campos obrigatórios e opcionais,
 /// máscaras de CPF/telefone/CEP e aceite de termos de uso (LGPD).
 library;
 
@@ -214,9 +214,10 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       ),
                       value: _generoSelecionado,
                       items: const [
-                        DropdownMenuItem(value: 'Feminino', child: Text('Feminino')),
                         DropdownMenuItem(value: 'Masculino', child: Text('Masculino')),
-                        DropdownMenuItem(value: 'Outro', child: Text('Outro')),
+                        DropdownMenuItem(value: 'Feminino', child: Text('Feminino')),
+                        DropdownMenuItem(value: 'Não-Binário', child: Text('Não-Binário')),
+                        DropdownMenuItem(value: 'Desejo não Informar', child: Text('Desejo não Informar')),
                       ],
                       onChanged: (v) => setState(() => _generoSelecionado = v),
                       validator: (v) => v == null ? 'Selecione.' : null,
