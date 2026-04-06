@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import 'paciente/paciente_home_tab.dart';
@@ -37,9 +38,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isProfissional = false;
   bool _isAdmin = false;
 
+  // Controle de recuperação de sessão após reload da página
+  bool _isLoadingSession = false;
+  bool _sessionResolved = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_sessionResolved) return; // evita rodar mais de uma vez
+    _sessionResolved = true;
+
     _args = (ModalRoute.of(context)?.settings.arguments
         as Map<String, dynamic>?) ??
         {};
@@ -51,6 +59,61 @@ class _HomeScreenState extends State<HomeScreen> {
     _adminId = _args['id_administrador'] as String?;
     _isProfissional = _tipo == 'Profissional';
     _isAdmin = _tipo == 'Administrador';
+
+    // Sem argumentos = reload da página (Flutter Web perde os args)
+    // Recupera o tipo de usuário direto da sessão Supabase
+    if (_args.isEmpty) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _resolveFromSession());
+    }
+  }
+
+  /// Recupera dados do usuário logado via Supabase quando os argumentos
+  /// de navegação estão ausentes (ex: reload da página no browser).
+  Future<void> _resolveFromSession() async {
+    final user = _api.currentUser;
+    if (user == null) {
+      // Sem sessão ativa → vai para tela inicial
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+      }
+      return;
+    }
+
+    setState(() => _isLoadingSession = true);
+
+    try {
+      final loginData = await Supabase.instance.client
+          .from('login')
+          .select('tipo_usuario, id_paciente, id_profissional, id_administrador')
+          .eq('supabase_user_id', user.id)
+          .maybeSingle();
+
+      if (!mounted) return;
+
+      if (loginData == null) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+        return;
+      }
+
+      setState(() {
+        _tipo = loginData['tipo_usuario'] as String? ?? 'Paciente';
+        _nome = (user.userMetadata?['nome'] as String?) ??
+            user.email ??
+            'Usuário';
+        _email = user.email ?? '';
+        _pacienteId = loginData['id_paciente']?.toString();
+        _profissionalId = loginData['id_profissional']?.toString();
+        _adminId = loginData['id_administrador']?.toString();
+        _isProfissional = _tipo == 'Profissional';
+        _isAdmin = _tipo == 'Administrador';
+        _isLoadingSession = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+      }
+    }
   }
 
   Future<void> _logout() async {
@@ -61,6 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Aguardando recuperação da sessão após reload da página
+    if (_isLoadingSession) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     // --- Visão do Administrador (3 Menus) ------------------------------
     if (_isAdmin) {
       final adminTabs = [
