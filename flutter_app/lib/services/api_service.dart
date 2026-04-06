@@ -87,6 +87,7 @@ class ApiService {
         email: email,
         password: senha,
         data: {'nome': data['nome'], 'tipo': 'Paciente'},
+        emailRedirectTo: 'https://reivissonluiz.github.io/-Fisio-Saude/',
       );
 
       final user = response.user;
@@ -156,6 +157,7 @@ class ApiService {
         email: email,
         password: senha,
         data: {'nome': data['nome'], 'tipo': 'Profissional'},
+        emailRedirectTo: 'https://reivissonluiz.github.io/-Fisio-Saude/',
       );
 
       final user = response.user;
