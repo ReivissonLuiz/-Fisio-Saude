@@ -36,7 +36,6 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     }
   }
 
-  /// Desativar (ativo=false) ou Reativar (ativo=true) com confirmação.
   Future<void> _confirmToggleAtivo(
       String table, String id, String nome, bool isAtivo) async {
     final acaoLabel = isAtivo ? 'Desativar' : 'Reativar';
@@ -87,7 +86,6 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     }
   }
 
-  /// Exclusão permanente do banco com dupla confirmação.
   Future<void> _confirmPermanentDelete(
       String table, String id, String nome) async {
     final confirmar = await showDialog<bool>(
@@ -104,8 +102,7 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
               child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
             child: const Text('Excluir permanentemente'),
           ),
         ],
@@ -178,8 +175,7 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
               padding: const EdgeInsets.all(16),
               children: [
                 _SectionHeader(
-                  title:
-                      'Fisioterapeutas (${filteredProfissionais.length})',
+                  title: 'Fisioterapeutas (${filteredProfissionais.length})',
                   icon: Icons.medical_services_rounded,
                   color: AppTheme.secondary,
                 ),
@@ -194,9 +190,7 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
                           p['nome'],
                           p['ativo'] as bool? ?? true),
                       onPermanentDelete: () => _confirmPermanentDelete(
-                          'profissional',
-                          p['id'].toString(),
-                          p['nome']),
+                          'profissional', p['id'].toString(), p['nome']),
                     )),
                 const SizedBox(height: 24),
                 _SectionHeader(
@@ -241,8 +235,7 @@ class _SectionHeader extends StatelessWidget {
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 8),
           Text(title,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 16)),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ],
       ),
     );
@@ -276,47 +269,59 @@ class _ManagementTile extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                isAtivo ? AppTheme.divider : Colors.orange.shade200,
+            color: isAtivo ? AppTheme.divider : Colors.orange.shade200,
           ),
         ),
-        child: ListTile(
-          title: Row(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
             children: [
+              // ── Info ────────────────────────────────────────────────
               Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14)),
-              ),
-              if (!isAtivo)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'INATIVO',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ),
+                        if (!isAtivo)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade100,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'INATIVO',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 12, color: AppTheme.textSecondary)),
+                  ],
                 ),
-            ],
-          ),
-          subtitle: Text(subtitle,
-              style: const TextStyle(fontSize: 12)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ── Desativar / Reativar ────────────────────────────────
+              ),
+              const SizedBox(width: 8),
+              // ── Botão Desativar / Reativar ──────────────────────────
               Tooltip(
                 message: isAtivo ? 'Desativar conta' : 'Reativar conta',
                 child: Container(
-                  margin: const EdgeInsets.only(right: 4),
+                  margin: const EdgeInsets.only(right: 6),
                   decoration: BoxDecoration(
                     color: isAtivo
                         ? Colors.orange.withValues(alpha: 0.1)
@@ -335,7 +340,7 @@ class _ManagementTile extends StatelessWidget {
                   ),
                 ),
               ),
-              // ── Excluir permanentemente ─────────────────────────────
+              // ── Botão Excluir permanentemente ───────────────────────
               Tooltip(
                 message: 'Excluir permanentemente',
                 child: Container(
