@@ -22,6 +22,9 @@ dependencies:
   # ── Máscaras de input (CPF, telefone, CEP) ────────────
   mask_text_input_formatter: ^2.9.0
 
+  # ── HTTP para validação de CEP (ViaCEP) ───────────────
+  http: ^1.2.0
+
   # ── Ícones e fontes ───────────────────────────────────
   cupertino_icons: ^1.0.6
   google_fonts: ^6.2.1

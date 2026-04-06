@@ -2,7 +2,9 @@
 /// máscaras de CPF/telefone/CEP e aceite de termos de uso (LGPD).
 library;
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
@@ -84,6 +86,26 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       _errorMsg = null;
       _successMsg = null;
     });
+
+    // Validação real do CEP via ViaCEP (API dos Correios)
+    final cepUnmasked = _cepMask.getUnmaskedText();
+    try {
+      final viaResp = await http
+          .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
+          .timeout(const Duration(seconds: 6));
+      if (viaResp.statusCode == 200) {
+        final data = json.decode(viaResp.body);
+        if (data is Map && data['erro'] == true) {
+          setState(() {
+            _isLoading = false;
+            _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
+          });
+          return;
+        }
+      }
+    } catch (_) {
+      // Se a API do ViaCEP estiver indisponível, deixa prosseguir
+    }
 
     final result = await _api.registerPatient({
       'nome': _nomeCtrl.text.trim(),
