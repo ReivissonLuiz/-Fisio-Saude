@@ -730,34 +730,54 @@ class ApiService {
 
   /// Traduz mensagens de erro do Supabase Auth para português.
   String _traduzirErroAuth(String message) {
-    if (message.contains('Invalid login credentials')) {
+    final m = message.toLowerCase();
+
+    if (m.contains('invalid login credentials') ||
+        m.contains('invalid_credentials')) {
       return 'E-mail ou senha incorretos.';
     }
-    if (message.contains('Email not confirmed')) {
+    if (m.contains('email not confirmed')) {
       return 'Confirme seu e-mail antes de fazer login.';
     }
-    if (message.contains('User already registered')) {
+    if (m.contains('user already registered') ||
+        m.contains('already been registered')) {
       return 'Este e-mail já está cadastrado.';
     }
-    if (message.contains('Password should be at least')) {
+    if (m.contains('password should be at least') ||
+        m.contains('password is too short')) {
       return 'A senha deve ter no mínimo 6 caracteres.';
     }
-    if (message.contains('rate limit') ||
-        message.contains('only request this after')) {
-      // Extrai o número de segundos da mensagem se disponível
-      final match = RegExp(r'after (\d+) seconds').firstMatch(message);
+    if (m.contains('weak_password')) {
+      return 'Senha fraca. Use letras, números e símbolos.';
+    }
+    if (m.contains('invalid email') || m.contains('unable to validate email')) {
+      return 'E-mail inválido. Verifique o endereço informado.';
+    }
+    if (m.contains('email address not authorized') ||
+        m.contains('not authorized')) {
+      return 'E-mail não autorizado para cadastro.';
+    }
+    if (m.contains('signup is disabled')) {
+      return 'Cadastro temporariamente desativado.';
+    }
+    if (m.contains('rate limit') || m.contains('only request this after')) {
+      final match = RegExp(r'after (\d+) seconds').firstMatch(m);
       if (match != null) {
         return 'Por segurança, aguarde ${match.group(1)} segundos antes de tentar novamente.';
       }
       return 'Muitas tentativas. Aguarde um momento e tente novamente.';
     }
-    if (message.contains('Token has expired')) {
+    if (m.contains('token has expired') || m.contains('token_expired')) {
       return 'Código expirado. Solicite um novo.';
     }
-    if (message.contains('otp_expired') || message.contains('invalid')) {
+    // OTP específicos (recuperação de senha, verificação)
+    if (m.contains('otp_expired') ||
+        (m.contains('invalid') &&
+            (m.contains('otp') || m.contains('token') || m.contains('code')))) {
       return 'Código inválido ou expirado.';
     }
-    return 'Erro: $message';
+    // Fallback com a mensagem original
+    return 'Erro ao processar solicitação. Tente novamente.';
   }
 }
 
