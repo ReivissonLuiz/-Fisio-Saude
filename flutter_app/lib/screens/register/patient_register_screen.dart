@@ -264,13 +264,13 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     const SizedBox(height: 12),
 
                     CustomTextField(
-                      label: 'CEP',
+                      label: 'CEP *',
                       hint: '00000-000',
                       controller: _cepCtrl,
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cepMask],
                       prefixIcon: const Icon(Icons.location_on_outlined),
-                      validator: (_) => Validators.cepOpcional(
+                      validator: (_) => Validators.cepObrigatorio(
                           _cepCtrl.text, _cepMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 20),

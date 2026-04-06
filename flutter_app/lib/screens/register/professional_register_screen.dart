@@ -310,10 +310,8 @@ class _ProfessionalRegisterScreenState
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cepMask],
                       prefixIcon: const Icon(Icons.location_on_outlined),
-                      validator: (v) =>
-                          (v == null || _cepMask.getUnmaskedText().length != 8)
-                              ? 'CEP inválido.'
-                              : null,
+                      validator: (_) => Validators.cepObrigatorio(
+                          _cepCtrl.text, _cepMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 20),
 

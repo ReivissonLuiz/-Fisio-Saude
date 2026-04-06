@@ -16,6 +16,7 @@ import 'profissional/agenda_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
+import 'admin/admin_perfil_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -138,11 +139,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _ProfissionalViewTabs(profissionalId: _profissionalId, nome: _nome),
         _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
         AdminManagementTab(key: UniqueKey()),
-        PerfilProfissionalTab(
-            profissionalId: _adminId ?? '', // Usando adminId como ID de referência
-            nome: _nome,
-            email: _email,
-            onLogout: _logout),
+        AdminPerfilTab(
+          nome: _nome,
+          email: _email,
+          onLogout: _logout,
+        ),
       ];
 
       return Scaffold(
