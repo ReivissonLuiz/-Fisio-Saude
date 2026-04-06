@@ -259,8 +259,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // --- Campos opcionais ------------------------------------------
-                    const SectionLabel('Endereço (opcional)'),
+                    // --- Endereço --------------------------------------------------
+                    const SectionLabel('Endereço'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
