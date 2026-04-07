@@ -2,10 +2,13 @@
 /// máscaras de CPF/telefone/CEP e aceite de termos de uso (LGPD).
 library;
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/password_strength_indicator.dart';
@@ -83,6 +86,26 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       _errorMsg = null;
       _successMsg = null;
     });
+
+    // Validação real do CEP via ViaCEP (API dos Correios)
+    final cepUnmasked = _cepMask.getUnmaskedText();
+    try {
+      final viaResp = await http
+          .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
+          .timeout(const Duration(seconds: 6));
+      if (viaResp.statusCode == 200) {
+        final data = json.decode(viaResp.body);
+        if (data is Map && data['erro'] == true) {
+          setState(() {
+            _isLoading = false;
+            _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
+          });
+          return;
+        }
+      }
+    } catch (_) {
+      // Se a API do ViaCEP estiver indisponível, deixa prosseguir
+    }
 
     final result = await _api.registerPatient({
       'nome': _nomeCtrl.text.trim(),
@@ -197,13 +220,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cpfMask],
                       prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) {
-                        if (v == null ||
-                            _cpfMask.getUnmaskedText().length != 11) {
-                          return 'CPF inválido.';
-                        }
-                        return null;
-                      },
+                      validator: (_) =>
+                          Validators.cpf(_cpfMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 14),
 
@@ -263,17 +281,19 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // --- Campos opcionais ------------------------------------------
-                    const SectionLabel('Endereço (opcional)'),
+                    // --- Endereço --------------------------------------------------
+                    const SectionLabel('Endereço'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
-                      label: 'CEP',
+                      label: 'CEP *',
                       hint: '00000-000',
                       controller: _cepCtrl,
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cepMask],
                       prefixIcon: const Icon(Icons.location_on_outlined),
+                      validator: (_) => Validators.cepObrigatorio(
+                          _cepCtrl.text, _cepMask.getUnmaskedText()),
                     ),
                     const SizedBox(height: 20),
 

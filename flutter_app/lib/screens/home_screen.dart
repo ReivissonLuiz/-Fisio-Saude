@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import 'paciente/paciente_home_tab.dart';
@@ -15,6 +16,7 @@ import 'profissional/agenda_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
+import 'admin/admin_perfil_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,13 +40,22 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isProfissional = false;
   bool _isAdmin = false;
 
+<<<<<<< HEAD
   /// Papel ativo para ADM: 'admin' | 'profissional' | 'paciente'
   /// Permite que o ADM navegue livremente entre as visões de cada papel.
   String _activeView = 'admin';
+=======
+  // Controle de recuperação de sessão após reload da página
+  bool _isLoadingSession = false;
+  bool _sessionResolved = false;
+>>>>>>> eab958c1d040dee4ca607983e467c3054b86ab70
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_sessionResolved) return; // evita rodar mais de uma vez
+    _sessionResolved = true;
+
     _args = (ModalRoute.of(context)?.settings.arguments
         as Map<String, dynamic>?) ??
         {};
@@ -57,6 +68,61 @@ class _HomeScreenState extends State<HomeScreen> {
     _adminId = _args['id_administrador'] as String?;
     _isProfissional = _tipo == 'Profissional';
     _isAdmin = _tipo == 'Administrador';
+
+    // Sem argumentos = reload da página (Flutter Web perde os args)
+    // Recupera o tipo de usuário direto da sessão Supabase
+    if (_args.isEmpty) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _resolveFromSession());
+    }
+  }
+
+  /// Recupera dados do usuário logado via Supabase quando os argumentos
+  /// de navegação estão ausentes (ex: reload da página no browser).
+  Future<void> _resolveFromSession() async {
+    final user = _api.currentUser;
+    if (user == null) {
+      // Sem sessão ativa → vai para tela inicial
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+      }
+      return;
+    }
+
+    setState(() => _isLoadingSession = true);
+
+    try {
+      final loginData = await Supabase.instance.client
+          .from('login')
+          .select('tipo_usuario, id_paciente, id_profissional, id_administrador')
+          .eq('supabase_user_id', user.id)
+          .maybeSingle();
+
+      if (!mounted) return;
+
+      if (loginData == null) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+        return;
+      }
+
+      setState(() {
+        _tipo = loginData['tipo_usuario'] as String? ?? 'Paciente';
+        _nome = (user.userMetadata?['nome'] as String?) ??
+            user.email ??
+            'Usuário';
+        _email = user.email ?? '';
+        _pacienteId = loginData['id_paciente']?.toString();
+        _profissionalId = loginData['id_profissional']?.toString();
+        _adminId = loginData['id_administrador']?.toString();
+        _isProfissional = _tipo == 'Profissional';
+        _isAdmin = _tipo == 'Administrador';
+        _isLoadingSession = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
+      }
+    }
   }
 
   Future<void> _logout() async {
@@ -135,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     // ---------------------------------------------------------------
     // Visão do Administrador — suporta troca de papel ativo
     // ---------------------------------------------------------------
@@ -169,6 +236,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() => _profissionalId = id),
           ),
         ];
+=======
+    // Aguardando recuperação da sessão após reload da página
+    if (_isLoadingSession) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // --- Visão do Administrador (3 Menus) ------------------------------
+    if (_isAdmin) {
+      final adminTabs = [
+        AdminDashboardTab(key: UniqueKey(), adminId: _adminId ?? ''),
+        _ProfissionalViewTabs(profissionalId: _profissionalId, nome: _nome),
+        _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
+        AdminManagementTab(key: UniqueKey()),
+        AdminPerfilTab(
+          nome: _nome,
+          email: _email,
+          onLogout: _logout,
+        ),
+      ];
+>>>>>>> eab958c1d040dee4ca607983e467c3054b86ab70
 
         return Scaffold(
           backgroundColor: AppTheme.background,

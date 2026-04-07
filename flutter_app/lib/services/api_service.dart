@@ -163,6 +163,7 @@ class ApiService {
         email: email,
         password: senha,
         data: {'nome': data['nome'], 'tipo': 'Paciente'},
+        emailRedirectTo: 'https://reivissonluiz.github.io/-Fisio-Saude/',
       );
 
       final user = response.user;
@@ -232,6 +233,7 @@ class ApiService {
         email: email,
         password: senha,
         data: {'nome': data['nome'], 'tipo': 'Profissional'},
+        emailRedirectTo: 'https://reivissonluiz.github.io/-Fisio-Saude/',
       );
 
       final user = response.user;
@@ -863,7 +865,6 @@ class ApiService {
       return {'success': true};
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
-        // Isso acontece se 0 linhas foram afetadas (possível bloqueio de RLS do Supabase)
         return {'success': false, 'message': 'Operação recusada pelo banco (Verifique as políticas RLS).'};
       }
       return {'success': false, 'message': e.message};
@@ -872,36 +873,126 @@ class ApiService {
     }
   }
 
+  /// Desativa um paciente ou profissional: marca ativo = false.
+  /// O registro permanece no banco visível apenas para ADMs.
+  Future<Map<String, dynamic>> deactivateRecord(String table, String id) async {
+    try {
+      await _sb.from(table).update({'ativo': false}).eq('id', id).select().single();
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        return {'success': false, 'message': 'Operação recusada pelo banco (verifique as políticas RLS).'};
+      }
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao desativar registro.'};
+    }
+  }
+
+  /// Reativa um paciente ou profissional: marca ativo = true.
+  Future<Map<String, dynamic>> reactivateRecord(String table, String id) async {
+    try {
+      await _sb.from(table).update({'ativo': true}).eq('id', id).select().single();
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao reativar registro.'};
+    }
+  }
+
+  /// Exclusão permanente: remove da tabela `login`, da tabela principal e do Supabase Auth.
+  /// A remoção do Auth é feita via Edge Function `delete-auth-user` (usa service_role key).
+  Future<Map<String, dynamic>> permanentDeleteRecord(String table, String id) async {
+    try {
+      final loginField = table == 'paciente' ? 'id_paciente' : 'id_profissional';
+
+      // 1. Busca o supabase_user_id ANTES de deletar (precisamos para excluir do Auth)
+      final loginData = await _sb
+          .from('login')
+          .select('supabase_user_id')
+          .eq(loginField, id)
+          .maybeSingle();
+
+      final supabaseUserId = loginData?['supabase_user_id'] as String?;
+
+      // 2. Remove vínculo na tabela login
+      await _sb.from('login').delete().eq(loginField, id);
+
+      // 3. Remove o registro principal
+      await _sb.from(table).delete().eq('id', id);
+
+      // 4. Remove do Supabase Auth via Edge Function (service_role key no servidor)
+      if (supabaseUserId != null && supabaseUserId.isNotEmpty) {
+        try {
+          await _sb.functions.invoke(
+            'delete-auth-user',
+            body: {'user_id': supabaseUserId},
+          );
+        } catch (_) {
+          // Auth cleanup falhou, mas dados do banco já foram removidos.
+          // Retorna sucesso parcial para não bloquear o fluxo do ADM.
+        }
+      }
+
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao excluir registro permanentemente.'};
+    }
+  }
+
   /// Traduz mensagens de erro do Supabase Auth para português.
   String _traduzirErroAuth(String message) {
-    if (message.contains('Invalid login credentials')) {
+    final m = message.toLowerCase();
+
+    if (m.contains('invalid login credentials') ||
+        m.contains('invalid_credentials')) {
       return 'E-mail ou senha incorretos.';
     }
-    if (message.contains('Email not confirmed')) {
+    if (m.contains('email not confirmed')) {
       return 'Confirme seu e-mail antes de fazer login.';
     }
-    if (message.contains('User already registered')) {
+    if (m.contains('user already registered') ||
+        m.contains('already been registered')) {
       return 'Este e-mail já está cadastrado.';
     }
-    if (message.contains('Password should be at least')) {
+    if (m.contains('password should be at least') ||
+        m.contains('password is too short')) {
       return 'A senha deve ter no mínimo 6 caracteres.';
     }
-    if (message.contains('rate limit') ||
-        message.contains('only request this after')) {
-      // Extrai o número de segundos da mensagem se disponível
-      final match = RegExp(r'after (\d+) seconds').firstMatch(message);
+    if (m.contains('weak_password')) {
+      return 'Senha fraca. Use letras, números e símbolos.';
+    }
+    if (m.contains('invalid email') || m.contains('unable to validate email')) {
+      return 'E-mail inválido. Verifique o endereço informado.';
+    }
+    if (m.contains('email address not authorized') ||
+        m.contains('not authorized')) {
+      return 'E-mail não autorizado para cadastro.';
+    }
+    if (m.contains('signup is disabled')) {
+      return 'Cadastro temporariamente desativado.';
+    }
+    if (m.contains('rate limit') || m.contains('only request this after')) {
+      final match = RegExp(r'after (\d+) seconds').firstMatch(m);
       if (match != null) {
         return 'Por segurança, aguarde ${match.group(1)} segundos antes de tentar novamente.';
       }
       return 'Muitas tentativas. Aguarde um momento e tente novamente.';
     }
-    if (message.contains('Token has expired')) {
+    if (m.contains('token has expired') || m.contains('token_expired')) {
       return 'Código expirado. Solicite um novo.';
     }
-    if (message.contains('otp_expired') || message.contains('invalid')) {
+    // OTP específicos (recuperação de senha, verificação)
+    if (m.contains('otp_expired') ||
+        (m.contains('invalid') &&
+            (m.contains('otp') || m.contains('token') || m.contains('code')))) {
       return 'Código inválido ou expirado.';
     }
-    return 'Erro: $message';
+    // Fallback com a mensagem original
+    return 'Erro ao processar solicitação. Tente novamente.';
   }
 }
 
