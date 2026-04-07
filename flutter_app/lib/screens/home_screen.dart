@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../theme/app_theme.dart';
@@ -572,10 +573,9 @@ class _ProfissionalViewTabsState extends State<_ProfissionalViewTabs> {
     final telCtrl = TextEditingController();
     String? especialidade;
 
-    final cpfMask = MaskTextInputFormatter(
-        mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
-    final telMask = MaskTextInputFormatter(
-        mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
+    final Map<String, RegExp> filter = {"#": RegExp(r'[0-9]')};
+    final cpfMask = MaskTextInputFormatter(mask: '###.###.###-##', filter: filter);
+    final telMask = MaskTextInputFormatter(mask: '(##) #####-####', filter: filter);
 
     const especializacoes = [
       'Fisioterapia Ortopédica e Traumatológica', 'Fisioterapia Neurológica',
@@ -616,10 +616,13 @@ class _ProfissionalViewTabsState extends State<_ProfissionalViewTabs> {
                     const SizedBox(height: 16),
                     CustomTextField(
                       label: 'CPF *', hint: '000.000.000-00',
-                      controller: cpfCtrl, inputFormatters: [cpfMask],
+                      controller: cpfCtrl, inputFormatters: <TextInputFormatter>[cpfMask],
                       keyboardType: TextInputType.number,
                       prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) => cpfMask.getUnmaskedText().length != 11 ? 'CPF inválido.' : null,
+                      validator: (v) {
+                        final val = v?.replaceAll(RegExp(r'\D'), '') ?? '';
+                        return val.length != 11 ? 'CPF inválido.' : null;
+                      },
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
@@ -644,10 +647,14 @@ class _ProfissionalViewTabsState extends State<_ProfissionalViewTabs> {
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
-                      label: 'Telefone', hint: '(11) 99999-9999',
-                      controller: telCtrl, inputFormatters: [telMask],
+                      label: 'Telefone *', hint: '(11) 99999-9999',
+                      controller: telCtrl, inputFormatters: <TextInputFormatter>[telMask],
                       keyboardType: TextInputType.phone,
                       prefixIcon: const Icon(Icons.phone_outlined),
+                      validator: (v) {
+                        final val = v?.replaceAll(RegExp(r'\D'), '') ?? '';
+                        return val.length < 10 ? 'Telefone inválido.' : null;
+                      },
                     ),
                   ],
                 ),
@@ -777,10 +784,9 @@ class _PacienteViewTabsState extends State<_PacienteViewTabs> {
     final nascCtrl = TextEditingController();
     String? genero;
 
-    final cpfMask = MaskTextInputFormatter(
-        mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
-    final nascMask = MaskTextInputFormatter(
-        mask: '##/##/####', filter: {'#': RegExp(r'\d')});
+    final Map<String, RegExp> filter = {"#": RegExp(r'[0-9]')};
+    final cpfMask = MaskTextInputFormatter(mask: '###.###.###-##', filter: filter);
+    final nascMask = MaskTextInputFormatter(mask: '##/##/####', filter: filter);
 
     await showDialog(
       context: context,
@@ -813,15 +819,18 @@ class _PacienteViewTabsState extends State<_PacienteViewTabs> {
                     const SizedBox(height: 16),
                     CustomTextField(
                       label: 'CPF *', hint: '000.000.000-00',
-                      inputFormatters: [cpfMask], controller: cpfCtrl,
+                      inputFormatters: <TextInputFormatter>[cpfMask], controller: cpfCtrl,
                       keyboardType: TextInputType.number,
                       prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) => cpfMask.getUnmaskedText().length != 11 ? 'CPF inválido.' : null,
+                      validator: (v) {
+                        final val = v?.replaceAll(RegExp(r'\D'), '') ?? '';
+                        return val.length != 11 ? 'CPF inválido.' : null;
+                      },
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
                       label: 'Data de Nascimento *', hint: 'DD/MM/AAAA',
-                      inputFormatters: [nascMask], controller: nascCtrl,
+                      inputFormatters: <TextInputFormatter>[nascMask], controller: nascCtrl,
                       keyboardType: TextInputType.number,
                       prefixIcon: const Icon(Icons.cake_outlined),
                       validator: (v) => (v == null || v.length != 10) ? 'Data inválida.' : null,

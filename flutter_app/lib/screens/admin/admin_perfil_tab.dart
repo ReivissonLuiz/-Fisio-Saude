@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
@@ -196,10 +197,9 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
     final nascCtrl = TextEditingController();
     String? genero;
 
-    final cpfMask = MaskTextInputFormatter(
-        mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
-    final nascMask = MaskTextInputFormatter(
-        mask: '##/##/####', filter: {'#': RegExp(r'\d')});
+    final Map<String, RegExp> filter = {"#": RegExp(r'[0-9]')};
+    final cpfMask = MaskTextInputFormatter(mask: '###.###.###-##', filter: filter);
+    final nascMask = MaskTextInputFormatter(mask: '##/##/####', filter: filter);
 
     await showDialog(
       context: context,
@@ -228,19 +228,20 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
                     CustomTextField(
                       label: 'CPF *',
                       hint: '000.000.000-00',
-                      inputFormatters: [cpfMask],
+                      inputFormatters: <TextInputFormatter>[cpfMask],
                       controller: cpfCtrl,
                       keyboardType: TextInputType.number,
                       prefixIcon: const Icon(Icons.badge_outlined),
-                      validator: (v) => cpfMask.getUnmaskedText().length != 11
-                          ? 'CPF inválido.'
-                          : null,
+                      validator: (v) {
+                        final val = v?.replaceAll(RegExp(r'\D'), '') ?? '';
+                        return val.length != 11 ? 'CPF inválido.' : null;
+                      },
                     ),
                     const SizedBox(height: 12),
                     CustomTextField(
                       label: 'Data de Nascimento *',
                       hint: 'DD/MM/AAAA',
-                      inputFormatters: [nascMask],
+                      inputFormatters: <TextInputFormatter>[nascMask],
                       controller: nascCtrl,
                       keyboardType: TextInputType.number,
                       prefixIcon: const Icon(Icons.cake_outlined),
