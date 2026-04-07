@@ -2,17 +2,25 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
 /// Aba de perfil exclusiva para Administradores.
-/// Não exibe campos de profissional (CREFITO, especialidade etc.).
+/// Inclui seletor de visão de papel (ADM / Profissional / Paciente).
 class AdminPerfilTab extends StatelessWidget {
   final String nome;
   final String email;
+  final String activeView;
+  final bool hasProfissional;
+  final bool hasPaciente;
   final Future<void> Function() onLogout;
+  final void Function(String) onSwitchView;
 
   const AdminPerfilTab({
     super.key,
     required this.nome,
     required this.email,
+    required this.activeView,
+    required this.hasProfissional,
+    required this.hasPaciente,
     required this.onLogout,
+    required this.onSwitchView,
   });
 
   @override
@@ -62,7 +70,7 @@ class AdminPerfilTab extends StatelessWidget {
                             fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        'Administrador',
+                        _activeViewLabel(),
                         style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 14),
@@ -79,7 +87,70 @@ class AdminPerfilTab extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Informações da conta
+
+                // ── Seletor de Visão ──────────────────────────────────
+                const Text(
+                  'Mudar Visão',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Como administrador, você pode alternar entre diferentes tipos de acesso do sistema.',
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.divider),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildViewTile(
+                        icon: Icons.admin_panel_settings_rounded,
+                        color: Colors.purple,
+                        label: 'Administrador',
+                        description: 'Dashboard, gestão completa do sistema',
+                        viewKey: 'admin',
+                        isFirst: true,
+                        isLast: !hasProfissional && !hasPaciente,
+                      ),
+                      if (hasProfissional) ...[
+                        const Divider(height: 1, color: AppTheme.divider, indent: 56),
+                        _buildViewTile(
+                          icon: Icons.medical_services_rounded,
+                          color: AppTheme.secondary,
+                          label: 'Fisioterapeuta',
+                          description: 'Agenda de consultas e pacientes',
+                          viewKey: 'profissional',
+                          isFirst: false,
+                          isLast: !hasPaciente,
+                        ),
+                      ],
+                      if (hasPaciente) ...[
+                        const Divider(height: 1, color: AppTheme.divider, indent: 56),
+                        _buildViewTile(
+                          icon: Icons.person_rounded,
+                          color: AppTheme.primary,
+                          label: 'Paciente',
+                          description: 'Buscar fisios, saúde e consultas',
+                          viewKey: 'paciente',
+                          isFirst: false,
+                          isLast: true,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ── Informações da conta ──────────────────────────────
                 const Text(
                   'Informações da Conta',
                   style: TextStyle(
@@ -106,7 +177,7 @@ class AdminPerfilTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Configurações
+                // ── Configurações ─────────────────────────────────────
                 const Text(
                   'Configurações',
                   style: TextStyle(
@@ -135,7 +206,7 @@ class AdminPerfilTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // Botão sair
+                // ── Botão sair ────────────────────────────────────────
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -160,6 +231,104 @@ class AdminPerfilTab extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  String _activeViewLabel() {
+    switch (activeView) {
+      case 'profissional':
+        return 'Visão: Fisioterapeuta';
+      case 'paciente':
+        return 'Visão: Paciente';
+      default:
+        return 'Administrador';
+    }
+  }
+
+  Widget _buildViewTile({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String description,
+    required String viewKey,
+    required bool isFirst,
+    required bool isLast,
+  }) {
+    final bool isActive = activeView == viewKey;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.vertical(
+        top: isFirst ? const Radius.circular(16) : Radius.zero,
+        bottom: isLast ? const Radius.circular(16) : Radius.zero,
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? const Radius.circular(16) : Radius.zero,
+          bottom: isLast ? const Radius.circular(16) : Radius.zero,
+        ),
+        onTap: isActive ? null : () => onSwitchView(viewKey),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              // Ícone do papel
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: isActive ? 0.15 : 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon,
+                    color: color.withValues(alpha: isActive ? 1.0 : 0.6),
+                    size: 22),
+              ),
+              const SizedBox(width: 14),
+              // Texto
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: isActive ? color : AppTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                          fontSize: 11, color: AppTheme.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              // Indicador ativo / botão
+              if (isActive)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Ativo',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: color),
+                  ),
+                )
+              else
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 14, color: AppTheme.textSecondary),
+            ],
+          ),
+        ),
       ),
     );
   }

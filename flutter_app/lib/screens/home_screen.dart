@@ -16,6 +16,7 @@ import 'profissional/agenda_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
+import 'admin/admin_perfil_tab.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -225,19 +226,15 @@ class _HomeScreenState extends State<HomeScreen> {
             onNavigateToProfile: () => setState(() => _tabIndex = 4),
           ),
           AdminManagementTab(key: UniqueKey()),
-          PerfilProfissionalTab(
+          AdminPerfilTab(
             key: UniqueKey(),
-            profissionalId: _profissionalId ?? '',
             nome: _nome,
             email: _email,
-            supabaseUserId: _supabaseUserId,
-            pacienteId: _pacienteId,
-            adminId: _adminId,
-            isAdmin: true,
+            activeView: _activeView,
+            hasProfissional: _profissionalId != null && _profissionalId!.isNotEmpty,
+            hasPaciente: _pacienteId != null && _pacienteId!.isNotEmpty,
             onLogout: _logout,
-            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
-            onProfissionalRoleAdded: (id) =>
-                setState(() => _profissionalId = id),
+            onSwitchView: (v) => setState(() { _activeView = v; _tabIndex = 0; }),
           ),
         ];
 
@@ -304,19 +301,15 @@ class _HomeScreenState extends State<HomeScreen> {
             nome: _nome,
             onNavigateToProfile: () => setState(() => _tabIndex = 3),
           ),
-          PerfilProfissionalTab(
+          AdminPerfilTab(
             key: UniqueKey(),
-            profissionalId: _profissionalId!,
             nome: _nome,
             email: _email,
-            supabaseUserId: _supabaseUserId,
-            pacienteId: _pacienteId,
-            adminId: _adminId,
-            isAdmin: true,
+            activeView: _activeView,
+            hasProfissional: true,
+            hasPaciente: _pacienteId != null && _pacienteId!.isNotEmpty,
             onLogout: _logout,
-            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
-            onProfissionalRoleAdded: (id) =>
-                setState(() => _profissionalId = id),
+            onSwitchView: (v) => setState(() { _activeView = v; _tabIndex = 0; }),
           ),
         ];
 
@@ -372,11 +365,16 @@ class _HomeScreenState extends State<HomeScreen> {
           PacienteHomeTab(pacienteId: _pacienteId!, nome: _nome),
           const BuscarFisioTab(),
           MinhaSaudeTab(pacienteId: _pacienteId!),
-          MeuPerfilTab(
-              pacienteId: _pacienteId!,
-              nome: _nome,
-              email: _email,
-              onLogout: _logout),
+          AdminPerfilTab(
+            key: UniqueKey(),
+            nome: _nome,
+            email: _email,
+            activeView: _activeView,
+            hasProfissional: _profissionalId != null && _profissionalId!.isNotEmpty,
+            hasPaciente: true,
+            onLogout: _logout,
+            onSwitchView: (v) => setState(() { _activeView = v; _tabIndex = 0; }),
+          ),
         ];
 
         return Scaffold(
