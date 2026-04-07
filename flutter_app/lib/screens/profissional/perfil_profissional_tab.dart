@@ -227,10 +227,13 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
   /// Abre o diálogo para adicionar papel de Profissional (apenas ADM)
   Future<void> _showAddProfissionalRoleDialog() async {
     final formKey = GlobalKey<FormState>();
+    final cpfCtrl = TextEditingController();
     final crefitoCtrl = TextEditingController();
     final telCtrl = TextEditingController();
     String? especializacaoSelecionada;
 
+    final cpfMask = MaskTextInputFormatter(
+        mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
     final telMask = MaskTextInputFormatter(
         mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
 
@@ -281,6 +284,19 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    CustomTextField(
+                      label: 'CPF *',
+                      hint: '000.000.000-00',
+                      controller: cpfCtrl,
+                      inputFormatters: [cpfMask],
+                      keyboardType: TextInputType.number,
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      validator: (v) =>
+                          cpfMask.getUnmaskedText().length != 11
+                              ? 'CPF inválido.'
+                              : null,
+                    ),
+                    const SizedBox(height: 12),
                     CustomTextField(
                       label: 'CREFITO *',
                       hint: 'Ex: 3-12345-F',
@@ -335,7 +351,7 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
                   supabaseUserId: uid,
                   nome: widget.nome,
                   email: widget.email,
-                  cpf: _perfilData?['cpf'] as String? ?? '',
+                  cpf: cpfCtrl.text,           // CPF do formulário, não de _perfilData
                   crefito: crefitoCtrl.text,
                   especialidade: especializacaoSelecionada ?? '',
                   telefone: telCtrl.text,
@@ -373,6 +389,7 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
       ),
     );
 
+    cpfCtrl.dispose();
     crefitoCtrl.dispose();
     telCtrl.dispose();
   }
