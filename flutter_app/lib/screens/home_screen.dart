@@ -5,8 +5,10 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/custom_text_field.dart';
 import 'paciente/paciente_home_tab.dart';
 import 'paciente/buscar_fisio_tab.dart';
 import 'paciente/minha_saude_tab.dart';
@@ -218,12 +220,16 @@ class _HomeScreenState extends State<HomeScreen> {
           _ProfissionalViewTabs(
             profissionalId: _profissionalId,
             nome: _nome,
-            onNavigateToProfile: () => setState(() => _tabIndex = 4),
+            email: _email,
+            supabaseUserId: _supabaseUserId,
+            onProfissionalRoleAdded: (id) => setState(() => _profissionalId = id),
           ),
           _PacienteViewTabs(
             pacienteId: _pacienteId,
             nome: _nome,
-            onNavigateToProfile: () => setState(() => _tabIndex = 4),
+            email: _email,
+            supabaseUserId: _supabaseUserId,
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
           ),
           AdminManagementTab(key: UniqueKey()),
           AdminPerfilTab(
@@ -302,7 +308,9 @@ class _HomeScreenState extends State<HomeScreen> {
           _PacienteViewTabs(
             pacienteId: _pacienteId,
             nome: _nome,
-            onNavigateToProfile: () => setState(() => _tabIndex = 3),
+            email: _email,
+            supabaseUserId: _supabaseUserId,
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
           ),
           AdminPerfilTab(
             key: UniqueKey(),
@@ -446,8 +454,9 @@ class _HomeScreenState extends State<HomeScreen> {
         _PacienteViewTabs(
           pacienteId: _pacienteId,
           nome: _nome,
-          // O perfil do Profissional é sempre a última aba (index 3)
-          onNavigateToProfile: () => setState(() => _tabIndex = 3),
+          email: _email,
+          supabaseUserId: _supabaseUserId,
+          onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
         ),
         PerfilProfissionalTab(
           key: UniqueKey(),
@@ -533,147 +542,399 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // --- Helpers de Visão Multi-função ------------------------------------------
 
-class _ProfissionalViewTabs extends StatelessWidget {
+class _ProfissionalViewTabs extends StatefulWidget {
   final String? profissionalId;
   final String nome;
-  /// Callback chamado quando o ADM clica em "Ir para o Perfil" para ativar o papel
-  final VoidCallback? onNavigateToProfile;
+  final String email;
+  final String? supabaseUserId;
+  final void Function(String)? onProfissionalRoleAdded;
 
   const _ProfissionalViewTabs({
     required this.profissionalId,
     required this.nome,
-    this.onNavigateToProfile,
+    required this.email,
+    this.supabaseUserId,
+    this.onProfissionalRoleAdded,
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (profissionalId == null || profissionalId!.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.secondary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.medical_services_outlined,
-                    size: 64, color: AppTheme.secondary.withValues(alpha: 0.6)),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Papel de Fisioterapeuta não ativado',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Acesse a aba "Perfil" para ativar o papel de Fisioterapeuta e ter acesso à agenda e demais funcionalidades.',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 28),
-              ElevatedButton.icon(
-                onPressed: onNavigateToProfile,
-                icon: const Icon(Icons.person_rounded),
-                label: const Text('Ir para o Perfil e Ativar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondary,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+  State<_ProfissionalViewTabs> createState() => _ProfissionalViewTabsState();
+}
 
+class _ProfissionalViewTabsState extends State<_ProfissionalViewTabs> {
+  final _api = ApiService();
+  bool _isActivating = false;
+
+  Future<void> _showActivateDialog() async {
+    final formKey = GlobalKey<FormState>();
+    final cpfCtrl = TextEditingController();
+    final crefitoCtrl = TextEditingController();
+    final telCtrl = TextEditingController();
+    String? especialidade;
+
+    final cpfMask = MaskTextInputFormatter(
+        mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
+    final telMask = MaskTextInputFormatter(
+        mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
+
+    const especializacoes = [
+      'Fisioterapia Ortopédica e Traumatológica', 'Fisioterapia Neurológica',
+      'Fisioterapia Esportiva', 'Fisioterapia Cardiorrespiratória',
+      'Fisioterapia em Saúde da Mulher', 'Fisioterapia Pediátrica',
+      'Fisioterapia Geriátrica', 'Fisioterapia Aquática',
+      'Fisioterapia Dermato-Funcional', 'RPG — Reeducação Postural Global', 'Outra',
+    ];
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(children: [
+            Icon(Icons.medical_services_rounded, color: AppTheme.secondary),
+            SizedBox(width: 10),
+            Expanded(child: Text('Ativar como Fisioterapeuta',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17))),
+          ]),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('Preencha os dados para ativar o acesso como Fisioterapeuta.',
+                          style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      label: 'CPF *', hint: '000.000.000-00',
+                      controller: cpfCtrl, inputFormatters: [cpfMask],
+                      keyboardType: TextInputType.number,
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      validator: (v) => cpfMask.getUnmaskedText().length != 11 ? 'CPF inválido.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      label: 'CREFITO *', hint: 'Ex: 3-12345-F',
+                      controller: crefitoCtrl,
+                      prefixIcon: const Icon(Icons.workspace_premium_outlined),
+                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Informe o CREFITO.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: especialidade,
+                      decoration: InputDecoration(
+                        labelText: 'Especialização *',
+                        prefixIcon: const Icon(Icons.category_outlined),
+                        filled: true, fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: especializacoes.map((e) => DropdownMenuItem(
+                          value: e, child: Text(e, style: const TextStyle(fontSize: 13)))).toList(),
+                      onChanged: (v) => setD(() => especialidade = v),
+                      validator: (v) => v == null ? 'Selecione.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      label: 'Telefone', hint: '(11) 99999-9999',
+                      controller: telCtrl, inputFormatters: [telMask],
+                      keyboardType: TextInputType.phone,
+                      prefixIcon: const Icon(Icons.phone_outlined),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+            ElevatedButton.icon(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                Navigator.pop(ctx);
+                setState(() => _isActivating = true);
+                final uid = widget.supabaseUserId ?? _api.currentUser?.id ?? '';
+                final res = await _api.addProfissionalRole(
+                  supabaseUserId: uid, nome: widget.nome, email: widget.email,
+                  cpf: cpfCtrl.text, crefito: crefitoCtrl.text,
+                  especialidade: especialidade ?? '', telefone: telCtrl.text,
+                );
+                if (!mounted) return;
+                setState(() => _isActivating = false);
+                if (res['success'] == true) {
+                  widget.onProfissionalRoleAdded?.call(res['id_profissional'] as String);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Papel de Fisioterapeuta ativado!'),
+                    backgroundColor: AppTheme.accent));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(res['message'] ?? 'Erro ao ativar papel.'),
+                    backgroundColor: AppTheme.error));
+                }
+              },
+              icon: const Icon(Icons.check_rounded),
+              label: const Text('Ativar'),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.secondary),
+            ),
+          ],
+        ),
+      ),
+    );
+    cpfCtrl.dispose(); crefitoCtrl.dispose(); telCtrl.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.profissionalId == null || widget.profissionalId!.isEmpty) {
+      return _isActivating
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.medical_services_outlined,
+                          size: 64, color: AppTheme.secondary.withValues(alpha: 0.6)),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text('Papel de Fisioterapeuta não ativado',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 10),
+                    const Text('Ative o papel de Fisioterapeuta para acessar a agenda e demais funcionalidades.',
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 28),
+                    ElevatedButton.icon(
+                      onPressed: _showActivateDialog,
+                      icon: const Icon(Icons.add_circle_outline_rounded),
+                      label: const Text('Ativar Fisioterapeuta'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.secondary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+    }
     return Column(
       children: [
         const Padding(
           padding: EdgeInsets.all(16),
-          child: Text(
-            'Visão de Fisioterapeuta',
-            style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.secondary),
-          ),
+          child: Text('Visão de Fisioterapeuta',
+              style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.secondary)),
         ),
-        Expanded(child: AgendaTab(profissionalId: profissionalId!)),
+        Expanded(child: AgendaTab(profissionalId: widget.profissionalId!)),
       ],
     );
   }
 }
 
-class _PacienteViewTabs extends StatelessWidget {
+class _PacienteViewTabs extends StatefulWidget {
   final String? pacienteId;
   final String nome;
-  /// Callback chamado quando o ADM/Profissional clica em "Ir para o Perfil" para ativar o papel
-  final VoidCallback? onNavigateToProfile;
+  final String email;
+  final String? supabaseUserId;
+  final void Function(String)? onPacienteRoleAdded;
 
   const _PacienteViewTabs({
     required this.pacienteId,
     required this.nome,
-    this.onNavigateToProfile,
+    required this.email,
+    this.supabaseUserId,
+    this.onPacienteRoleAdded,
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (pacienteId == null || pacienteId!.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.person_outline_rounded,
-                    size: 64, color: AppTheme.primary.withValues(alpha: 0.6)),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Papel de Paciente não ativado',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Acesse a aba "Perfil" para ativar o papel de Paciente e ter acesso à área de saúde.',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 28),
-              ElevatedButton.icon(
-                onPressed: onNavigateToProfile,
-                icon: const Icon(Icons.person_add_rounded),
-                label: const Text('Ir para o Perfil e Ativar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+  State<_PacienteViewTabs> createState() => _PacienteViewTabsState();
+}
 
+class _PacienteViewTabsState extends State<_PacienteViewTabs> {
+  final _api = ApiService();
+  bool _isActivating = false;
+
+  Future<void> _showActivateDialog() async {
+    final formKey = GlobalKey<FormState>();
+    final cpfCtrl = TextEditingController();
+    final nascCtrl = TextEditingController();
+    String? genero;
+
+    final cpfMask = MaskTextInputFormatter(
+        mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
+    final nascMask = MaskTextInputFormatter(
+        mask: '##/##/####', filter: {'#': RegExp(r'\d')});
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(children: [
+            Icon(Icons.person_add_rounded, color: AppTheme.primary),
+            SizedBox(width: 10),
+            Text('Ativar como Paciente',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          ]),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text('Preencha os dados para criar o seu perfil de paciente.',
+                          style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      label: 'CPF *', hint: '000.000.000-00',
+                      inputFormatters: [cpfMask], controller: cpfCtrl,
+                      keyboardType: TextInputType.number,
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      validator: (v) => cpfMask.getUnmaskedText().length != 11 ? 'CPF inválido.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      label: 'Data de Nascimento *', hint: 'DD/MM/AAAA',
+                      inputFormatters: [nascMask], controller: nascCtrl,
+                      keyboardType: TextInputType.number,
+                      prefixIcon: const Icon(Icons.cake_outlined),
+                      validator: (v) => (v == null || v.length != 10) ? 'Data inválida.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: genero,
+                      decoration: InputDecoration(
+                        labelText: 'Gênero *',
+                        prefixIcon: const Icon(Icons.people_outline),
+                        filled: true, fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Masculino', child: Text('Masculino')),
+                        DropdownMenuItem(value: 'Feminino', child: Text('Feminino')),
+                        DropdownMenuItem(value: 'Não-Binário', child: Text('Não-Binário')),
+                        DropdownMenuItem(value: 'Desejo não Informar', child: Text('Desejo não Informar')),
+                      ],
+                      onChanged: (v) => setD(() => genero = v),
+                      validator: (v) => v == null ? 'Selecione.' : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+            ElevatedButton.icon(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                Navigator.pop(ctx);
+                setState(() => _isActivating = true);
+                final uid = widget.supabaseUserId ?? _api.currentUser?.id ?? '';
+                final res = await _api.addPacienteRole(
+                  supabaseUserId: uid, nome: widget.nome, email: widget.email,
+                  cpf: cpfCtrl.text, dataNascimento: nascCtrl.text, genero: genero ?? '',
+                );
+                if (!mounted) return;
+                setState(() => _isActivating = false);
+                if (res['success'] == true) {
+                  widget.onPacienteRoleAdded?.call(res['id_paciente'] as String);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Perfil de Paciente ativado com sucesso!'),
+                    backgroundColor: AppTheme.accent));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(res['message'] ?? 'Erro ao ativar papel.'),
+                    backgroundColor: AppTheme.error));
+                }
+              },
+              icon: const Icon(Icons.check_rounded),
+              label: const Text('Ativar'),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+    cpfCtrl.dispose(); nascCtrl.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.pacienteId == null || widget.pacienteId!.isEmpty) {
+      return _isActivating
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.person_outline_rounded,
+                          size: 64, color: AppTheme.primary.withValues(alpha: 0.6)),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text('Papel de Paciente não ativado',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 10),
+                    const Text('Ative o papel de Paciente para acessar a área de saúde.',
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 28),
+                    ElevatedButton.icon(
+                      onPressed: _showActivateDialog,
+                      icon: const Icon(Icons.person_add_rounded),
+                      label: const Text('Ativar Paciente'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+    }
     return const Column(
       children: [
         Padding(
           padding: EdgeInsets.all(16),
-          child: Text(
-            'Visão de Paciente',
-            style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary),
-          ),
+          child: Text('Visão de Paciente',
+              style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primary)),
         ),
         Expanded(child: BuscarFisioTab()),
       ],
