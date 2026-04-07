@@ -1,4 +1,4 @@
-﻿/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
+/// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
 /// incluindo CREFITO e especialização, com aceite de termos LGPD.
 library;
 
@@ -32,8 +32,10 @@ class _ProfessionalRegisterScreenState
   final _cepCtrl = TextEditingController();
   final _senhaCtrl = TextEditingController();
   final _confirmarCtrl = TextEditingController();
+  final _nascCtrl = TextEditingController();
 
   String? _especializacaoSelecionada;
+  String? _generoSelecionado;
   bool _obscureSenha = true;
   bool _obscureConfirmar = true;
   bool _aceitaTermos = false;
@@ -48,6 +50,8 @@ class _ProfessionalRegisterScreenState
       mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
   final _cepMask =
       MaskTextInputFormatter(mask: '#####-###', filter: {'#': RegExp(r'\d')});
+  final _nascMask =
+      MaskTextInputFormatter(mask: '##/##/####', filter: {'#': RegExp(r'\d')});
 
   final _api = ApiService();
 
@@ -75,7 +79,8 @@ class _ProfessionalRegisterScreenState
       _telCtrl,
       _cepCtrl,
       _senhaCtrl,
-      _confirmarCtrl
+      _confirmarCtrl,
+      _nascCtrl,
     ]) {
       c.dispose();
     }
@@ -102,7 +107,8 @@ class _ProfessionalRegisterScreenState
       'crefito': _crefitoCtrl.text.trim(),
       'especializacao': _especializacaoSelecionada ?? '',
       'telefone': _telCtrl.text.trim(),
-      'cep': _cepCtrl.text.trim(),
+      'dataNascimento': _nascCtrl.text.trim(),
+      'genero': _generoSelecionado ?? '',
       'senha': _senhaCtrl.text,
       'confirmarSenha': _confirmarCtrl.text,
       'aceitaTermos': _aceitaTermos,
@@ -253,6 +259,48 @@ class _ProfessionalRegisterScreenState
                               ? 'Telefone inválido.'
                               : null,
                     ),
+                    const SizedBox(height: 14),
+
+                    CustomTextField(
+                      label: 'Data de nascimento *',
+                      hint: 'DD/MM/AAAA',
+                      controller: _nascCtrl,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [_nascMask],
+                      prefixIcon: const Icon(Icons.cake_outlined),
+                      validator: (v) {
+                        if (v == null || v.length != 10) return 'Data inválida.';
+                        try {
+                          final p = v.split('/');
+                          final dataNasc = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
+                          final hoje = DateTime.now();
+                          var idade = hoje.year - dataNasc.year;
+                          if (hoje.month < dataNasc.month || (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) idade--;
+                          if (idade < 1) return 'Idade mínima é 1 ano.';
+                          if (idade > 150) return 'Idade máxima é 150 anos.';
+                        } catch (e) {
+                          return 'Data inválida.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    DropdownButtonFormField<String>(
+                      value: _generoSelecionado,
+                      decoration: const InputDecoration(
+                        labelText: 'Gênero *',
+                        prefixIcon: Icon(Icons.people_outline),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Masculino', child: Text('Masculino')),
+                        DropdownMenuItem(value: 'Feminino', child: Text('Feminino')),
+                        DropdownMenuItem(value: 'Não-Binário', child: Text('Não-Binário')),
+                        DropdownMenuItem(value: 'Desejo não Informar', child: Text('Desejo não Informar')),
+                      ],
+                      onChanged: (v) => setState(() => _generoSelecionado = v),
+                      validator: (v) => v == null ? 'Selecione um gênero.' : null,
+                    ),
                     const SizedBox(height: 20),
 
                     // --- Dados Profissionais ---------------------------------------
@@ -301,20 +349,16 @@ class _ProfessionalRegisterScreenState
                     const SizedBox(height: 20),
 
                     // --- Endereço --------------------------------------------------
-                    const SectionLabel('Endereço'),
+                    const SectionLabel('Endereço (opcional)'),
                     const SizedBox(height: 12),
 
                     CustomTextField(
-                      label: 'CEP *',
+                      label: 'CEP',
                       hint: '00000-000',
                       controller: _cepCtrl,
                       keyboardType: TextInputType.number,
                       inputFormatters: [_cepMask],
                       prefixIcon: const Icon(Icons.location_on_outlined),
-                      validator: (v) =>
-                          (v == null || _cepMask.getUnmaskedText().length != 8)
-                              ? 'CEP inválido.'
-                              : null,
                     ),
                     const SizedBox(height: 20),
 

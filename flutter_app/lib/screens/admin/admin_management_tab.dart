@@ -24,8 +24,8 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    final resPac = await _api.getAllPacientes();
-    final resProf = await _api.getAllProfissionais();
+    final resPac = await _api.getAllPacientes(filterAtivo: false);
+    final resProf = await _api.getAllProfissionais(filterAtivo: false);
     
     if (mounted) {
       setState(() {
@@ -36,30 +36,33 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     }
   }
 
-  Future<void> _confirmDelete(String table, String id, String nome) async {
+  Future<void> _confirmDelete(String table, String id, String nome, {bool forceHardDelete = false}) async {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar Remoção'),
-        content: Text('Deseja realmente remover "$nome"? Esta ação não pode ser desfeita.'),
+        title: Text(forceHardDelete ? 'Exclusão Permanente' : 'Confirmar Desativação'),
+        content: Text(forceHardDelete 
+          ? 'Deseja excluir "$nome" DEFINITIVAMENTE do banco de dados? Esta ação destruirá o registro e não pode ser desfeita.'
+          : 'Deseja desativar o registro de "$nome"? (O registro não aparecerá em buscas padrão, mas continuará salvo no sistema).'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-            child: const Text('Remover'),
+            child: Text(forceHardDelete ? 'Excluir Permanente' : 'Desativar'),
           ),
         ],
       ),
     );
 
     if (confirmar == true) {
-      final res = await _api.deleteRecord(table, id);
+      final res = await _api.deleteRecord(table, id, forceHardDelete: forceHardDelete);
       if (res['success'] && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('"$nome" removido.'), backgroundColor: AppTheme.primary));
+        final txt = forceHardDelete ? 'removido permanentemente' : 'desativado';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('"$nome" $txt.'), backgroundColor: AppTheme.primary));
         _loadData();
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Falha ao remover'), backgroundColor: AppTheme.error));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Falha ao processar operação'), backgroundColor: AppTheme.error));
       }
     }
   }
@@ -102,16 +105,20 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
                 ...filteredProfissionais.map((p) => _ManagementTile(
                   id: p['id'].toString(),
                   title: p['nome'],
-                  subtitle: 'CREFITO: ${p['crefito']}',
-                  onDelete: () => _confirmDelete('profissional', p['id'].toString(), p['nome']),
+                  subtitle: p['ativo'] == false ? 'INATIVO - CREFITO: ${p['crefito']}' : 'CREFITO: ${p['crefito']}',
+                  isAtivo: p['ativo'] == true,
+                  onDeactivate: () => _confirmDelete('profissional', p['id'].toString(), p['nome'], forceHardDelete: false),
+                  onHardDelete: () => _confirmDelete('profissional', p['id'].toString(), p['nome'], forceHardDelete: true),
                 )),
                 const SizedBox(height: 24),
                 _SectionHeader(title: 'Pacientes (${filteredPacientes.length})', icon: Icons.people_rounded, color: AppTheme.primary),
                 ...filteredPacientes.map((p) => _ManagementTile(
                   id: p['id'].toString(),
                   title: p['nome'],
-                  subtitle: p['email'],
-                  onDelete: () => _confirmDelete('paciente', p['id'].toString(), p['nome']),
+                  subtitle: p['ativo'] == false ? 'INATIVO - ${p['email']}' : p['email'],
+                  isAtivo: p['ativo'] == true,
+                  onDeactivate: () => _confirmDelete('paciente', p['id'].toString(), p['nome'], forceHardDelete: false),
+                  onHardDelete: () => _confirmDelete('paciente', p['id'].toString(), p['nome'], forceHardDelete: true),
                 )),
               ],
             ),
@@ -144,21 +151,35 @@ class _ManagementTile extends StatelessWidget {
   final String id;
   final String title;
   final String subtitle;
-  final VoidCallback onDelete;
+  final bool isAtivo;
+  final VoidCallback onDeactivate;
+  final VoidCallback onHardDelete;
 
-  const _ManagementTile({required this.id, required this.title, required this.subtitle, required this.onDelete});
+  const _ManagementTile({required this.id, required this.title, required this.subtitle, required this.isAtivo, required this.onDeactivate, required this.onHardDelete});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+      decoration: BoxDecoration(color: isAtivo ? Colors.white : Colors.grey.shade100, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
       child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.error),
-          onPressed: onDelete,
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isAtivo ? AppTheme.textPrimary : Colors.grey)),
+        subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: isAtivo ? AppTheme.textSecondary : Colors.grey, fontStyle: isAtivo ? FontStyle.normal : FontStyle.italic)),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isAtivo)
+              IconButton(
+                icon: const Icon(Icons.person_off_rounded, color: Colors.orange),
+                tooltip: 'Desativar Registro',
+                onPressed: onDeactivate,
+              ),
+            IconButton(
+              icon: const Icon(Icons.delete_forever_rounded, color: AppTheme.error),
+              tooltip: 'Excluir Definitivamente',
+              onPressed: onHardDelete,
+            ),
+          ],
         ),
       ),
     );

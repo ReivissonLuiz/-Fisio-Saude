@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _nome = 'Usuário';
   String _tipo = 'Paciente';
   String _email = '';
+  String? _supabaseUserId;
   String? _pacienteId;
   String? _profissionalId;
   String? _adminId;
@@ -46,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _nome = _args['nome'] as String? ?? 'Usuário';
     _tipo = _args['tipo'] as String? ?? 'Paciente';
     _email = _args['email'] as String? ?? '';
+    _supabaseUserId = _args['id'] as String?;
     _pacienteId = _args['id_paciente'] as String?;
     _profissionalId = _args['id_profissional'] as String?;
     _adminId = _args['id_administrador'] as String?;
@@ -69,10 +71,18 @@ class _HomeScreenState extends State<HomeScreen> {
         _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
         AdminManagementTab(key: UniqueKey()),
         PerfilProfissionalTab(
-            profissionalId: _adminId ?? '', // Usando adminId como ID de referência
+            key: UniqueKey(),
+            profissionalId: _profissionalId ?? '',
             nome: _nome,
             email: _email,
-            onLogout: _logout),
+            supabaseUserId: _supabaseUserId,
+            pacienteId: _pacienteId,
+            adminId: _adminId,
+            isAdmin: true,
+            onLogout: _logout,
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
+            onProfissionalRoleAdded: (id) => setState(() => _profissionalId = id),
+        ),
       ];
 
       return Scaffold(
@@ -103,7 +113,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ProfissionalHomeTab(profissionalId: _profissionalId ?? '', nome: _nome),
         AgendaTab(profissionalId: _profissionalId ?? ''),
         _PacienteViewTabs(pacienteId: _pacienteId, nome: _nome),
-        PerfilProfissionalTab(profissionalId: _profissionalId ?? '', nome: _nome, email: _email, onLogout: _logout),
+        PerfilProfissionalTab(
+            key: UniqueKey(),
+            profissionalId: _profissionalId ?? '',
+            nome: _nome,
+            email: _email,
+            supabaseUserId: _supabaseUserId,
+            pacienteId: _pacienteId,
+            isAdmin: false,
+            onLogout: _logout,
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
+        ),
       ];
 
       return Scaffold(
