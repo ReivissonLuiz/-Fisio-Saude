@@ -230,11 +230,14 @@ class _HomeScreenState extends State<HomeScreen> {
             key: UniqueKey(),
             nome: _nome,
             email: _email,
+            supabaseUserId: _supabaseUserId,
             activeView: _activeView,
             hasProfissional: _profissionalId != null && _profissionalId!.isNotEmpty,
             hasPaciente: _pacienteId != null && _pacienteId!.isNotEmpty,
             onLogout: _logout,
             onSwitchView: (v) => setState(() { _activeView = v; _tabIndex = 0; }),
+            onProfissionalRoleAdded: (id) => setState(() => _profissionalId = id),
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
           ),
         ];
 
@@ -305,11 +308,14 @@ class _HomeScreenState extends State<HomeScreen> {
             key: UniqueKey(),
             nome: _nome,
             email: _email,
+            supabaseUserId: _supabaseUserId,
             activeView: _activeView,
             hasProfissional: true,
             hasPaciente: _pacienteId != null && _pacienteId!.isNotEmpty,
             onLogout: _logout,
             onSwitchView: (v) => setState(() { _activeView = v; _tabIndex = 0; }),
+            onProfissionalRoleAdded: (id) => setState(() => _profissionalId = id),
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
           ),
         ];
 
@@ -369,11 +375,14 @@ class _HomeScreenState extends State<HomeScreen> {
             key: UniqueKey(),
             nome: _nome,
             email: _email,
+            supabaseUserId: _supabaseUserId,
             activeView: _activeView,
             hasProfissional: _profissionalId != null && _profissionalId!.isNotEmpty,
             hasPaciente: true,
             onLogout: _logout,
             onSwitchView: (v) => setState(() { _activeView = v; _tabIndex = 0; }),
+            onProfissionalRoleAdded: (id) => setState(() => _profissionalId = id),
+            onPacienteRoleAdded: (id) => setState(() => _pacienteId = id),
           ),
         ];
 
