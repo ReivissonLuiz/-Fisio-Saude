@@ -174,8 +174,9 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
                   ? null
                   : () async {
                       if (!formKey.currentState!.validate()) return;
+                      // Fecha o diálogo ANTES de chamar setState do pai
                       Navigator.pop(ctx);
-                      setStateDialog(() => _isAddingRole = true);
+                      setState(() => _isAddingRole = true);
                       final uid = widget.supabaseUserId ??
                           _api.currentUser?.id ?? '';
                       final res = await _api.addPacienteRole(
@@ -376,6 +377,154 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
     telCtrl.dispose();
   }
 
+  /// Abre o diálogo para editar dados do perfil profissional (CREFITO, especialidade, telefone)
+  Future<void> _showEditarPerfilDialog() async {
+    final formKey = GlobalKey<FormState>();
+    final crefitoCtrl = TextEditingController(text: _perfilData?['crefito'] as String? ?? '');
+    final telCtrl = TextEditingController(text: _perfilData?['telefone'] as String? ?? '');
+
+    final telMask = MaskTextInputFormatter(
+        mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
+
+    const especializacoes = [
+      'Fisioterapia Ortopédica e Traumatológica',
+      'Fisioterapia Neurológica',
+      'Fisioterapia Esportiva',
+      'Fisioterapia Cardiorrespiratória',
+      'Fisioterapia em Saúde da Mulher',
+      'Fisioterapia Pediátrica',
+      'Fisioterapia Geriátrica',
+      'Fisioterapia Aquática',
+      'Fisioterapia Dermato-Funcional',
+      'RPG — Reeducação Postural Global',
+      'Outra',
+    ];
+
+    String? especializacaoSelecionada = _perfilData?['especialidade'] as String?;
+    // Garante que o valor salvo existe na lista; se não, deixa null
+    if (especializacaoSelecionada != null &&
+        !especializacoes.contains(especializacaoSelecionada)) {
+      especializacaoSelecionada = null;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateDialog) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.edit_note_rounded, color: AppTheme.primary),
+              SizedBox(width: 10),
+              Text('Editar Perfil Profissional',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomTextField(
+                      label: 'CREFITO *',
+                      hint: 'Ex: 3-12345-F',
+                      controller: crefitoCtrl,
+                      prefixIcon: const Icon(Icons.workspace_premium_outlined),
+                      validator: (v) =>
+                          (v == null || v.trim().isEmpty) ? 'Informe o CREFITO.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: especializacaoSelecionada,
+                      decoration: InputDecoration(
+                        labelText: 'Especialização *',
+                        prefixIcon: const Icon(Icons.category_outlined),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      items: especializacoes
+                          .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e, style: const TextStyle(fontSize: 13))))
+                          .toList(),
+                      onChanged: (v) =>
+                          setStateDialog(() => especializacaoSelecionada = v),
+                      validator: (v) => v == null ? 'Selecione.' : null,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      label: 'Telefone',
+                      hint: '(11) 99999-9999',
+                      controller: telCtrl,
+                      inputFormatters: [telMask],
+                      keyboardType: TextInputType.phone,
+                      prefixIcon: const Icon(Icons.phone_outlined),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                      if (!formKey.currentState!.validate()) return;
+                      Navigator.pop(ctx);
+                      setState(() => _isAddingRole = true);
+                      final res = await _api.updateProfissional(
+                        widget.profissionalId,
+                        {
+                          'crefito': crefitoCtrl.text.trim(),
+                          'especialidade': especializacaoSelecionada ?? '',
+                          'telefone': telCtrl.text,
+                        },
+                      );
+                      if (!mounted) return;
+                      setState(() => _isAddingRole = false);
+                      if (res['success'] == true) {
+                        // Recarrega perfil para refletir dados atualizados
+                        await _loadPerfil();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Perfil atualizado com sucesso!'),
+                              backgroundColor: AppTheme.accent,
+                            ),
+                          );
+                        }
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(res['message'] ?? 'Erro ao salvar.'),
+                              backgroundColor: AppTheme.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              icon: const Icon(Icons.save_rounded),
+              label: const Text('Salvar'),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    crefitoCtrl.dispose();
+    telCtrl.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool temPapelProfissional = widget.profissionalId.isNotEmpty;
@@ -490,7 +639,8 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
 
                       // --- Seção: Configurações --------------------------------
                       _buildSection('Configurações', [
-                        _buildMenuTile(Icons.edit_note_rounded, 'Editar Perfil', () {}),
+                        _buildMenuTile(Icons.edit_note_rounded, 'Editar Perfil',
+                            temPapelProfissional ? _showEditarPerfilDialog : () {}),
                         _buildMenuTile(Icons.notifications_none_rounded, 'Notificações', () {}),
                         _buildMenuTile(Icons.help_outline_rounded, 'Ajuda e Suporte', () {}),
                       ]),
