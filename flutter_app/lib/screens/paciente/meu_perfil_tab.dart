@@ -1,8 +1,9 @@
-﻿/// meu_perfil_tab.dart
+/// meu_perfil_tab.dart
 /// Aba "Meu Perfil" — visualização e edição dos dados do paciente — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/custom_text_field.dart';
@@ -29,6 +30,10 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
   final _api = ApiService();
   final _nomeCtrl = TextEditingController();
   final _telCtrl = TextEditingController();
+
+  // Máscara para exibir o telefone formatado no modo de edição
+  final _telMask = MaskTextInputFormatter(
+      mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
 
   Map<String, dynamic>? _paciente;
   bool _loading = true;
@@ -65,6 +70,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
         _paciente = p;
         _loading = false;
         _nomeCtrl.text = p['nome'] as String? ?? '';
+        // Seta o telefone; a máscara formata automaticamente ao editar
         _telCtrl.text = p['telefone'] as String? ?? '';
         _generoSelecionado = p['genero'] as String?;
       });
@@ -86,7 +92,9 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
 
     final result = await _api.updatePaciente(widget.pacienteId, {
       'nome': _nomeCtrl.text.trim(),
-      'telefone': _telCtrl.text.replaceAll(RegExp(r'\D'), ''),
+      'telefone': _telMask.getUnmaskedText().isNotEmpty
+          ? _telMask.getUnmaskedText()
+          : _telCtrl.text.replaceAll(RegExp(r'\D'), ''),
       'genero': _generoSelecionado,
     });
 
@@ -267,6 +275,7 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
                     hint: '(11) 99999-9999',
                     controller: _telCtrl,
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [_telMask],
                     prefixIcon: const Icon(Icons.phone_outlined),
                   ),
                   const SizedBox(height: 12),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 
 /// Aba de perfil exclusiva para Administradores.
@@ -46,12 +47,15 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
   Future<void> _showAddProfissionalDialog() async {
     final formKey = GlobalKey<FormState>();
     final cpfCtrl = TextEditingController();
-    final crefitoCtrl = TextEditingController();
+    final crefitoNumCtrl = TextEditingController();
     final telCtrl = TextEditingController();
     String? especializacao;
+    String tipoCrefito = 'F';
 
     final cpfMask = MaskTextInputFormatter(
         mask: '###.###.###-##', filter: {'#': RegExp(r'\d')});
+    final crefitoNumMask = MaskTextInputFormatter(
+        mask: '#######', filter: {'#': RegExp(r'\d')});
     final telMask = MaskTextInputFormatter(
         mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
 
@@ -107,13 +111,133 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
                           : null,
                     ),
                     const SizedBox(height: 12),
-                    CustomTextField(
-                      label: 'CREFITO *',
-                      hint: 'Ex: 3-12345-F',
-                      controller: crefitoCtrl,
-                      prefixIcon: const Icon(Icons.workspace_premium_outlined),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Informe o CREFITO.' : null,
+                    // Seletor de categoria CREFITO (F ou TO)
+                    StatefulBuilder(
+                      builder: (ctx2, setD2) => Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Categoria Profissional',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setD(() => tipoCrefito = 'F'),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: tipoCrefito == 'F'
+                                            ? AppTheme.secondary
+                                            : Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(children: [
+                                        Text('Fisioterapeuta',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: tipoCrefito == 'F' ? Colors.white : AppTheme.textSecondary),
+                                            textAlign: TextAlign.center),
+                                        Text('-F',
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: tipoCrefito == 'F' ? Colors.white70 : Colors.grey),
+                                            textAlign: TextAlign.center),
+                                      ]),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setD(() => tipoCrefito = 'TO'),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: tipoCrefito == 'TO'
+                                            ? AppTheme.primary
+                                            : Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Column(children: [
+                                        Text('Ter. Ocupacional',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: tipoCrefito == 'TO' ? Colors.white : AppTheme.textSecondary),
+                                            textAlign: TextAlign.center),
+                                        Text('-TO',
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: tipoCrefito == 'TO' ? Colors.white70 : Colors.grey),
+                                            textAlign: TextAlign.center),
+                                      ]),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            label: 'CREFITO Número *',
+                            hint: '0123456',
+                            controller: crefitoNumCtrl,
+                            inputFormatters: [crefitoNumMask],
+                            keyboardType: TextInputType.number,
+                            prefixIcon: const Icon(Icons.workspace_premium_outlined),
+                            validator: (_) => Validators.crefito(
+                                '${crefitoNumMask.getUnmaskedText()}-$tipoCrefito'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        StatefulBuilder(
+                          builder: (_, __) => Container(
+                            height: 60,
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: tipoCrefito == 'F'
+                                  ? AppTheme.secondary.withValues(alpha: 0.1)
+                                  : AppTheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: tipoCrefito == 'F'
+                                      ? AppTheme.secondary.withValues(alpha: 0.4)
+                                      : AppTheme.primary.withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              '-$tipoCrefito',
+                              style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: tipoCrefito == 'F'
+                                      ? AppTheme.secondary
+                                      : AppTheme.primary),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
@@ -158,12 +282,13 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
                 Navigator.pop(ctx);
                 setState(() => _isActivating = true);
                 final uid = widget.supabaseUserId ?? _api.currentUser?.id ?? '';
+                final crefitoFinal = '${crefitoNumMask.getUnmaskedText()}-$tipoCrefito';
                 final res = await _api.addProfissionalRole(
                   supabaseUserId: uid,
                   nome: widget.nome,
                   email: widget.email,
                   cpf: cpfCtrl.text,
-                  crefito: crefitoCtrl.text,
+                  crefito: crefitoFinal,
                   especialidade: especializacao ?? '',
                   telefone: telCtrl.text,
                 );
@@ -186,7 +311,7 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
     );
 
     cpfCtrl.dispose();
-    crefitoCtrl.dispose();
+    crefitoNumCtrl.dispose();
     telCtrl.dispose();
   }
 

@@ -31,6 +31,12 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   final _senhaCtrl = TextEditingController();
   final _confirmarCtrl = TextEditingController();
   final _cepCtrl = TextEditingController();
+  final _logradouroCtrl = TextEditingController();
+  final _bairroCtrl = TextEditingController();
+  final _cidadeCtrl = TextEditingController();
+  final _ufCtrl = TextEditingController();
+  final _numeroCtrl = TextEditingController();
+  final _complementoCtrl = TextEditingController();
 
   String? _generoSelecionado;
 
@@ -38,6 +44,8 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   bool _obscureConfirmar = true;
   bool _aceitaTermos = false;
   bool _isLoading = false;
+  bool _buscandoCep = false;
+  bool _cepEncontrado = false;
   String? _errorMsg;
   String? _successMsg;
 
@@ -56,18 +64,65 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
   @override
   void dispose() {
     for (var c in [
-      _nomeCtrl,
-      _emailCtrl,
-      _cpfCtrl,
-      _nascCtrl,
-      _telCtrl,
-      _senhaCtrl,
-      _confirmarCtrl,
-      _cepCtrl,
+      _nomeCtrl, _emailCtrl, _cpfCtrl, _nascCtrl, _telCtrl,
+      _senhaCtrl, _confirmarCtrl, _cepCtrl, _logradouroCtrl,
+      _bairroCtrl, _cidadeCtrl, _ufCtrl, _numeroCtrl, _complementoCtrl,
     ]) {
       c.dispose();
     }
     super.dispose();
+  }
+
+  /// Busca o CEP na API ViaCEP e preenche os campos de endereço automaticamente.
+  Future<void> _buscarCep() async {
+    final cepUnmasked = _cepMask.getUnmaskedText();
+    if (cepUnmasked.length != 8) return;
+
+    setState(() {
+      _buscandoCep = true;
+      _cepEncontrado = false;
+      _errorMsg = null;
+    });
+
+    try {
+      final resp = await http
+          .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
+          .timeout(const Duration(seconds: 8));
+
+      if (!mounted) return;
+
+      if (resp.statusCode == 200) {
+        final data = json.decode(resp.body);
+        if (data is Map && data['erro'] == true) {
+          setState(() {
+            _buscandoCep = false;
+            _cepEncontrado = false;
+            _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
+          });
+          return;
+        }
+        setState(() {
+          _buscandoCep = false;
+          _cepEncontrado = true;
+          _logradouroCtrl.text = data['logradouro'] as String? ?? '';
+          _bairroCtrl.text = data['bairro'] as String? ?? '';
+          _cidadeCtrl.text = data['localidade'] as String? ?? '';
+          _ufCtrl.text = data['uf'] as String? ?? '';
+        });
+      } else {
+        setState(() {
+          _buscandoCep = false;
+          _cepEncontrado = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _buscandoCep = false;
+          _cepEncontrado = false;
+        });
+      }
+    }
   }
 
   Future<void> _register() async {
@@ -81,30 +136,38 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       setState(() => _errorMsg = 'Por favor, selecione o seu Gênero.');
       return;
     }
-    setState(() {
-      _isLoading = true;
-      _errorMsg = null;
-      _successMsg = null;
-    });
 
-    // Validação real do CEP via ViaCEP (API dos Correios)
+    // Se CEP foi preenchido mas não foi encontrado, valida antes de prosseguir
     final cepUnmasked = _cepMask.getUnmaskedText();
-    try {
-      final viaResp = await http
-          .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
-          .timeout(const Duration(seconds: 6));
-      if (viaResp.statusCode == 200) {
-        final data = json.decode(viaResp.body);
-        if (data is Map && data['erro'] == true) {
-          setState(() {
-            _isLoading = false;
-            _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
-          });
-          return;
+    if (cepUnmasked.length == 8 && !_cepEncontrado) {
+      setState(() {
+        _isLoading = true;
+        _errorMsg = null;
+        _successMsg = null;
+      });
+      try {
+        final viaResp = await http
+            .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
+            .timeout(const Duration(seconds: 6));
+        if (viaResp.statusCode == 200) {
+          final data = json.decode(viaResp.body);
+          if (data is Map && data['erro'] == true) {
+            setState(() {
+              _isLoading = false;
+              _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
+            });
+            return;
+          }
         }
+      } catch (_) {
+        // API indisponível — prossegue
       }
-    } catch (_) {
-      // Se a API do ViaCEP estiver indisponível, deixa prosseguir
+    } else {
+      setState(() {
+        _isLoading = true;
+        _errorMsg = null;
+        _successMsg = null;
+      });
     }
 
     final result = await _api.registerPatient({
@@ -115,6 +178,12 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
       'dataNascimento': _nascCtrl.text.trim(),
       'telefone': _telCtrl.text.trim(),
       'cep': _cepCtrl.text.trim(),
+      'logradouro': _logradouroCtrl.text.trim(),
+      'numero': _numeroCtrl.text.trim(),
+      'complemento': _complementoCtrl.text.trim(),
+      'bairro': _bairroCtrl.text.trim(),
+      'cidade': _cidadeCtrl.text.trim(),
+      'uf': _ufCtrl.text.trim(),
       'senha': _senhaCtrl.text,
       'confirmarSenha': _confirmarCtrl.text,
       'aceitaTermos': _aceitaTermos,
@@ -249,21 +318,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [_nascMask],
                       prefixIcon: const Icon(Icons.cake_outlined),
-                      validator: (v) {
-                        if (v == null || v.length != 10) return 'Data inválida.';
-                        try {
-                          final p = v.split('/');
-                          final dataNasc = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
-                          final hoje = DateTime.now();
-                          var idade = hoje.year - dataNasc.year;
-                          if (hoje.month < dataNasc.month || (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) idade--;
-                          if (idade < 1) return 'Idade mínima é 1 ano.';
-                          if (idade > 150) return 'Idade máxima é 150 anos.';
-                        } catch (e) {
-                          return 'Data inválida.';
-                        }
-                        return null;
-                      },
+                      validator: (_) => Validators.dataNascimento(_nascCtrl.text),
                     ),
                     const SizedBox(height: 14),
 
@@ -285,16 +340,141 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                     const SectionLabel('Endereço'),
                     const SizedBox(height: 12),
 
-                    CustomTextField(
-                      label: 'CEP *',
-                      hint: '00000-000',
-                      controller: _cepCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [_cepMask],
-                      prefixIcon: const Icon(Icons.location_on_outlined),
-                      validator: (_) => Validators.cepObrigatorio(
-                          _cepCtrl.text, _cepMask.getUnmaskedText()),
+                    // CEP com busca automática via ViaCEP
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            label: 'CEP *',
+                            hint: '00000-000',
+                            controller: _cepCtrl,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [_cepMask],
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                            onChanged: (v) {
+                              if (_cepMask.getUnmaskedText().length == 8) {
+                                _buscarCep();
+                              } else {
+                                setState(() => _cepEncontrado = false);
+                              }
+                            },
+                            validator: (_) => Validators.cepObrigatorio(
+                                _cepCtrl.text, _cepMask.getUnmaskedText()),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 60,
+                          child: OutlinedButton.icon(
+                            onPressed: _buscandoCep ? null : _buscarCep,
+                            icon: _buscandoCep
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2))
+                                : Icon(
+                                    _cepEncontrado
+                                        ? Icons.check_circle_outline
+                                        : Icons.search,
+                                    color: _cepEncontrado
+                                        ? AppTheme.accent
+                                        : AppTheme.primary),
+                            label: Text(
+                              _cepEncontrado ? 'Encontrado' : 'Buscar',
+                              style: TextStyle(
+                                  color: _cepEncontrado
+                                      ? AppTheme.accent
+                                      : AppTheme.primary),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                  color: _cepEncontrado
+                                      ? AppTheme.accent
+                                      : AppTheme.primary),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (_cepEncontrado) ...[  
+                      const SizedBox(height: 14),
+                      CustomTextField(
+                        label: 'Logradouro',
+                        controller: _logradouroCtrl,
+                        prefixIcon: const Icon(Icons.signpost_outlined),
+                        readOnly: true,
+                        validator: null,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: CustomTextField(
+                              label: 'Número *',
+                              hint: 'Ex: 123',
+                              controller: _numeroCtrl,
+                              prefixIcon: const Icon(Icons.tag_outlined),
+                              validator: (v) =>
+                                  (v == null || v.trim().isEmpty)
+                                      ? 'Informe o número.'
+                                      : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 3,
+                            child: CustomTextField(
+                              label: 'Complemento',
+                              hint: 'Apto, Sala...',
+                              controller: _complementoCtrl,
+                              prefixIcon: const Icon(Icons.apartment_outlined),
+                              validator: null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: CustomTextField(
+                              label: 'Bairro',
+                              controller: _bairroCtrl,
+                              prefixIcon: const Icon(Icons.map_outlined),
+                              readOnly: true,
+                              validator: null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 4,
+                            child: CustomTextField(
+                              label: 'Cidade',
+                              controller: _cidadeCtrl,
+                              prefixIcon: const Icon(Icons.location_city_outlined),
+                              readOnly: true,
+                              validator: null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 1,
+                            child: CustomTextField(
+                              label: 'UF',
+                              controller: _ufCtrl,
+                              readOnly: true,
+                              validator: null,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 20),
 
                     // --- Senha -----------------------------------------------------

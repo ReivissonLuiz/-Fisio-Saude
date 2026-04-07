@@ -37,6 +37,64 @@ class Validators {
     return null; // ✅ CPF válido
   }
 
+  /// Valida CREFITO conforme a categoria profissional:
+  ///   Fisioterapeuta:        0000000-F   (7 dígitos + -F)
+  ///   Terapeuta Ocupacional: 0000000-TO  (7 dígitos + -TO)
+  /// Retorna null se válido, ou mensagem de erro se inválido.
+  static String? crefito(String? value) {
+    if (value == null || value.trim().isEmpty) return 'Informe seu CREFITO.';
+    final v = value.trim().toUpperCase();
+    final regExp = RegExp(r'^\d{7}-(?:F|TO)$');
+    if (!regExp.hasMatch(v)) {
+      return 'CREFITO inválido. Ex: 0123456-F ou 0123456-TO';
+    }
+    return null; // ✅ CREFITO válido
+  }
+
+  /// Valida a data de nascimento no formato DD/MM/AAAA.
+  ///   - A data deve ser uma data real (ex: 30/02 é inválido)
+  ///   - O usuário deve ter entre 1 e 120 anos
+  ///   - Não aceita datas futuras
+  /// Retorna null se válido, ou mensagem de erro se inválido.
+  static String? dataNascimento(String? value) {
+    if (value == null || value.length != 10) return 'Data inválida.';
+    try {
+      final parts = value.split('/');
+      if (parts.length != 3) return 'Data inválida.';
+
+      final day = int.parse(parts[0]);
+      final month = int.parse(parts[1]);
+      final year = int.parse(parts[2]);
+
+      // Verifica se a data é real (DateTime normaliza datas inválidas como 30/02)
+      final dataNasc = DateTime(year, month, day);
+      if (dataNasc.day != day || dataNasc.month != month || dataNasc.year != year) {
+        return 'Data inválida (dia ou mês inexistente).';
+      }
+
+      final hoje = DateTime.now();
+      final hojeDate = DateTime(hoje.year, hoje.month, hoje.day);
+
+      // Não aceita datas futuras
+      if (dataNasc.isAfter(hojeDate)) {
+        return 'Data de nascimento não pode ser futura.';
+      }
+
+      // Calcula a idade exata
+      int idade = hoje.year - dataNasc.year;
+      if (hoje.month < dataNasc.month ||
+          (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) {
+        idade--;
+      }
+
+      if (idade < 1) return 'Idade mínima é 1 ano.';
+      if (idade > 120) return 'Idade máxima permitida é 120 anos.';
+    } catch (e) {
+      return 'Data inválida.';
+    }
+    return null; // ✅ Data válida
+  }
+
   /// Valida CEP: se preenchido, deve ter exatamente 8 dígitos.
   /// Retorna null se válido ou vazio (campo opcional), erro se preenchido incorretamente.
   static String? cepOpcional(String? value, String unmaskedText) {

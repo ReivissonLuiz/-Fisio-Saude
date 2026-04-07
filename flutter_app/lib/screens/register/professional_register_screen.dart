@@ -1,5 +1,5 @@
 /// Tela de cadastro de Fisioterapeuta com todos os campos obrigatórios,
-/// incluindo CREFITO e especialização, com aceite de termos LGPD.
+/// incluindo CREFITO com máscara dinâmica (F ou TO) e integração ViaCEP.
 library;
 
 import 'dart:convert';
@@ -33,6 +33,12 @@ class _ProfessionalRegisterScreenState
   final _crefitoCtrl = TextEditingController();
   final _telCtrl = TextEditingController();
   final _cepCtrl = TextEditingController();
+  final _logradouroCtrl = TextEditingController();
+  final _bairroCtrl = TextEditingController();
+  final _cidadeCtrl = TextEditingController();
+  final _ufCtrl = TextEditingController();
+  final _numeroCtrl = TextEditingController();
+  final _complementoCtrl = TextEditingController();
   final _senhaCtrl = TextEditingController();
   final _confirmarCtrl = TextEditingController();
   final _nascCtrl = TextEditingController();
@@ -43,8 +49,13 @@ class _ProfessionalRegisterScreenState
   bool _obscureConfirmar = true;
   bool _aceitaTermos = false;
   bool _isLoading = false;
+  bool _buscandoCep = false;
+  bool _cepEncontrado = false;
   String? _errorMsg;
   String? _successMsg;
+
+  // Tipo de CREFITO: 'F' = Fisioterapeuta, 'TO' = Terapeuta Ocupacional
+  String _tipoCrefito = 'F';
 
   // Máscaras
   final _cpfMask = MaskTextInputFormatter(
@@ -55,6 +66,9 @@ class _ProfessionalRegisterScreenState
       MaskTextInputFormatter(mask: '#####-###', filter: {'#': RegExp(r'\d')});
   final _nascMask =
       MaskTextInputFormatter(mask: '##/##/####', filter: {'#': RegExp(r'\d')});
+  // Máscara CREFITO: 7 dígitos
+  final _crefitoNumMask = MaskTextInputFormatter(
+      mask: '#######', filter: {'#': RegExp(r'\d')});
 
   final _api = ApiService();
 
@@ -69,65 +83,126 @@ class _ProfessionalRegisterScreenState
     'Fisioterapia Aquática',
     'Fisioterapia Dermato-Funcional',
     'RPG — Reeducação Postural Global',
+    'Terapia Ocupacional',
     'Outra',
   ];
 
   @override
   void dispose() {
     for (var c in [
-      _nomeCtrl,
-      _emailCtrl,
-      _cpfCtrl,
-      _crefitoCtrl,
-      _telCtrl,
-      _cepCtrl,
-      _senhaCtrl,
-      _confirmarCtrl,
-      _nascCtrl,
+      _nomeCtrl, _emailCtrl, _cpfCtrl, _crefitoCtrl, _telCtrl, _cepCtrl,
+      _logradouroCtrl, _bairroCtrl, _cidadeCtrl, _ufCtrl, _numeroCtrl,
+      _complementoCtrl, _senhaCtrl, _confirmarCtrl, _nascCtrl,
     ]) {
       c.dispose();
     }
     super.dispose();
   }
 
-  Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (!_aceitaTermos) {
-      setState(() => _errorMsg =
-          'Você deve aceitar os Termos de Uso e Política de Privacidade.');
-      return;
-    }
+  /// Busca o CEP na API ViaCEP e preenche os campos automaticamente.
+  Future<void> _buscarCep() async {
+    final cepUnmasked = _cepMask.getUnmaskedText();
+    if (cepUnmasked.length != 8) return;
+
     setState(() {
-      _isLoading = true;
+      _buscandoCep = true;
+      _cepEncontrado = false;
       _errorMsg = null;
-      _successMsg = null;
     });
 
-    // Validação real do CEP via ViaCEP
-    final cepUnmasked = _cepMask.getUnmaskedText();
     try {
-      final viaResp = await http
+      final resp = await http
           .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
-          .timeout(const Duration(seconds: 6));
-      if (viaResp.statusCode == 200) {
-        final data = json.decode(viaResp.body);
+          .timeout(const Duration(seconds: 8));
+
+      if (!mounted) return;
+
+      if (resp.statusCode == 200) {
+        final data = json.decode(resp.body);
         if (data is Map && data['erro'] == true) {
           setState(() {
-            _isLoading = false;
+            _buscandoCep = false;
+            _cepEncontrado = false;
             _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
           });
           return;
         }
+        setState(() {
+          _buscandoCep = false;
+          _cepEncontrado = true;
+          _logradouroCtrl.text = data['logradouro'] as String? ?? '';
+          _bairroCtrl.text = data['bairro'] as String? ?? '';
+          _cidadeCtrl.text = data['localidade'] as String? ?? '';
+          _ufCtrl.text = data['uf'] as String? ?? '';
+        });
+      } else {
+        setState(() {
+          _buscandoCep = false;
+          _cepEncontrado = false;
+        });
       }
     } catch (_) {
-      // Se a API do ViaCEP estiver indisponível, deixa prosseguir
+      if (mounted) {
+        setState(() {
+          _buscandoCep = false;
+          _cepEncontrado = false;
+        });
+      }
+    }
+  }
+
+  /// Monta o valor do CREFITO com o sufixo do tipo selecionado.
+  String get _crefitoCompletoFormatado {
+    final nums = _crefitoNumMask.getUnmaskedText();
+    return '$nums-$_tipoCrefito';
+  }
+
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_aceitaTermos) {
+      setState(() =>
+          _errorMsg = 'Você deve aceitar os Termos de Uso e Política de Privacidade.');
+      return;
+    }
+
+    // Verificação adicional do CEP via ViaCEP (se ainda não buscou)
+    final cepUnmasked = _cepMask.getUnmaskedText();
+    if (cepUnmasked.isNotEmpty && !_cepEncontrado) {
+      setState(() {
+        _isLoading = true;
+        _errorMsg = null;
+        _successMsg = null;
+      });
+      try {
+        final viaResp = await http
+            .get(Uri.parse('https://viacep.com.br/ws/$cepUnmasked/json/'))
+            .timeout(const Duration(seconds: 6));
+        if (viaResp.statusCode == 200) {
+          final data = json.decode(viaResp.body);
+          if (data is Map && data['erro'] == true) {
+            setState(() {
+              _isLoading = false;
+              _errorMsg = 'CEP não encontrado. Verifique o número digitado.';
+            });
+            return;
+          }
+        }
+      } catch (_) {
+        // Se a API estiver indisponível, prossegue
+      }
+    } else {
+      setState(() {
+        _isLoading = true;
+        _errorMsg = null;
+        _successMsg = null;
+      });
     }
 
     final result = await _api.registerProfessional({
       'nome': _nomeCtrl.text.trim(),
       'email': _emailCtrl.text.trim(),
       'cpf': _cpfCtrl.text.trim(),
-      'crefito': _crefitoCtrl.text.trim(),
+      'crefito': _crefitoCompletoFormatado,
       'especializacao': _especializacaoSelecionada ?? '',
       'telefone': _telCtrl.text.trim(),
       'dataNascimento': _nascCtrl.text.trim(),
@@ -135,6 +210,13 @@ class _ProfessionalRegisterScreenState
       'senha': _senhaCtrl.text,
       'confirmarSenha': _confirmarCtrl.text,
       'aceitaTermos': _aceitaTermos,
+      'cep': _cepCtrl.text.trim(),
+      'logradouro': _logradouroCtrl.text.trim(),
+      'numero': _numeroCtrl.text.trim(),
+      'complemento': _complementoCtrl.text.trim(),
+      'bairro': _bairroCtrl.text.trim(),
+      'cidade': _cidadeCtrl.text.trim(),
+      'uf': _ufCtrl.text.trim(),
     });
 
     if (!mounted) return;
@@ -190,7 +272,7 @@ class _ProfessionalRegisterScreenState
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: AppTheme.textSecondary)),
-                            Text('Fisioterapeuta',
+                            Text('Profissional de Saúde',
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                           ],
@@ -289,21 +371,7 @@ class _ProfessionalRegisterScreenState
                       keyboardType: TextInputType.number,
                       inputFormatters: [_nascMask],
                       prefixIcon: const Icon(Icons.cake_outlined),
-                      validator: (v) {
-                        if (v == null || v.length != 10) return 'Data inválida.';
-                        try {
-                          final p = v.split('/');
-                          final dataNasc = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
-                          final hoje = DateTime.now();
-                          var idade = hoje.year - dataNasc.year;
-                          if (hoje.month < dataNasc.month || (hoje.month == dataNasc.month && hoje.day < dataNasc.day)) idade--;
-                          if (idade < 1) return 'Idade mínima é 1 ano.';
-                          if (idade > 150) return 'Idade máxima é 150 anos.';
-                        } catch (e) {
-                          return 'Data inválida.';
-                        }
-                        return null;
-                      },
+                      validator: (_) => Validators.dataNascimento(_nascCtrl.text),
                     ),
                     const SizedBox(height: 14),
 
@@ -328,14 +396,164 @@ class _ProfessionalRegisterScreenState
                     const SectionLabel('Dados Profissionais'),
                     const SizedBox(height: 12),
 
-                    CustomTextField(
-                      label: 'CREFITO *',
-                      hint: 'Ex: 3-12345-F',
-                      controller: _crefitoCtrl,
-                      prefixIcon: const Icon(Icons.workspace_premium_outlined),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe seu CREFITO.'
-                          : null,
+                    // Selector de tipo de CREFITO
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Categoria Profissional *',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textSecondary,
+                                  fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _tipoCrefito = 'F'),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: _tipoCrefito == 'F'
+                                          ? AppTheme.secondary
+                                          : Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.medical_services_outlined,
+                                            color: _tipoCrefito == 'F'
+                                                ? Colors.white
+                                                : AppTheme.textSecondary,
+                                            size: 20),
+                                        const SizedBox(height: 4),
+                                        Text('Fisioterapeuta',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: _tipoCrefito == 'F'
+                                                    ? Colors.white
+                                                    : AppTheme.textSecondary),
+                                            textAlign: TextAlign.center),
+                                        Text('sufixo: -F',
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: _tipoCrefito == 'F'
+                                                    ? Colors.white70
+                                                    : Colors.grey),
+                                            textAlign: TextAlign.center),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _tipoCrefito = 'TO'),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: _tipoCrefito == 'TO'
+                                          ? AppTheme.primary
+                                          : Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.accessibility_new_outlined,
+                                            color: _tipoCrefito == 'TO'
+                                                ? Colors.white
+                                                : AppTheme.textSecondary,
+                                            size: 20),
+                                        const SizedBox(height: 4),
+                                        Text('Ter. Ocupacional',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: _tipoCrefito == 'TO'
+                                                    ? Colors.white
+                                                    : AppTheme.textSecondary),
+                                            textAlign: TextAlign.center),
+                                        Text('sufixo: -TO',
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: _tipoCrefito == 'TO'
+                                                    ? Colors.white70
+                                                    : Colors.grey),
+                                            textAlign: TextAlign.center),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Campo CREFITO com máscara de 7 dígitos + sufixo automático
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            label: 'CREFITO — Número *',
+                            hint: '0123456',
+                            controller: _crefitoCtrl,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [_crefitoNumMask],
+                            prefixIcon: const Icon(Icons.workspace_premium_outlined),
+                            validator: (_) => Validators.crefito(
+                                _crefitoCompletoFormatado),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          height: 60,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: _tipoCrefito == 'F'
+                                ? AppTheme.secondary.withValues(alpha: 0.1)
+                                : AppTheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: _tipoCrefito == 'F'
+                                    ? AppTheme.secondary.withValues(alpha: 0.4)
+                                    : AppTheme.primary.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            '-$_tipoCrefito',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: _tipoCrefito == 'F'
+                                    ? AppTheme.secondary
+                                    : AppTheme.primary),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Text(
+                        'Ex: 0123456-$_tipoCrefito',
+                        style: const TextStyle(
+                            fontSize: 11, color: AppTheme.textSecondary),
+                      ),
                     ),
                     const SizedBox(height: 14),
 
@@ -343,7 +561,7 @@ class _ProfessionalRegisterScreenState
                     DropdownButtonFormField<String>(
                       value: _especializacaoSelecionada,
                       decoration: InputDecoration(
-                        labelText: 'Especialização / Írea de atuação *',
+                        labelText: 'Especialização / Área de atuação *',
                         prefixIcon: const Icon(Icons.category_outlined),
                         filled: true,
                         fillColor: Colors.white,
@@ -370,19 +588,144 @@ class _ProfessionalRegisterScreenState
                     const SizedBox(height: 20),
 
                     // --- Endereço --------------------------------------------------
-                    const SectionLabel('Endereço (opcional)'),
+                    const SectionLabel('Endereço'),
                     const SizedBox(height: 12),
 
-                    CustomTextField(
-                      label: 'CEP',
-                      hint: '00000-000',
-                      controller: _cepCtrl,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [_cepMask],
-                      prefixIcon: const Icon(Icons.location_on_outlined),
-                      validator: (_) => Validators.cepOpcional(
-                          _cepCtrl.text, _cepMask.getUnmaskedText()),
+                    // CEP com busca automática
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            label: 'CEP *',
+                            hint: '00000-000',
+                            controller: _cepCtrl,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [_cepMask],
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                            onChanged: (v) {
+                              if (_cepMask.getUnmaskedText().length == 8) {
+                                _buscarCep();
+                              } else {
+                                setState(() => _cepEncontrado = false);
+                              }
+                            },
+                            validator: (_) => Validators.cepObrigatorio(
+                                _cepCtrl.text, _cepMask.getUnmaskedText()),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 60,
+                          child: OutlinedButton.icon(
+                            onPressed: _buscandoCep ? null : _buscarCep,
+                            icon: _buscandoCep
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2))
+                                : Icon(
+                                    _cepEncontrado
+                                        ? Icons.check_circle_outline
+                                        : Icons.search,
+                                    color: _cepEncontrado
+                                        ? AppTheme.accent
+                                        : AppTheme.primary),
+                            label: Text(
+                              _cepEncontrado ? 'Encontrado' : 'Buscar',
+                              style: TextStyle(
+                                  color: _cepEncontrado
+                                      ? AppTheme.accent
+                                      : AppTheme.primary),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                  color: _cepEncontrado
+                                      ? AppTheme.accent
+                                      : AppTheme.primary),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (_cepEncontrado) ...[
+                      const SizedBox(height: 14),
+                      CustomTextField(
+                        label: 'Logradouro',
+                        controller: _logradouroCtrl,
+                        prefixIcon: const Icon(Icons.signpost_outlined),
+                        readOnly: true,
+                        validator: null,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: CustomTextField(
+                              label: 'Número *',
+                              hint: 'Ex: 123',
+                              controller: _numeroCtrl,
+                              keyboardType: TextInputType.text,
+                              prefixIcon: const Icon(Icons.tag_outlined),
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? 'Informe o número.'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 3,
+                            child: CustomTextField(
+                              label: 'Complemento',
+                              hint: 'Apto, Sala...',
+                              controller: _complementoCtrl,
+                              prefixIcon: const Icon(Icons.apartment_outlined),
+                              validator: null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: CustomTextField(
+                              label: 'Bairro',
+                              controller: _bairroCtrl,
+                              prefixIcon: const Icon(Icons.map_outlined),
+                              readOnly: true,
+                              validator: null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 4,
+                            child: CustomTextField(
+                              label: 'Cidade',
+                              controller: _cidadeCtrl,
+                              prefixIcon: const Icon(Icons.location_city_outlined),
+                              readOnly: true,
+                              validator: null,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 1,
+                            child: CustomTextField(
+                              label: 'UF',
+                              controller: _ufCtrl,
+                              readOnly: true,
+                              validator: null,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 20),
 
                     // --- Senha -----------------------------------------------------
@@ -434,7 +777,7 @@ class _ProfessionalRegisterScreenState
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas Não coincidem.';
+                          return 'As senhas não coincidem.';
                         }
                         return null;
                       },
@@ -473,5 +816,3 @@ class _ProfessionalRegisterScreenState
     );
   }
 }
-
-
