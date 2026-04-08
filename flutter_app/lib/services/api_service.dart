@@ -160,34 +160,29 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela usuario com permissao = Paciente
-      final usuarioResp = await _sb
-          .from('usuario')
-          .insert({
-            'supabase_user_id': user.id,
-            'id_permissao': Permissao.paciente,
-            'nome': (data['nome'] as String).trim(),
-            'email': email,
-            'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': _formatarData(data['dataNascimento'] as String?),
-            'telefone':
-                (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'genero': data['genero'],
-            'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'logradouro': data['logradouro'],
-            'numero': data['numero'],
-            'complemento': data['complemento'],
-            'bairro': data['bairro'],
-            'cidade': data['cidade'],
-            'uf': data['uf'],
-            'ativo': true,
-          })
-          .select()
-          .single();
+      await _sb.from('usuario').insert({
+        'supabase_user_id': user.id,
+        'id_permissao': Permissao.paciente,
+        'nome': (data['nome'] as String).trim(),
+        'email': email,
+        'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'data_nasc': _formatarData(data['dataNascimento'] as String?),
+        'telefone':
+            (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'genero': data['genero'],
+        'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'logradouro': data['logradouro'],
+        'numero': data['numero'],
+        'complemento': data['complemento'],
+        'bairro': data['bairro'],
+        'cidade': data['cidade'],
+        'uf': data['uf'],
+        'ativo': true,
+      });
 
       return {
         'success': true,
         'message': 'Paciente cadastrado com sucesso!',
-        'id_usuario': usuarioResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
@@ -231,38 +226,33 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela usuario com permissao = Profissional
-      final usuarioResp = await _sb
-          .from('usuario')
-          .insert({
-            'supabase_user_id': user.id,
-            'id_permissao': Permissao.profissional,
-            'nome': (data['nome'] as String).trim(),
-            'email': email,
-            'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': _formatarData(data['dataNascimento'] as String?),
-            'telefone':
-                (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'genero': (data['genero'] as String?)?.isNotEmpty == true
-                ? data['genero']
-                : 'Não informado',
-            'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'logradouro': data['logradouro'],
-            'numero': data['numero'],
-            'complemento': data['complemento'],
-            'bairro': data['bairro'],
-            'cidade': data['cidade'],
-            'uf': data['uf'],
-            'crefito': (data['crefito'] as String?)?.trim(),
-            'especialidade': (data['especializacao'] as String?)?.trim(),
-            'ativo': true,
-          })
-          .select()
-          .single();
+      await _sb.from('usuario').insert({
+        'supabase_user_id': user.id,
+        'id_permissao': Permissao.profissional,
+        'nome': (data['nome'] as String).trim(),
+        'email': email,
+        'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'data_nasc': _formatarData(data['dataNascimento'] as String?),
+        'telefone':
+            (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'genero': (data['genero'] as String?)?.isNotEmpty == true
+            ? data['genero']
+            : 'Não informado',
+        'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'logradouro': data['logradouro'],
+        'numero': data['numero'],
+        'complemento': data['complemento'],
+        'bairro': data['bairro'],
+        'cidade': data['cidade'],
+        'uf': data['uf'],
+        'crefito': (data['crefito'] as String?)?.trim(),
+        'especialidade': (data['especializacao'] as String?)?.trim(),
+        'ativo': true,
+      });
 
       return {
         'success': true,
         'message': 'Cadastro realizado com sucesso! Você já pode fazer login.',
-        'id_usuario': usuarioResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
@@ -304,37 +294,32 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela usuario com permissao = Administrador
-      final usuarioResp = await _sb
-          .from('usuario')
-          .insert({
-            'supabase_user_id': user.id,
-            'id_permissao': Permissao.administrador,
-            'nome': (data['nome'] as String).trim(),
-            'email': email,
-            'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': _formatarData(data['dataNascimento'] as String?),
-            'telefone':
-                (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'genero': (data['genero'] as String?)?.isNotEmpty == true
-                ? data['genero']
-                : 'Não informado',
-            'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'logradouro': data['logradouro'],
-            'numero': data['numero'],
-            'complemento': data['complemento'],
-            'bairro': data['bairro'],
-            'cidade': data['cidade'],
-            'uf': data['uf'],
-            'cargo': data['cargo'] ?? 'Diretor',
-            'ativo': true,
-          })
-          .select()
-          .single();
+      await _sb.from('usuario').insert({
+        'supabase_user_id': user.id,
+        'id_permissao': Permissao.administrador,
+        'nome': (data['nome'] as String).trim(),
+        'email': email,
+        'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'data_nasc': _formatarData(data['dataNascimento'] as String?),
+        'telefone':
+            (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'genero': (data['genero'] as String?)?.isNotEmpty == true
+            ? data['genero']
+            : 'Não informado',
+        'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'logradouro': data['logradouro'],
+        'numero': data['numero'],
+        'complemento': data['complemento'],
+        'bairro': data['bairro'],
+        'cidade': data['cidade'],
+        'uf': data['uf'],
+        'cargo': data['cargo'] ?? 'Diretor',
+        'ativo': true,
+      });
 
       return {
         'success': true,
         'message': 'Administrador cadastrado com sucesso!',
-        'id_usuario': usuarioResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
