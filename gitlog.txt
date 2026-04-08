@@ -1,0 +1,134 @@
+﻿commit 2a0d4669700cf7df3fd49dfb5e5d02855f0cacc4
+Author: Bruno Rezende de Lima <brezendelima@gmail.com>
+Date:   Sun Apr 5 18:39:56 2026 -0300
+
+    fix(admin/auth): corrige verificacoes do supabase, erro 400 em ids vazios, auto reload dos tabs ADM e remocao de scale meta tag
+
+diff --git a/flutter_app/web/index.html b/flutter_app/web/index.html
+index e20155e..7d319f4 100644
+--- a/flutter_app/web/index.html
++++ b/flutter_app/web/index.html
+@@ -18,7 +18,6 @@
+ 
+   <meta charset="UTF-8">
+   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+   <meta name="description" content="A new Flutter project.">
+ 
+   <!-- iOS meta tags & icons -->
+
+commit 24a173c6e3d4c0ab680aff7d08f79479ff85d9a9
+Author: Bruno Rezende de Lima <brezendelima@gmail.com>
+Date:   Mon Mar 30 20:55:18 2026 -0300
+
+    feat(auth): adiciona m├íscara de formata├º├úo para RG, limita├º├úo de idade realista no cadastro e restaura meta tag viewport de forma segura
+
+diff --git a/flutter_app/web/index.html b/flutter_app/web/index.html
+index 7d319f4..e20155e 100644
+--- a/flutter_app/web/index.html
++++ b/flutter_app/web/index.html
+@@ -18,6 +18,7 @@
+ 
+   <meta charset="UTF-8">
+   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+   <meta name="description" content="A new Flutter project.">
+ 
+   <!-- iOS meta tags & icons -->
+
+commit 39bfce90c6f1d0ff4c6ccfbaf6979d19999fa743
+Author: Bruno Rezende de Lima <brezendelima@gmail.com>
+Date:   Mon Mar 30 20:49:50 2026 -0300
+
+    fix(web): remove meta tag viewport para restaurar escala e proporcoes visuais do desktop simulado no mobile
+
+diff --git a/flutter_app/web/index.html b/flutter_app/web/index.html
+index e20155e..7d319f4 100644
+--- a/flutter_app/web/index.html
++++ b/flutter_app/web/index.html
+@@ -18,7 +18,6 @@
+ 
+   <meta charset="UTF-8">
+   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+   <meta name="description" content="A new Flutter project.">
+ 
+   <!-- iOS meta tags & icons -->
+
+commit 6b9599163e1f453e04a8ee31f2c9432fc29f7cf7
+Author: Bruno Rezende de Lima <brezendelima@gmail.com>
+Date:   Mon Mar 30 20:43:55 2026 -0300
+
+    fix(web): adiciona meta tag de viewport para corrigir escala e zoom em dispositivos m├│veis e painel devtools
+
+diff --git a/flutter_app/web/index.html b/flutter_app/web/index.html
+index 7d319f4..e20155e 100644
+--- a/flutter_app/web/index.html
++++ b/flutter_app/web/index.html
+@@ -18,6 +18,7 @@
+ 
+   <meta charset="UTF-8">
+   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
++  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+   <meta name="description" content="A new Flutter project.">
+ 
+   <!-- iOS meta tags & icons -->
+
+commit c48e4277db31ef7062aaf8be17c83dd10a4cd50a
+Author: Bruno Rezende de Lima <brezendelima@gmail.com>
+Date:   Mon Mar 23 16:06:28 2026 -0300
+
+    feat: habilitar suporte web Flutter e adicionar script de execucao
+    
+    - Adiciona pasta web/ gerada pelo flutter create --platforms=web
+    - Adiciona .gitignore padrao do Flutter
+    - Adiciona analysis_options.yaml e README.md do Flutter
+    - Adiciona pasta test/ com widget_test.dart
+    - Confirma api_service.dart com suporte a kIsWeb (localhost:3000)
+    - Adiciona script start-web.ps1 para iniciar backend + Flutter web
+    - Adiciona workflow .agent/workflows/run-web.md (/run-web)
+
+diff --git a/flutter_app/web/index.html b/flutter_app/web/index.html
+new file mode 100644
+index 0000000..7d319f4
+--- /dev/null
++++ b/flutter_app/web/index.html
+@@ -0,0 +1,38 @@
++<!DOCTYPE html>
++<html>
++<head>
++  <!--
++    If you are serving your web app in a path other than the root, change the
++    href value below to reflect the base path you are serving from.
++
++    The path provided below has to start and end with a slash "/" in order for
++    it to work correctly.
++
++    For more details:
++    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
++
++    This is a placeholder for base href that will be replaced by the value of
++    the `--base-href` argument provided to `flutter build`.
++  -->
++  <base href="$FLUTTER_BASE_HREF">
++
++  <meta charset="UTF-8">
++  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
++  <meta name="description" content="A new Flutter project.">
++
++  <!-- iOS meta tags & icons -->
++  <meta name="mobile-web-app-capable" content="yes">
++  <meta name="apple-mobile-web-app-status-bar-style" content="black">
++  <meta name="apple-mobile-web-app-title" content="fisio_saude">
++  <link rel="apple-touch-icon" href="icons/Icon-192.png">
++
++  <!-- Favicon -->
++  <link rel="icon" type="image/png" href="favicon.png"/>
++
++  <title>fisio_saude</title>
++  <link rel="manifest" href="manifest.json">
++</head>
++<body>
++  <script src="flutter_bootstrap.js" async></script>
++</body>
++</html>
