@@ -65,8 +65,8 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
 
     if (confirmar == true) {
       final res = isAtivo
-          ? await _api.deactivateRecord(table, id)
-          : await _api.reactivateRecord(table, id);
+          ? await _api.deactivateRecord('usuario', id)
+          : await _api.reactivateRecord('usuario', id);
 
       if (!mounted) return;
       if (res['success']) {
@@ -110,7 +110,7 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
     );
 
     if (confirmar == true) {
-      final res = await _api.permanentDeleteRecord(table, id);
+      final res = await _api.permanentDeleteUsuario(id);
       if (!mounted) return;
       if (res['success']) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -185,12 +185,12 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
                       subtitle: 'CREFITO: ${p['crefito']}',
                       isAtivo: p['ativo'] as bool? ?? true,
                       onToggleAtivo: () => _confirmToggleAtivo(
-                          'profissional',
+                          'usuario',
                           p['id'].toString(),
                           p['nome'],
                           p['ativo'] as bool? ?? true),
                       onPermanentDelete: () => _confirmPermanentDelete(
-                          'profissional', p['id'].toString(), p['nome']),
+                          'usuario', p['id'].toString(), p['nome']),
                     )),
                 const SizedBox(height: 24),
                 _SectionHeader(
@@ -204,12 +204,12 @@ class _AdminManagementTabState extends State<AdminManagementTab> {
                       subtitle: p['email'],
                       isAtivo: p['ativo'] as bool? ?? true,
                       onToggleAtivo: () => _confirmToggleAtivo(
-                          'paciente',
+                          'usuario',
                           p['id'].toString(),
                           p['nome'],
                           p['ativo'] as bool? ?? true),
                       onPermanentDelete: () => _confirmPermanentDelete(
-                          'paciente', p['id'].toString(), p['nome']),
+                          'usuario', p['id'].toString(), p['nome']),
                     )),
               ],
             ),

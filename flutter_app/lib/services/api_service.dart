@@ -1,15 +1,46 @@
-/// supabase_service.dart  (antigo api_service.dart)
-/// Serviço de comunicação com o Supabase — +Fisio +Saúde
+/// api_service.dart
+/// Serviço de comunicação com o Supabase — +Físio +Saúde
 ///
-/// Substitui completamente a camada Node.js (localhost:3000).
-/// Usa o Supabase Auth SDK para login, registro e recuperação de senha.
-/// Os dados de paciente/profissional são gravados diretamente nas tabelas.
+/// Esquema unificado: tabela `usuario` com FK para `permissao`.
+/// Permissões: 1=Paciente, 2=Profissional, 3=Administrador.
+/// A tabela `login` é usada como log de acessos.
 library;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Acesso global ao cliente Supabase (após Supabase.initialize)
 SupabaseClient get _sb => Supabase.instance.client;
+
+/// Níveis de permissão
+class Permissao {
+  static const int paciente = 1;
+  static const int profissional = 2;
+  static const int administrador = 3;
+
+  static String nomePorNivel(int nivel) {
+    switch (nivel) {
+      case 1:
+        return 'Paciente';
+      case 2:
+        return 'Profissional';
+      case 3:
+        return 'Administrador';
+      default:
+        return 'Paciente';
+    }
+  }
+
+  static int nivelPorNome(String nome) {
+    switch (nome.toLowerCase()) {
+      case 'profissional':
+        return 2;
+      case 'administrador':
+        return 3;
+      default:
+        return 1;
+    }
+  }
+}
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -18,7 +49,7 @@ class ApiService {
 
   // --- Sessão atual ---------------------------------------------------------
 
-  /// Retorna o usuário autenticado atual, ou null se Não logado.
+  /// Retorna o usuário autenticado atual, ou null se não logado.
   User? get currentUser => _sb.auth.currentUser;
 
   /// Stream que emite eventos de mudança de autenticação.
@@ -39,91 +70,47 @@ class ApiService {
       final session = response.session;
 
       if (user == null) {
+        await _registrarLog(email: email, status: 'falha');
         return {'success': false, 'message': 'Credenciais inválidas.'};
       }
 
-      // Busca o tipo de usuário na tabela login
-      final loginData = await _sb
-          .from('login')
-          .select(
-              'tipo_usuario, id_paciente, id_profissional, id_administrador')
+      // Busca dados do usuário + permissão via join
+      final usuarioData = await _sb
+          .from('usuario')
+          .select('id, nome, email, id_permissao, ativo, permissao(nome, nivel)')
           .eq('supabase_user_id', user.id)
           .maybeSingle();
 
-      // Se loginData for null (possível bloqueio RLS ou registro faltando),
-      // tenta identificar o tipo pelo email nas tabelas correspondentes.
-      String tipo = loginData?['tipo_usuario'] ?? '';
-      String? idPaciente = loginData?['id_paciente']?.toString();
-      String? idProfissional = loginData?['id_profissional']?.toString();
-      String? idAdministrador = loginData?['id_administrador']?.toString();
-      String nome = user.userMetadata?['nome'] as String? ?? '';
-
-      if (tipo.isEmpty) {
-        // Fallback: verifica a tabela administrador primeiro
-        final admRow = await _sb
-            .from('administrador')
-            .select('id, nome')
-            .eq('email', user.email!)
-            .maybeSingle();
-        if (admRow != null) {
-          tipo = 'Administrador';
-          idAdministrador = admRow['id']?.toString();
-          nome = admRow['nome'] as String? ?? nome;
-        } else {
-          // Verifica profissional
-          final profRow = await _sb
-              .from('profissional')
-              .select('id, nome')
-              .eq('email', user.email!)
-              .maybeSingle();
-          if (profRow != null) {
-            tipo = 'Profissional';
-            idProfissional = profRow['id']?.toString();
-            nome = profRow['nome'] as String? ?? nome;
-            // Verifica se tem paciente vinculado
-            final pacRow = await _sb
-                .from('paciente')
-                .select('id')
-                .eq('email', user.email!)
-                .maybeSingle();
-            idPaciente = pacRow?['id']?.toString();
-          } else {
-            // Verifica paciente
-            final pacRow = await _sb
-                .from('paciente')
-                .select('id, nome')
-                .eq('email', user.email!)
-                .maybeSingle();
-            tipo = 'Paciente';
-            idPaciente = pacRow?['id']?.toString();
-            nome = pacRow?['nome'] as String? ?? nome;
-          }
-        }
-      } else {
-        // loginData existe — busca o nome da tabela correspondente
-        if (tipo == 'Administrador' && idAdministrador != null) {
-          final admRow = await _sb
-              .from('administrador')
-              .select('nome')
-              .eq('id', idAdministrador)
-              .maybeSingle();
-          nome = admRow?['nome'] as String? ?? nome;
-        } else if (tipo == 'Profissional' && idProfissional != null) {
-          final profRow = await _sb
-              .from('profissional')
-              .select('nome')
-              .eq('id', idProfissional)
-              .maybeSingle();
-          nome = profRow?['nome'] as String? ?? nome;
-        } else if (idPaciente != null) {
-          final pacRow = await _sb
-              .from('paciente')
-              .select('nome')
-              .eq('id', idPaciente)
-              .maybeSingle();
-          nome = pacRow?['nome'] as String? ?? nome;
-        }
+      if (usuarioData == null) {
+        await _registrarLog(email: email, status: 'falha');
+        return {
+          'success': false,
+          'message': 'Usuário não encontrado no sistema. Contate o suporte.'
+        };
       }
+
+      if (usuarioData['ativo'] == false) {
+        await _registrarLog(email: email, status: 'falha');
+        return {
+          'success': false,
+          'message': 'Conta desativada. Contate o administrador.'
+        };
+      }
+
+      final String usuarioId = usuarioData['id'] as String;
+      final String nome = usuarioData['nome'] as String? ?? user.email ?? '';
+      final int idPermissao = usuarioData['id_permissao'] as int;
+      final permissaoData = usuarioData['permissao'] as Map<String, dynamic>?;
+      final String tipo = permissaoData?['nome'] as String? ??
+          Permissao.nomePorNivel(idPermissao);
+
+      // Registrar acesso bem-sucedido
+      await _registrarLog(
+        supabaseUserId: user.id,
+        usuarioId: usuarioId,
+        email: email,
+        status: 'sucesso',
+      );
 
       return {
         'success': true,
@@ -131,15 +118,15 @@ class ApiService {
         'token': session?.accessToken,
         'user': {
           'id': user.id,
+          'id_usuario': usuarioId,
           'email': user.email,
           'nome': nome,
-          'tipo': tipo.isEmpty ? 'Paciente' : tipo,
-          'id_paciente': idPaciente,
-          'id_profissional': idProfissional,
-          'id_administrador': idAdministrador,
+          'tipo': tipo,
+          'id_permissao': idPermissao,
         },
       };
     } on AuthException catch (e) {
+      await _registrarLog(email: email, status: 'falha');
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
@@ -151,7 +138,8 @@ class ApiService {
 
   // --- Auth: Registro de Paciente -------------------------------------------
 
-  /// Registra paciente no Supabase Auth e grava dados na tabela `paciente`.
+  /// Registra paciente no Supabase Auth e grava dados na tabela `usuario`
+  /// com id_permissao = 1 (Paciente).
   Future<Map<String, dynamic>> registerPatient(
       Map<String, dynamic> data) async {
     try {
@@ -171,34 +159,35 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela paciente
-      final pacienteResp = await _sb
-          .from('paciente')
+      // 2. Gravar dados na tabela usuario com permissao = Paciente
+      final usuarioResp = await _sb
+          .from('usuario')
           .insert({
+            'supabase_user_id': user.id,
+            'id_permissao': Permissao.paciente,
             'nome': (data['nome'] as String).trim(),
             'email': email,
-            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': (data['dataNascimento'] as String).split('/').reversed.join('-'),
+            'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'data_nasc': _formatarData(data['dataNascimento'] as String?),
             'telefone':
                 (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
             'genero': data['genero'],
+            'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'logradouro': data['logradouro'],
+            'numero': data['numero'],
+            'complemento': data['complemento'],
+            'bairro': data['bairro'],
+            'cidade': data['cidade'],
+            'uf': data['uf'],
             'ativo': true,
           })
           .select()
           .single();
 
-      // 3. Criar vínculo na tabela login
-      await _sb.from('login').insert({
-        'supabase_user_id': user.id,
-        'email': email,
-        'tipo_usuario': 'Paciente',
-        'id_paciente': pacienteResp['id'],
-      });
-
       return {
         'success': true,
         'message': 'Paciente cadastrado com sucesso!',
-        'paciente_id': pacienteResp['id'],
+        'id_usuario': usuarioResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
@@ -220,8 +209,8 @@ class ApiService {
 
   // --- Auth: Registro de Profissional ---------------------------------------
 
-  /// Registra profissional no Auth e grava dados na tabela `profissional`.
-  /// O profissional é ativado imediatamente (sem aprovação de administrador).
+  /// Registra profissional no Auth e grava dados na tabela `usuario`
+  /// com id_permissao = 2 (Profissional).
   Future<Map<String, dynamic>> registerProfessional(
       Map<String, dynamic> data) async {
     try {
@@ -241,62 +230,39 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela profissional
-      final profResp = await _sb
-          .from('profissional')
+      // 2. Gravar dados na tabela usuario com permissao = Profissional
+      final usuarioResp = await _sb
+          .from('usuario')
           .insert({
+            'supabase_user_id': user.id,
+            'id_permissao': Permissao.profissional,
             'nome': (data['nome'] as String).trim(),
             'email': email,
-            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-            'crefito': (data['crefito'] as String).trim(),
-            'especialidade': (data['especializacao'] as String).trim(),
+            'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'data_nasc': _formatarData(data['dataNascimento'] as String?),
             'telefone':
                 (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-            'ativo': true,
-          })
-          .select()
-          .single();
-
-      // 3. Profissional também é Paciente: Criar registro na tabela paciente
-      // Usa dados_nasc e genero coletados no formulário
-      final String dataNascRaw = data['dataNascimento'] as String? ?? '';
-      String dataNascFormatted = '1990-01-01';
-      if (dataNascRaw.length == 10 && dataNascRaw.contains('/')) {
-        dataNascFormatted = dataNascRaw.split('/').reversed.join('-');
-      } else if (dataNascRaw.length == 10 && dataNascRaw.contains('-')) {
-        dataNascFormatted = dataNascRaw;
-      }
-
-      final pacienteResp = await _sb
-          .from('paciente')
-          .insert({
-            'nome': (data['nome'] as String).trim(),
-            'email': email,
-            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': dataNascFormatted,
-            'telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
             'genero': (data['genero'] as String?)?.isNotEmpty == true
                 ? data['genero']
                 : 'Não informado',
+            'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'logradouro': data['logradouro'],
+            'numero': data['numero'],
+            'complemento': data['complemento'],
+            'bairro': data['bairro'],
+            'cidade': data['cidade'],
+            'uf': data['uf'],
+            'crefito': (data['crefito'] as String?)?.trim(),
+            'especialidade': (data['especializacao'] as String?)?.trim(),
             'ativo': true,
           })
           .select()
           .single();
-
-      // 4. Criar vínculo na tabela login (conectando ambos os IDs)
-      await _sb.from('login').insert({
-        'supabase_user_id': user.id,
-        'email': email,
-        'tipo_usuario': 'Profissional',
-        'id_profissional': profResp['id'],
-        'id_paciente': pacienteResp['id'],
-      });
 
       return {
         'success': true,
         'message': 'Cadastro realizado com sucesso! Você já pode fazer login.',
-        'profissional_id': profResp['id'],
-        'paciente_id': pacienteResp['id'],
+        'id_usuario': usuarioResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
@@ -318,7 +284,8 @@ class ApiService {
 
   // --- Auth: Registro de Administrador -------------------------------------
 
-  /// Registra administrador no Auth e grava dados na tabela `administrador`.
+  /// Registra administrador no Auth e grava dados na tabela `usuario`
+  /// com id_permissao = 3 (Administrador).
   Future<Map<String, dynamic>> registerAdmin(Map<String, dynamic> data) async {
     try {
       final email = (data['email'] as String).trim().toLowerCase();
@@ -336,31 +303,25 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela administrador
-      final admResp = await _sb
-          .from('administrador')
+      // 2. Gravar dados na tabela usuario com permissao = Administrador
+      final usuarioResp = await _sb
+          .from('usuario')
           .insert({
+            'supabase_user_id': user.id,
+            'id_permissao': Permissao.administrador,
             'nome': (data['nome'] as String).trim(),
             'email': email,
-            'cpf': (data['cpf'] as String).replaceAll(RegExp(r'\D'), ''),
+            'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
             'cargo': data['cargo'] ?? 'Diretor',
             'ativo': true,
           })
           .select()
           .single();
 
-      // 3. Criar vínculo na tabela login
-      await _sb.from('login').insert({
-        'supabase_user_id': user.id,
-        'email': email,
-        'tipo_usuario': 'Administrador',
-        'id_administrador': admResp['id'],
-      });
-
       return {
         'success': true,
         'message': 'Administrador cadastrado com sucesso!',
-        'id_administrador': admResp['id'],
+        'id_usuario': usuarioResp['id'],
       };
     } on AuthException catch (e) {
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
@@ -383,7 +344,6 @@ class ApiService {
   // --- Auth: Esqueci Minha Senha --------------------------------------------
 
   /// Envia e-mail real de recuperação de senha via Supabase.
-  /// O link no e-mail redireciona para a tela de redefinição de senha do app.
   Future<Map<String, dynamic>> forgotPassword(String email,
       {String? redirectTo}) async {
     try {
@@ -408,7 +368,6 @@ class ApiService {
 
   // --- Auth: Verificar Código OTP (Passo 2) ---------------------------------
 
-  /// Verifica o token OTP enviado por e-mail pelo Supabase.
   Future<Map<String, dynamic>> verifyCode(String email, String code) async {
     try {
       final response = await _sb.auth.verifyOTP(
@@ -432,7 +391,6 @@ class ApiService {
 
   // --- Auth: Redefinir Senha (Passo 3) --------------------------------------
 
-  /// Atualiza a senha do usuário após OTP verificado.
   Future<Map<String, dynamic>> resetPassword({
     required String email,
     required String code,
@@ -440,7 +398,7 @@ class ApiService {
     required String confirmarSenha,
   }) async {
     if (novaSenha != confirmarSenha) {
-      return {'success': false, 'message': 'As senhas Não coincidem.'};
+      return {'success': false, 'message': 'As senhas não coincidem.'};
     }
     if (novaSenha.length < 6) {
       return {
@@ -475,16 +433,23 @@ class ApiService {
     await _sb.auth.signOut();
   }
 
-  // --- Paciente: Perfil -----------------------------------------------------
+  // --- Usuario: Busca por supabase_user_id ----------------------------------
 
-  /// Busca os dados completos do paciente pelo ID.
-  Future<Map<String, dynamic>> getPaciente(String pacienteId) async {
-    if (pacienteId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
+  /// Busca dados completos do usuário logado via supabase_user_id.
+  Future<Map<String, dynamic>> getUsuarioLogado() async {
+    final user = currentUser;
+    if (user == null) return {'success': false, 'message': 'Não autenticado.'};
+    return getUsuarioPorSupabaseId(user.id);
+  }
+
+  /// Busca dados do usuário pelo supabase_user_id (join com permissao).
+  Future<Map<String, dynamic>> getUsuarioPorSupabaseId(
+      String supabaseUserId) async {
     try {
       final data = await _sb
-          .from('paciente')
-          .select()
-          .eq('id', pacienteId)
+          .from('usuario')
+          .select('*, permissao(id, nome, nivel)')
+          .eq('supabase_user_id', supabaseUserId)
           .single();
       return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
@@ -494,14 +459,55 @@ class ApiService {
     }
   }
 
-  /// Atualiza os dados editáveis do paciente.
-  Future<Map<String, dynamic>> updatePaciente(
-      String pacienteId, Map<String, dynamic> dados) async {
+  /// Busca dados do usuário pelo ID interno (UUID da tabela usuario).
+  Future<Map<String, dynamic>> getUsuario(String usuarioId) async {
+    if (usuarioId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
     try {
       final data = await _sb
-          .from('paciente')
+          .from('usuario')
+          .select('*, permissao(id, nome, nivel)')
+          .eq('id', usuarioId)
+          .single();
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  // --- Compat: métodos legados de Paciente → usuario -----------------------
+
+  /// Alias para compatibilidade: busca dados do paciente pelo ID.
+  Future<Map<String, dynamic>> getPaciente(String usuarioId) =>
+      getUsuario(usuarioId);
+
+  /// Alias para compatibilidade: atualiza dados do paciente.
+  Future<Map<String, dynamic>> updatePaciente(
+          String usuarioId, Map<String, dynamic> dados) =>
+      updateUsuario(usuarioId, dados);
+
+  // --- Compat: métodos legados de Profissional → usuario -------------------
+
+  /// Alias para compatibilidade: busca dados do profissional pelo ID.
+  Future<Map<String, dynamic>> getProfissional(String usuarioId) =>
+      getUsuario(usuarioId);
+
+  /// Alias para compatibilidade: atualiza dados do profissional.
+  Future<Map<String, dynamic>> updateProfissional(
+          String usuarioId, Map<String, dynamic> dados) =>
+      updateUsuario(usuarioId, dados);
+
+  // --- Usuario: Atualização -------------------------------------------------
+
+  /// Atualiza campos editáveis do usuário.
+  Future<Map<String, dynamic>> updateUsuario(
+      String usuarioId, Map<String, dynamic> dados) async {
+    try {
+      final data = await _sb
+          .from('usuario')
           .update(dados)
-          .eq('id', pacienteId)
+          .eq('id', usuarioId)
           .select()
           .single();
       return {'success': true, 'data': data};
@@ -554,15 +560,13 @@ class ApiService {
   /// Lista todos os profissionais ativos para busca pelo paciente.
   Future<Map<String, dynamic>> getProfissionais({String? termoBusca}) async {
     try {
-      var query = _sb
-          .from('profissional')
-          .select('id, nome, especialidade, crefito, telefone')
+      final data = await _sb
+          .from('usuario')
+          .select('id, nome, especialidade, crefito, telefone, cidade, uf')
+          .eq('id_permissao', Permissao.profissional)
           .eq('ativo', true)
           .order('nome');
 
-      final data = await query;
-
-      // Filtro local por termo (nome ou especialidade)
       if (termoBusca != null && termoBusca.trim().isNotEmpty) {
         final termo = termoBusca.trim().toLowerCase();
         final filtrado = (data as List).where((p) {
@@ -581,7 +585,7 @@ class ApiService {
     }
   }
 
-  // --- Paciente: Consultas --------------------------------------------------
+  // --- Consultas ------------------------------------------------------------
 
   /// Busca as consultas do paciente com dados do profissional.
   Future<Map<String, dynamic>> getConsultas(String pacienteId) async {
@@ -589,7 +593,7 @@ class ApiService {
     try {
       final data = await _sb
           .from('consulta')
-          .select('*, profissional(nome, especialidade)')
+          .select('*, profissional:id_profissional(nome, especialidade)')
           .eq('id_paciente', pacienteId)
           .order('data_hora', ascending: false)
           .limit(20);
@@ -601,52 +605,17 @@ class ApiService {
     }
   }
 
-  // --- Profissional: Perfil --------------------------------------------------
-
-  /// Busca os dados completos do profissional pelo ID.
-  Future<Map<String, dynamic>> getProfissional(String profissionalId) async {
-    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
-    try {
-      final data = await _sb
-          .from('profissional')
-          .select()
-          .eq('id', profissionalId)
-          .single();
-      return {'success': true, 'data': data};
-    } on PostgrestException catch (e) {
-      return {'success': false, 'message': e.message};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
-    }
-  }
-
-  /// Atualiza os dados editáveis do profissional.
-  Future<Map<String, dynamic>> updateProfissional(
-      String profissionalId, Map<String, dynamic> dados) async {
-    try {
-      final data = await _sb
-          .from('profissional')
-          .update(dados)
-          .eq('id', profissionalId)
-          .select()
-          .single();
-      return {'success': true, 'data': data};
-    } on PostgrestException catch (e) {
-      return {'success': false, 'message': e.message};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro de conexão.'};
-    }
-  }
-
-  // --- Profissional: Consultas e Pacientes -----------------------------------
-
   /// Busca as consultas do profissional com dados do paciente.
-  Future<Map<String, dynamic>> getConsultasProfissional(String profissionalId) async {
-    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
+  Future<Map<String, dynamic>> getConsultasProfissional(
+      String profissionalId) async {
+    if (profissionalId.isEmpty) {
+      return {'success': false, 'message': 'ID inválido.'};
+    }
     try {
       final data = await _sb
           .from('consulta')
-          .select('*, paciente(nome, email, telefone, data_nasc, genero)')
+          .select(
+              '*, paciente:id_paciente(nome, email, telefone, data_nasc, genero)')
           .eq('id_profissional', profissionalId)
           .order('data_hora', ascending: true);
       return {'success': true, 'data': data};
@@ -658,16 +627,18 @@ class ApiService {
   }
 
   /// Busca a lista única de pacientes que já tiveram consulta com este profissional.
-  Future<Map<String, dynamic>> getPacientesDoProfissional(String profissionalId) async {
-    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
+  Future<Map<String, dynamic>> getPacientesDoProfissional(
+      String profissionalId) async {
+    if (profissionalId.isEmpty) {
+      return {'success': false, 'message': 'ID inválido.'};
+    }
     try {
-      // 1. Busca todas as consultas do profissional
       final consultas = await _sb
           .from('consulta')
-          .select('id_paciente, paciente(id, nome, email, telefone, cpf, data_nasc)')
+          .select(
+              'id_paciente, paciente:id_paciente(id, nome, email, telefone, cpf, data_nasc)')
           .eq('id_profissional', profissionalId);
-      
-      // 2. Filtra para obter pacientes únicos
+
       final Map<String, dynamic> pacientesUnicos = {};
       for (var item in (consultas as List)) {
         final pac = item['paciente'];
@@ -684,35 +655,37 @@ class ApiService {
     }
   }
 
-  // --- Administrador: Gestão --------------------------------------------------
+  // --- Administrador: Gestão -----------------------------------------------
 
-  /// Busca todos os pacientes para o painel ADM.
-  Future<Map<String, dynamic>> getAllPacientes({bool filterAtivo = true}) async {
+  /// Busca todos os usuários de um determinado nível de permissão.
+  Future<Map<String, dynamic>> getUsuariosPorPermissao(int idPermissao,
+      {bool filterAtivo = true}) async {
     try {
-      var query = _sb.from('paciente').select();
-      if (filterAtivo) {
-         query = query.eq('ativo', true);
-      }
-      final res = await query.order('nome');
-      return {'success': true, 'data': res};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao carregar pacientes.'};
-    }
-  }
-
-  /// Busca todos os profissionais para o painel ADM.
-  Future<Map<String, dynamic>> getAllProfissionais({bool filterAtivo = true}) async {
-    try {
-      var query = _sb.from('profissional').select();
+      var query =
+          _sb.from('usuario').select('*, permissao(nome, nivel)').eq('id_permissao', idPermissao);
       if (filterAtivo) {
         query = query.eq('ativo', true);
       }
       final res = await query.order('nome');
       return {'success': true, 'data': res};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao carregar profissionais.'};
+      return {'success': false, 'message': 'Erro ao carregar usuários.'};
     }
   }
+
+  /// Alias: Lista todos os pacientes para o painel ADM.
+  Future<Map<String, dynamic>> getAllPacientes({bool filterAtivo = true}) =>
+      getUsuariosPorPermissao(Permissao.paciente, filterAtivo: filterAtivo);
+
+  /// Alias: Lista todos os profissionais para o painel ADM.
+  Future<Map<String, dynamic>> getAllProfissionais(
+          {bool filterAtivo = true}) =>
+      getUsuariosPorPermissao(Permissao.profissional, filterAtivo: filterAtivo);
+
+  /// Busca todos os administradores para o painel ADM.
+  Future<Map<String, dynamic>> getAllAdministradores(
+          {bool filterAtivo = true}) =>
+      getUsuariosPorPermissao(Permissao.administrador, filterAtivo: filterAtivo);
 
   /// Busca todas as consultas para o painel ADM.
   Future<Map<String, dynamic>> getAllConsultas() async {
@@ -727,145 +700,68 @@ class ApiService {
   /// Busca todos os sintomas globais para BI ADM.
   Future<Map<String, dynamic>> getAllSintomasGlobais() async {
     try {
-      final res = await _sb.from('registro_sintomas').select().order('data_hora', ascending: false);
+      final res = await _sb
+          .from('registro_sintomas')
+          .select()
+          .order('data_hora', ascending: false);
       return {'success': true, 'data': res};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao carregar sintomas globais.'};
+      return {
+        'success': false,
+        'message': 'Erro ao carregar sintomas globais.'
+      };
     }
   }
 
-  // --- Gestão de Papéis (Roles) -------------------------------------------
+  // --- Gestão: Alterar Permissão -------------------------------------------
 
-  /// Adiciona o papel de Paciente a um usuário existente (ADM ou Profissional).
-  /// Cria registro na tabela `paciente` e atualiza `login` com o id_paciente.
-  Future<Map<String, dynamic>> addPacienteRole({
-    required String supabaseUserId,
-    required String nome,
-    required String email,
-    required String cpf,
-    required String dataNascimento,
-    required String genero,
-    String? telefone,
+  /// Altera a permissão de um usuário (ex: promover paciente a profissional).
+  /// Atualiza também os campos específicos do novo papel.
+  Future<Map<String, dynamic>> alterarPermissao({
+    required String usuarioId,
+    required int novaPermissao,
+    Map<String, dynamic>? dadosAdicionais,
   }) async {
     try {
-      // Verifica se já existe
-      final existing = await _sb
-          .from('paciente')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle();
-      if (existing != null) {
-        // Já existe — apenas vincula
-        await _sb
-            .from('login')
-            .update({'id_paciente': existing['id']})
-            .eq('supabase_user_id', supabaseUserId);
-        return {'success': true, 'id_paciente': existing['id'].toString()};
-      }
+      final updateData = <String, dynamic>{
+        'id_permissao': novaPermissao,
+        ...?dadosAdicionais,
+      };
 
-      String dataNascFormatted = dataNascimento;
-      if (dataNascimento.contains('/')) {
-        dataNascFormatted = dataNascimento.split('/').reversed.join('-');
-      }
-
-      final pacResp = await _sb
-          .from('paciente')
-          .insert({
-            'nome': nome.trim(),
-            'email': email,
-            'cpf': cpf.replaceAll(RegExp(r'\D'), ''),
-            'data_nasc': dataNascFormatted,
-            'telefone': telefone?.replaceAll(RegExp(r'\D'), ''),
-            'genero': genero.isNotEmpty ? genero : 'Não informado',
-            'ativo': true,
-          })
+      final data = await _sb
+          .from('usuario')
+          .update(updateData)
+          .eq('id', usuarioId)
           .select()
           .single();
-
-      await _sb
-          .from('login')
-          .update({'id_paciente': pacResp['id']})
-          .eq('supabase_user_id', supabaseUserId);
-
-      return {'success': true, 'id_paciente': pacResp['id'].toString()};
+      return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao adicionar papel de Paciente.'};
-    }
-  }
-
-  /// Adiciona o papel de Profissional a um Administrador existente.
-  /// Cria registro na tabela `profissional` e atualiza `login` com o id_profissional.
-  Future<Map<String, dynamic>> addProfissionalRole({
-    required String supabaseUserId,
-    required String nome,
-    required String email,
-    required String cpf,
-    required String crefito,
-    required String especialidade,
-    String? telefone,
-  }) async {
-    try {
-      // Verifica se já existe
-      final existing = await _sb
-          .from('profissional')
-          .select('id')
-          .eq('email', email)
-          .maybeSingle();
-      if (existing != null) {
-        await _sb
-            .from('login')
-            .update({'id_profissional': existing['id']})
-            .eq('supabase_user_id', supabaseUserId);
-        return {'success': true, 'id_profissional': existing['id'].toString()};
-      }
-
-      final profResp = await _sb
-          .from('profissional')
-          .insert({
-            'nome': nome.trim(),
-            'email': email,
-            'cpf': cpf.replaceAll(RegExp(r'\D'), ''),
-            'crefito': crefito.trim(),
-            'especialidade': especialidade.trim(),
-            'telefone': telefone?.replaceAll(RegExp(r'\D'), ''),
-            'ativo': true,
-          })
-          .select()
-          .single();
-
-      await _sb
-          .from('login')
-          .update({
-            'id_profissional': profResp['id'],
-            'tipo_usuario': 'Administrador', // mantém tipo original
-          })
-          .eq('supabase_user_id', supabaseUserId);
-
-      return {'success': true, 'id_profissional': profResp['id'].toString()};
-    } on PostgrestException catch (e) {
-      return {'success': false, 'message': e.message};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao adicionar papel de Profissional.'};
+      return {'success': false, 'message': 'Erro ao alterar permissão.'};
     }
   }
 
   // -------------------------------------------------------------------------
 
-  /// Remove (ou desativa) um registro de qualquer tabela.
-  /// Implementamos soft-delete para evitar conflitos de Foreign Keys (400 Bad Request).
-  Future<Map<String, dynamic>> deleteRecord(String table, String id, {bool forceHardDelete = false}) async {
+  /// Desativa um usuário (soft-delete): marca ativo = false.
+  Future<Map<String, dynamic>> deactivateRecord(
+      String table, String id) async {
     try {
-      if (forceHardDelete || table == 'consulta' || table == 'registro_sintomas') {
-        await _sb.from(table).delete().eq('id', id).select().single();
-      } else {
-        await _sb.from(table).update({'ativo': false}).eq('id', id).select().single();
-      }
+      await _sb
+          .from(table)
+          .update({'ativo': false})
+          .eq('id', id)
+          .select()
+          .single();
       return {'success': true};
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
-        return {'success': false, 'message': 'Operação recusada pelo banco (Verifique as políticas RLS).'};
+        return {
+          'success': false,
+          'message':
+              'Operação recusada pelo banco (verifique as políticas RLS).'
+        };
       }
       return {'success': false, 'message': e.message};
     } catch (e) {
@@ -873,26 +769,16 @@ class ApiService {
     }
   }
 
-  /// Desativa um paciente ou profissional: marca ativo = false.
-  /// O registro permanece no banco visível apenas para ADMs.
-  Future<Map<String, dynamic>> deactivateRecord(String table, String id) async {
+  /// Reativa um usuário: marca ativo = true.
+  Future<Map<String, dynamic>> reactivateRecord(
+      String table, String id) async {
     try {
-      await _sb.from(table).update({'ativo': false}).eq('id', id).select().single();
-      return {'success': true};
-    } on PostgrestException catch (e) {
-      if (e.code == 'PGRST116') {
-        return {'success': false, 'message': 'Operação recusada pelo banco (verifique as políticas RLS).'};
-      }
-      return {'success': false, 'message': e.message};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao desativar registro.'};
-    }
-  }
-
-  /// Reativa um paciente ou profissional: marca ativo = true.
-  Future<Map<String, dynamic>> reactivateRecord(String table, String id) async {
-    try {
-      await _sb.from(table).update({'ativo': true}).eq('id', id).select().single();
+      await _sb
+          .from(table)
+          .update({'ativo': true})
+          .eq('id', id)
+          .select()
+          .single();
       return {'success': true};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -901,28 +787,55 @@ class ApiService {
     }
   }
 
-  /// Exclusão permanente: remove da tabela `login`, da tabela principal e do Supabase Auth.
-  /// A remoção do Auth é feita via Edge Function `delete-auth-user` (usa service_role key).
-  Future<Map<String, dynamic>> permanentDeleteRecord(String table, String id) async {
+  /// Remove um registro de qualquer tabela (hard-delete).
+  Future<Map<String, dynamic>> deleteRecord(String table, String id,
+      {bool forceHardDelete = false}) async {
     try {
-      final loginField = table == 'paciente' ? 'id_paciente' : 'id_profissional';
+      if (forceHardDelete ||
+          table == 'consulta' ||
+          table == 'registro_sintomas') {
+        await _sb.from(table).delete().eq('id', id).select().single();
+      } else {
+        await _sb
+            .from(table)
+            .update({'ativo': false})
+            .eq('id', id)
+            .select()
+            .single();
+      }
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        return {
+          'success': false,
+          'message':
+              'Operação recusada pelo banco (Verifique as políticas RLS).'
+        };
+      }
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao deletar registro.'};
+    }
+  }
 
-      // 1. Busca o supabase_user_id ANTES de deletar (precisamos para excluir do Auth)
-      final loginData = await _sb
-          .from('login')
+  /// Exclusão permanente de usuário: remove da tabela `usuario` e do Supabase Auth.
+  Future<Map<String, dynamic>> permanentDeleteUsuario(
+      String usuarioId) async {
+    try {
+      // 1. Busca o supabase_user_id ANTES de deletar
+      final usuarioData = await _sb
+          .from('usuario')
           .select('supabase_user_id')
-          .eq(loginField, id)
+          .eq('id', usuarioId)
           .maybeSingle();
 
-      final supabaseUserId = loginData?['supabase_user_id'] as String?;
+      final supabaseUserId =
+          usuarioData?['supabase_user_id'] as String?;
 
-      // 2. Remove vínculo na tabela login
-      await _sb.from('login').delete().eq(loginField, id);
+      // 2. Remove o registro do usuário (cascata remove consultas e sintomas)
+      await _sb.from('usuario').delete().eq('id', usuarioId);
 
-      // 3. Remove o registro principal
-      await _sb.from(table).delete().eq('id', id);
-
-      // 4. Remove do Supabase Auth via Edge Function (service_role key no servidor)
+      // 3. Remove do Supabase Auth via Edge Function
       if (supabaseUserId != null && supabaseUserId.isNotEmpty) {
         try {
           await _sb.functions.invoke(
@@ -931,7 +844,6 @@ class ApiService {
           );
         } catch (_) {
           // Auth cleanup falhou, mas dados do banco já foram removidos.
-          // Retorna sucesso parcial para não bloquear o fluxo do ADM.
         }
       }
 
@@ -939,8 +851,45 @@ class ApiService {
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao excluir registro permanentemente.'};
+      return {
+        'success': false,
+        'message': 'Erro ao excluir usuário permanentemente.'
+      };
     }
+  }
+
+  // --- Logs ----------------------------------------------------------------
+
+  /// Registra evento de login na tabela `login`.
+  Future<void> _registrarLog({
+    String? supabaseUserId,
+    String? usuarioId,
+    required String email,
+    required String status,
+    String? dispositivo,
+  }) async {
+    try {
+      await _sb.from('login').insert({
+        if (supabaseUserId != null) 'supabase_user_id': supabaseUserId,
+        if (usuarioId != null) 'id_usuario': usuarioId,
+        'email': email,
+        'status': status,
+        if (dispositivo != null) 'dispositivo': dispositivo,
+      });
+    } catch (_) {
+      // Falha no log não deve bloquear o fluxo
+    }
+  }
+
+  // --- Helpers -------------------------------------------------------------
+
+  /// Converte data no formato DD/MM/AAAA para AAAA-MM-DD.
+  String? _formatarData(String? data) {
+    if (data == null || data.isEmpty) return null;
+    if (data.contains('/')) {
+      return data.split('/').reversed.join('-');
+    }
+    return data; // Já está em formato ISO
   }
 
   /// Traduz mensagens de erro do Supabase Auth para português.
@@ -965,7 +914,8 @@ class ApiService {
     if (m.contains('weak_password')) {
       return 'Senha fraca. Use letras, números e símbolos.';
     }
-    if (m.contains('invalid email') || m.contains('unable to validate email')) {
+    if (m.contains('invalid email') ||
+        m.contains('unable to validate email')) {
       return 'E-mail inválido. Verifique o endereço informado.';
     }
     if (m.contains('email address not authorized') ||
@@ -985,17 +935,13 @@ class ApiService {
     if (m.contains('token has expired') || m.contains('token_expired')) {
       return 'Código expirado. Solicite um novo.';
     }
-    // OTP específicos (recuperação de senha, verificação)
     if (m.contains('otp_expired') ||
         (m.contains('invalid') &&
-            (m.contains('otp') || m.contains('token') || m.contains('code')))) {
+            (m.contains('otp') ||
+                m.contains('token') ||
+                m.contains('code')))) {
       return 'Código inválido ou expirado.';
     }
-    // Fallback com a mensagem original
     return 'Erro ao processar solicitação. Tente novamente.';
   }
 }
-
-
-
-
