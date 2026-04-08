@@ -280,32 +280,7 @@ class _ProfessionalRegisterScreenState
                       ],
                     ),
 
-                    // Banner informativo: cadastro imediato
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accent.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                            color: AppTheme.accent.withValues(alpha: 0.4)),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.check_circle_outline,
-                              color: AppTheme.accent, size: 18),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Seu cadastro é ativado imediatamente. Você já pode fazer login após o registro.',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppTheme.accent),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 28),
+
 
                     // --- Dados Pessoais --------------------------------------------
                     const SectionLabel('Dados Pessoais'),

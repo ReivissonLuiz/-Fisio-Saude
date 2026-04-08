@@ -312,6 +312,19 @@ class ApiService {
             'nome': (data['nome'] as String).trim(),
             'email': email,
             'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'data_nasc': _formatarData(data['dataNascimento'] as String?),
+            'telefone':
+                (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'genero': (data['genero'] as String?)?.isNotEmpty == true
+                ? data['genero']
+                : 'Não informado',
+            'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+            'logradouro': data['logradouro'],
+            'numero': data['numero'],
+            'complemento': data['complemento'],
+            'bairro': data['bairro'],
+            'cidade': data['cidade'],
+            'uf': data['uf'],
             'cargo': data['cargo'] ?? 'Diretor',
             'ativo': true,
           })
