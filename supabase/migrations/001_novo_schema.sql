@@ -171,7 +171,7 @@ CREATE POLICY "usuario_admin_update" ON usuario
 
 -- usuario: insert permitido (necessário no cadastro — auth ainda não tem uid em alguns fluxos)
 CREATE POLICY "usuario_insert" ON usuario
-  FOR INSERT TO authenticated WITH CHECK (true);
+  FOR INSERT TO public WITH CHECK (true);
 
 -- login: insert aberto (registrar logs de tentativas de acesso)
 CREATE POLICY "login_insert" ON login
