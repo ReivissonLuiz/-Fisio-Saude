@@ -130,6 +130,22 @@ ALTER TABLE login              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE consulta           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE registro_sintomas  ENABLE ROW LEVEL SECURITY;
 
+-- Função SECURITY DEFINER para verificar se o usuário é administrador (ignora RLS)
+CREATE OR REPLACE FUNCTION check_is_admin()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM usuario
+    WHERE supabase_user_id = auth.uid()
+      AND id_permissao = 3
+  );
+END;
+$$;
+
 -- permissao: leitura pública (todos os usuários autenticados)
 CREATE POLICY "permissao_leitura" ON permissao
   FOR SELECT TO authenticated USING (true);
@@ -146,24 +162,12 @@ CREATE POLICY "usuario_proprio_update" ON usuario
 -- usuario: administradores lêem todos os registros
 CREATE POLICY "usuario_admin_select" ON usuario
   FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM usuario u2
-      WHERE u2.supabase_user_id = auth.uid()
-        AND u2.id_permissao = 3
-    )
-  );
+  USING (check_is_admin());
 
 -- usuario: administradores atualizam qualquer registro
 CREATE POLICY "usuario_admin_update" ON usuario
   FOR UPDATE TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM usuario u2
-      WHERE u2.supabase_user_id = auth.uid()
-        AND u2.id_permissao = 3
-    )
-  );
+  USING (check_is_admin());
 
 -- usuario: insert permitido (necessário no cadastro — auth ainda não tem uid em alguns fluxos)
 CREATE POLICY "usuario_insert" ON usuario
@@ -175,13 +179,7 @@ CREATE POLICY "login_insert" ON login
 
 CREATE POLICY "login_admin_select" ON login
   FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM usuario u2
-      WHERE u2.supabase_user_id = auth.uid()
-        AND u2.id_permissao = 3
-    )
-  );
+  USING (check_is_admin());
 
 -- consulta: paciente vê as próprias, profissional vê as suas, admin vê todas
 CREATE POLICY "consulta_paciente_select" ON consulta
@@ -189,7 +187,7 @@ CREATE POLICY "consulta_paciente_select" ON consulta
   USING (
     id_paciente IN (SELECT id FROM usuario WHERE supabase_user_id = auth.uid())
     OR id_profissional IN (SELECT id FROM usuario WHERE supabase_user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM usuario u2 WHERE u2.supabase_user_id = auth.uid() AND u2.id_permissao = 3)
+    OR check_is_admin()
   );
 
 CREATE POLICY "consulta_insert" ON consulta
@@ -199,21 +197,19 @@ CREATE POLICY "consulta_update" ON consulta
   FOR UPDATE TO authenticated
   USING (
     id_profissional IN (SELECT id FROM usuario WHERE supabase_user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM usuario u2 WHERE u2.supabase_user_id = auth.uid() AND u2.id_permissao = 3)
+    OR check_is_admin()
   );
 
 CREATE POLICY "consulta_delete" ON consulta
   FOR DELETE TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM usuario u2 WHERE u2.supabase_user_id = auth.uid() AND u2.id_permissao = 3)
-  );
+  USING (check_is_admin());
 
 -- registro_sintomas: paciente CRUD dos próprios, admin lê todos
 CREATE POLICY "sintomas_proprio" ON registro_sintomas
   FOR ALL TO authenticated
   USING (
     id_paciente IN (SELECT id FROM usuario WHERE supabase_user_id = auth.uid())
-    OR EXISTS (SELECT 1 FROM usuario u2 WHERE u2.supabase_user_id = auth.uid() AND u2.id_permissao = 3)
+    OR check_is_admin()
   );
 
 -- ─── 7. Índices de Performance ────────────────────────────────────────────
