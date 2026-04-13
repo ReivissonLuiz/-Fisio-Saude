@@ -1,4 +1,4 @@
-﻿/// Tela de redefinição de senha acessada via link do e-mail do Supabase.
+/// Tela de redefinição de senha acessada via link do e-mail do Supabase.
 ///
 /// O Supabase envia um e-mail com um link do tipo:
 ///   https://SEU_PROJETO.supabase.co/auth/v1/verify?token=...&type=recovery&redirect_to=...
@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/password_strength_indicator.dart';
@@ -199,7 +200,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Escolha uma senha forte com pelo menos 6 caracteres.',
+            'Escolha uma senha forte: mínimo 8 caracteres, letra maiúscula, minúscula, número e caractere especial.',
             style: TextStyle(
                 color: AppTheme.textSecondary, fontSize: 14, height: 1.4),
             textAlign: TextAlign.center,
@@ -223,11 +224,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               onPressed: () => setState(() => _obscureNova = !_obscureNova),
             ),
             onChanged: (_) => setState(() {}),
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Informe a nova senha.';
-              if (v.length < 6) return 'Mínimo de 6 caracteres.';
-              return null;
-            },
+            validator: Validators.senha,
           ),
           PasswordStrengthIndicator(password: _novaSenhaCtrl.text),
           const SizedBox(height: 16),

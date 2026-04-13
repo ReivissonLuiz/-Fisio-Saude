@@ -103,6 +103,31 @@ class Validators {
     return null;
   }
 
+  /// Valida senha forte:
+  ///   - Mínimo 8 caracteres
+  ///   - Pelo menos 1 letra maiúscula
+  ///   - Pelo menos 1 letra minúscula
+  ///   - Pelo menos 1 número
+  ///   - Pelo menos 1 caractere especial (!@#$&*~%^()_+=-]
+  /// Retorna null se válida, ou mensagem de erro detalhada.
+  static String? senha(String? value) {
+    if (value == null || value.isEmpty) return 'Crie uma senha.';
+    if (value.length < 8) return 'A senha deve ter no mínimo 8 caracteres.';
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'A senha deve conter pelo menos uma letra maiúscula.';
+    }
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'A senha deve conter pelo menos uma letra minúscula.';
+    }
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'A senha deve conter pelo menos um número.';
+    }
+    if (!value.contains(RegExp(r'[!@#\$&*~%^()_+=\-]'))) {
+      return 'A senha deve conter pelo menos um caractere especial (!@#\$&*~%^()_+=-).';
+    }
+    return null; // ✅ Senha forte
+  }
+
   /// Valida CEP obrigatório: deve ter exatamente 8 dígitos.
   static String? cepObrigatorio(String? value, String unmaskedText) {
     if (unmaskedText.length != 8) return 'CEP inválido.';

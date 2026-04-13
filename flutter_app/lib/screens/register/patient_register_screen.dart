@@ -483,7 +483,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
 
                     CustomTextField(
                       label: 'Senha *',
-                      hint: 'Mínimo 6 caracteres',
+                      hint: 'Ex: Fisio@2024',
                       controller: _senhaCtrl,
                       obscureText: _obscureSenha,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -497,11 +497,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                             setState(() => _obscureSenha = !_obscureSenha),
                       ),
                       onChanged: (_) => setState(() {}),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Crie uma senha.';
-                        if (v.length < 6) return 'Mínimo 6 caracteres.';
-                        return null;
-                      },
+                      validator: Validators.senha,
                     ),
                     PasswordStrengthIndicator(password: _senhaCtrl.text),
                     const SizedBox(height: 14),
@@ -526,7 +522,7 @@ class _PatientRegisterScreenState extends State<PatientRegisterScreen> {
                           return 'Confirme sua senha.';
                         }
                         if (v != _senhaCtrl.text) {
-                          return 'As senhas Não coincidem.';
+                          return 'As senhas não coincidem.';
                         }
                         return null;
                       },

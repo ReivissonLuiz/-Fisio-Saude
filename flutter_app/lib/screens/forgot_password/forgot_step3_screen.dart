@@ -1,10 +1,11 @@
-﻿/// forgot_step3_screen.dart
+/// forgot_step3_screen.dart
 /// Passo 3: O usuário define uma nova senha com indicador de força.
 library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../utils/validators.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/password_strength_indicator.dart';
@@ -106,7 +107,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Sua nova senha deve ter pelo menos 6 caracteres.',
+                      'Sua nova senha deve ter pelo menos 8 caracteres, letra maiúscula, minúscula, número e caractere especial.',
                       style: TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14),
                     ),
@@ -130,13 +131,7 @@ class _ForgotStep3ScreenState extends State<ForgotStep3Screen> {
                             setState(() => _obscureNova = !_obscureNova),
                       ),
                       onChanged: (_) => setState(() {}),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Informe a nova senha.';
-                        }
-                        if (v.length < 6) return 'Mínimo de 6 caracteres.';
-                        return null;
-                      },
+                      validator: Validators.senha,
                     ),
 
                     // Indicador de força
