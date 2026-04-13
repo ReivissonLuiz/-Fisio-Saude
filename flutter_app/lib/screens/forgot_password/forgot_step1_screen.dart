@@ -1,4 +1,4 @@
-﻿/// Passo 1: usuário informa o e-mail e recebe link de recuperação no e-mail.
+/// Passo 1: usuário informa o e-mail e recebe link de recuperação no e-mail.
 /// O Supabase envia um e-mail real com link de redefinição de senha.
 library;
 
@@ -38,12 +38,12 @@ class _ForgotStep1ScreenState extends State<ForgotStep1Screen> {
       _errorMsg = null;
     });
 
-    // Pega a URL em que o aplicativo está rodando atualmente (mesmo se for localhost ou github)
+    // Pega a URL em que o aplicativo está rodando atualmente
     String? redirectUrl;
     if (kIsWeb) {
       final currentUri = Uri.base;
-      // Garante que retorne para a mesma raiz do site atual
-      redirectUrl = '${currentUri.origin}${currentUri.path}';
+      // Garante que retorne para a página inicial com a rota de redefinição de senha
+      redirectUrl = '${currentUri.origin}${currentUri.path}#/reset-password';
     }
 
     final result = await _api.forgotPassword(
