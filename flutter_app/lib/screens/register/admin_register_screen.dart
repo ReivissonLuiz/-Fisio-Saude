@@ -433,6 +433,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                     const SizedBox(height: 12),
                     CustomTextField(
                       label: 'Senha *',
+                      hint: 'Ex: Admin@2024',
                       controller: _senhaCtrl,
                       obscureText: _obscureSenha,
                       prefixIcon: const Icon(Icons.lock_outline),
@@ -440,7 +441,8 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                         icon: Icon(_obscureSenha ? Icons.visibility_off_outlined : Icons.visibility_outlined),
                         onPressed: () => setState(() => _obscureSenha = !_obscureSenha),
                       ),
-                      validator: (v) => (v == null || v.length < 6) ? 'Mínimo de 6 caracteres.' : null,
+                      onChanged: (_) => setState(() {}),
+                      validator: Validators.senha,
                     ),
                     PasswordStrengthIndicator(password: _senhaCtrl.text),
                     const SizedBox(height: 14),
