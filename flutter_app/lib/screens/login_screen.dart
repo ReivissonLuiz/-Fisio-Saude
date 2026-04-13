@@ -1,4 +1,4 @@
-﻿/// Tela de login com validação em tempo real, controle de tentativas
+/// Tela de login com validação em tempo real, controle de tentativas
 /// e navegação para recuperação de senha e cadastro.
 library;
 
@@ -53,9 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
           'nome': result['user']['nome'] ?? result['user']['email'] ?? 'Usuário',
           'tipo': result['user']['tipo'],
           'email': result['user']['email'],
-          'id_paciente': result['user']['id_paciente'],
-          'id_profissional': result['user']['id_profissional'],
-          'id_administrador': result['user']['id_administrador'],
+          'id': result['user']['id'],
+          'id_usuario': result['user']['id_usuario'],
+          'id_permissao': result['user']['id_permissao'],
         },
       );
     } else {
