@@ -3,10 +3,9 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
-import '../../widgets/custom_text_field.dart';
+import '../../widgets/edit_perfil_dialog.dart';
 
 class MeuPerfilTab extends StatefulWidget {
   final String pacienteId;
@@ -28,24 +27,10 @@ class MeuPerfilTab extends StatefulWidget {
 
 class _MeuPerfilTabState extends State<MeuPerfilTab> {
   final _api = ApiService();
-  final _nomeCtrl = TextEditingController();
-  final _telCtrl = TextEditingController();
-
-  // Máscara para exibir o telefone formatado no modo de edição
-  final _telMask = MaskTextInputFormatter(
-      mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
 
   Map<String, dynamic>? _paciente;
   bool _loading = true;
-  bool _saving = false;
-  bool _editando = false;
   String? _successMsg;
-  String? _errorMsg;
-
-  static const _generos = [
-    'Masculino', 'Feminino', 'Não-binário', 'Prefiro Não informar', 'Outro'
-  ];
-  String? _generoSelecionado;
 
   @override
   void initState() {
@@ -53,62 +38,28 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
     _carregarPerfil();
   }
 
-  @override
-  void dispose() {
-    _nomeCtrl.dispose();
-    _telCtrl.dispose();
-    super.dispose();
-  }
-
   Future<void> _carregarPerfil() async {
     setState(() => _loading = true);
     final result = await _api.getPaciente(widget.pacienteId);
     if (!mounted) return;
-    if (result['success'] == true) {
-      final p = result['data'] as Map<String, dynamic>;
-      setState(() {
-        _paciente = p;
-        _loading = false;
-        _nomeCtrl.text = p['nome'] as String? ?? '';
-        // Seta o telefone; a máscara formata automaticamente ao editar
-        _telCtrl.text = p['telefone'] as String? ?? '';
-        _generoSelecionado = p['genero'] as String?;
-      });
-    } else {
-      setState(() => _loading = false);
-    }
+    setState(() {
+      _paciente = result['success'] == true ? result['data'] as Map<String, dynamic> : null;
+      _loading = false;
+    });
   }
 
-  Future<void> _salvar() async {
-    if (_nomeCtrl.text.trim().length < 3) {
-      setState(() => _errorMsg = 'Nome deve ter ao menos 3 caracteres.');
-      return;
+  Future<void> _abrirEdicao() async {
+    if (_paciente == null) return;
+    final saved = await showEditPerfilDialog(
+      context: context,
+      usuarioId: widget.pacienteId,
+      perfilData: _paciente!,
+      accentColor: AppTheme.primary,
+    );
+    if (saved && mounted) {
+      setState(() => _successMsg = 'Perfil atualizado com sucesso!');
+      await _carregarPerfil();
     }
-    setState(() {
-      _saving = true;
-      _errorMsg = null;
-      _successMsg = null;
-    });
-
-    final result = await _api.updatePaciente(widget.pacienteId, {
-      'nome': _nomeCtrl.text.trim(),
-      'telefone': _telMask.getUnmaskedText().isNotEmpty
-          ? _telMask.getUnmaskedText()
-          : _telCtrl.text.replaceAll(RegExp(r'\D'), ''),
-      'genero': _generoSelecionado,
-    });
-
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      if (result['success'] == true) {
-        _paciente = result['data'] as Map<String, dynamic>;
-        _editando = false;
-        _successMsg = 'Perfil atualizado com sucesso!';
-      } else {
-        _errorMsg = result['message'] as String? ?? 'Erro ao salvar.';
-      }
-    });
   }
 
   void _confirmarLogout() {
@@ -117,18 +68,12 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Sair', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Deseja encerrar sua Sessão?'),
+        content: const Text('Deseja encerrar sua sessão?'),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
-            onPressed: () {
-              Navigator.pop(ctx);
-              widget.onLogout();
-            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error),
+            onPressed: () { Navigator.pop(ctx); widget.onLogout(); },
             child: const Text('Sair'),
           ),
         ],
@@ -203,8 +148,6 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             // --- Feedbacks ---------------------------------------------------
             if (_successMsg != null)
               _FeedbackBanner(message: _successMsg!, isError: false),
-            if (_errorMsg != null)
-              _FeedbackBanner(message: _errorMsg!, isError: true),
 
             // --- Dados Não editáveis -----------------------------------------
             _SectionCard(
@@ -231,110 +174,48 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
             _SectionCard(
               title: 'Dados Pessoais',
               icon: Icons.person_outline,
-              trailing: _editando
-                  ? null
-                  : TextButton.icon(
-                      onPressed: () =>
-                          setState(() {
-                            _editando = true;
-                            _successMsg = null;
-                            _errorMsg = null;
-                          }),
-                      icon: const Icon(Icons.edit_outlined, size: 16),
-                      label: const Text('Editar'),
-                    ),
+              trailing: TextButton.icon(
+                onPressed: _abrirEdicao,
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Editar'),
+              ),
               children: [
-                if (!_editando) ...[
-                  _InfoRow(label: 'Nome completo', value: nome,
-                      icon: Icons.person_outline),
-                  _InfoRow(
-                      label: 'Telefone',
-                      value: (_paciente?['telefone'] as String?)
-                              ?.isNotEmpty ==
-                          true
-                          ? _paciente!['telefone'] as String
-                          : 'Não informado',
-                      icon: Icons.phone_outlined),
-                  _InfoRow(
-                      label: 'Gênero',
-                      value: (_paciente?['genero'] as String?) ??
-                          'Não informado',
-                      icon: Icons.people_outline),
-                ] else ...[
-                  CustomTextField(
-                    label: 'Nome completo *',
-                    controller: _nomeCtrl,
-                    prefixIcon: const Icon(Icons.person_outline),
-                    validator: (v) => (v == null || v.trim().length < 3)
-                        ? 'Nome inválido.'
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomTextField(
+                _InfoRow(label: 'Nome completo', value: nome, icon: Icons.person_outline),
+                _InfoRow(
                     label: 'Telefone',
-                    hint: '(11) 99999-9999',
-                    controller: _telCtrl,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [_telMask],
-                    prefixIcon: const Icon(Icons.phone_outlined),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _generoSelecionado,
-                    decoration: InputDecoration(
-                      labelText: 'Gênero',
-                      prefixIcon: const Icon(Icons.people_outline),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    items: _generos
-                        .map((g) => DropdownMenuItem(
-                            value: g,
-                            child: Text(g,
-                                style: const TextStyle(fontSize: 14))))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _generoSelecionado = v),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => setState(() {
-                            _editando = false;
-                            _errorMsg = null;
-                            // Restaura valores originais
-                            _nomeCtrl.text =
-                                _paciente?['nome'] as String? ?? '';
-                            _telCtrl.text =
-                                _paciente?['telefone'] as String? ?? '';
-                            _generoSelecionado =
-                                _paciente?['genero'] as String?;
-                          }),
-                          child: const Text('Cancelar'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _saving ? null : _salvar,
-                          child: _saving
-                              ? const SizedBox(
-                                  width: 20, height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white))
-                              : const Text('Salvar'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    value: (_paciente?['telefone'] as String?)?.isNotEmpty == true
+                        ? _paciente!['telefone'] as String
+                        : 'Não informado',
+                    icon: Icons.phone_outlined),
+                _InfoRow(
+                    label: 'Gênero',
+                    value: (_paciente?['genero'] as String?) ?? 'Não informado',
+                    icon: Icons.people_outline),
               ],
             ),
+            const SizedBox(height: 14),
+
+            // --- Endereço ---------------------------------------------------
+            if ((_paciente?['logradouro'] as String?)?.isNotEmpty == true ||
+                (_paciente?['cidade'] as String?)?.isNotEmpty == true)
+              _SectionCard(
+                title: 'Endereço',
+                icon: Icons.location_on_outlined,
+                children: [
+                  if ((_paciente?['logradouro'] as String?)?.isNotEmpty == true)
+                    _InfoRow(
+                        label: 'Logradouro',
+                        value: '${_paciente!['logradouro']}${(_paciente?['numero'] as String?)?.isNotEmpty == true ? ', ${_paciente!['numero']}' : ''}',
+                        icon: Icons.home_outlined),
+                  if ((_paciente?['bairro'] as String?)?.isNotEmpty == true)
+                    _InfoRow(label: 'Bairro', value: _paciente!['bairro'] as String, icon: Icons.holiday_village_outlined),
+                  if ((_paciente?['cidade'] as String?)?.isNotEmpty == true)
+                    _InfoRow(
+                        label: 'Cidade / UF',
+                        value: '${_paciente!['cidade']}${(_paciente?['uf'] as String?)?.isNotEmpty == true ? ' - ${_paciente!['uf']}' : ''}',
+                        icon: Icons.location_city_outlined),
+                ],
+              ),
             const SizedBox(height: 24),
 
             // --- Botão Sair --------------------------------------------------

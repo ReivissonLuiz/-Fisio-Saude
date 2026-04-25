@@ -5,9 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
-import '../../utils/validators.dart';
-import '../../widgets/custom_text_field.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import '../../widgets/edit_perfil_dialog.dart';
 
 class PerfilProfissionalTab extends StatefulWidget {
   final String profissionalId;
@@ -59,307 +57,37 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
     }
   }
 
-  /// Abre o diálogo para editar dados do perfil profissional
+  /// Abre o dialog de edição do perfil profissional
   Future<void> _showEditarPerfilDialog() async {
-    final formKey = GlobalKey<FormState>();
-
-    // Extrai o número e tipo do CREFITO existente
-    final crefitoAtual = _perfilData?['crefito'] as String? ?? '';
-    String tipoCrefito = 'F';
-    String crefitoNumeros = '';
-    if (crefitoAtual.contains('-TO')) {
-      tipoCrefito = 'TO';
-      crefitoNumeros = crefitoAtual.replaceAll('-TO', '');
-    } else if (crefitoAtual.contains('-F')) {
-      tipoCrefito = 'F';
-      crefitoNumeros = crefitoAtual.replaceAll('-F', '');
-    } else {
-      crefitoNumeros = crefitoAtual.replaceAll(RegExp(r'[^\d]'), '');
-    }
-
-    final crefitoNumCtrl = TextEditingController(text: crefitoNumeros);
-    final telCtrl = TextEditingController(text: _perfilData?['telefone'] as String? ?? '');
-
-    final crefitoNumMask = MaskTextInputFormatter(
-        mask: '#######', filter: {'#': RegExp(r'\d')});
-    final telMask = MaskTextInputFormatter(
-        mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
-
-    const especializacoes = [
-      'Fisioterapia Ortopédica e Traumatológica',
-      'Fisioterapia Neurológica',
-      'Fisioterapia Esportiva',
-      'Fisioterapia Cardiorrespiratória',
-      'Fisioterapia em Saúde da Mulher',
-      'Fisioterapia Pediátrica',
-      'Fisioterapia Geriátrica',
-      'Fisioterapia Aquática',
-      'Fisioterapia Dermato-Funcional',
-      'RPG — Reeducação Postural Global',
-      'Terapia Ocupacional',
-      'Outra',
-    ];
-
-    String? especializacaoSelecionada = _perfilData?['especialidade'] as String?;
-    // Garante que o valor salvo existe na lista; se não, deixa null
-    if (especializacaoSelecionada != null &&
-        !especializacoes.contains(especializacaoSelecionada)) {
-      especializacaoSelecionada = null;
-    }
-
-    bool isSaving = false;
-
-    await showDialog(
+    if (_perfilData == null) return;
+    final saved = await showEditPerfilDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setStateDialog) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
-            children: [
-              Icon(Icons.edit_note_rounded, color: AppTheme.secondary),
-              SizedBox(width: 10),
-              Text('Editar Perfil Profissional',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Seletor de categoria (F ou TO)
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Categoria Profissional',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.textSecondary,
-                                  fontWeight: FontWeight.w500)),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setStateDialog(() => tipoCrefito = 'F'),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: tipoCrefito == 'F'
-                                          ? AppTheme.secondary
-                                          : Colors.grey.shade100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Text('Fisioterapeuta',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: tipoCrefito == 'F'
-                                                    ? Colors.white
-                                                    : AppTheme.textSecondary),
-                                            textAlign: TextAlign.center),
-                                        Text('-F',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: tipoCrefito == 'F'
-                                                    ? Colors.white70
-                                                    : Colors.grey),
-                                            textAlign: TextAlign.center),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setStateDialog(() => tipoCrefito = 'TO'),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: tipoCrefito == 'TO'
-                                          ? AppTheme.primary
-                                          : Colors.grey.shade100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        Text('Ter. Ocupacional',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: tipoCrefito == 'TO'
-                                                    ? Colors.white
-                                                    : AppTheme.textSecondary),
-                                            textAlign: TextAlign.center),
-                                        Text('-TO',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: tipoCrefito == 'TO'
-                                                    ? Colors.white70
-                                                    : Colors.grey),
-                                            textAlign: TextAlign.center),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Número do CREFITO + badge do sufixo
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: CustomTextField(
-                            label: 'CREFITO Número *',
-                            hint: '0123456',
-                            controller: crefitoNumCtrl,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [crefitoNumMask],
-                            prefixIcon: const Icon(Icons.workspace_premium_outlined),
-                            validator: (_) {
-                              final nums = crefitoNumMask.getUnmaskedText();
-                              return Validators.crefito('$nums-$tipoCrefito');
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        StatefulBuilder(
-                          builder: (_, __) => Container(
-                            height: 60,
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: tipoCrefito == 'F'
-                                  ? AppTheme.secondary.withValues(alpha: 0.1)
-                                  : AppTheme.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: tipoCrefito == 'F'
-                                      ? AppTheme.secondary.withValues(alpha: 0.4)
-                                      : AppTheme.primary.withValues(alpha: 0.4)),
-                            ),
-                            child: Text(
-                              '-$tipoCrefito',
-                              style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: tipoCrefito == 'F'
-                                      ? AppTheme.secondary
-                                      : AppTheme.primary),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: especializacaoSelecionada,
-                      decoration: InputDecoration(
-                        labelText: 'Especialização *',
-                        prefixIcon: const Icon(Icons.category_outlined),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      items: especializacoes
-                          .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e, style: const TextStyle(fontSize: 13))))
-                          .toList(),
-                      onChanged: (v) =>
-                          setStateDialog(() => especializacaoSelecionada = v),
-                      validator: (v) => v == null ? 'Selecione.' : null,
-                    ),
-                    const SizedBox(height: 12),
-                    CustomTextField(
-                      label: 'Telefone',
-                      hint: '(11) 99999-9999',
-                      controller: telCtrl,
-                      inputFormatters: [telMask],
-                      keyboardType: TextInputType.phone,
-                      prefixIcon: const Icon(Icons.phone_outlined),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton.icon(
-              onPressed: isSaving ? null : () async {
-                if (!formKey.currentState!.validate()) return;
-                setStateDialog(() => isSaving = true);
-                
-                final crefitoFinal = '${crefitoNumMask.getUnmaskedText()}-$tipoCrefito';
-                final res = await _api.updateUsuario(
-                  widget.profissionalId,
-                  {
-                    'crefito': crefitoFinal,
-                    'especialidade': especializacaoSelecionada ?? '',
-                    'telefone': telCtrl.text,
-                  },
-                );
-                
-                setStateDialog(() => isSaving = false);
-                if (!ctx.mounted) return;
-                
-                if (res['success'] == true) {
-                  Navigator.pop(ctx);
-                  await _loadPerfil();
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Perfil atualizado com sucesso!'),
-                      backgroundColor: AppTheme.accent,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(ctx).showSnackBar(
-                    SnackBar(
-                      content: Text(res['message'] ?? 'Erro ao salvar.'),
-                      backgroundColor: AppTheme.error,
-                    ),
-                  );
-                }
-              },
-              icon: isSaving 
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Icon(Icons.save_rounded),
-              label: const Text('Salvar'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.secondary),
-            ),
-          ],
+      usuarioId: widget.profissionalId,
+      perfilData: _perfilData!,
+      accentColor: AppTheme.secondary,
+      camposExtras: [
+        const ExtraField(
+          label: 'CREFITO (ex: 1234567-F)',
+          fieldKey: 'crefito',
+          icon: Icons.workspace_premium_outlined,
         ),
-      ),
+        const ExtraField(
+          label: 'Especialidade',
+          fieldKey: 'especialidade',
+          icon: Icons.category_outlined,
+        ),
+      ],
     );
-
-    crefitoNumCtrl.dispose();
-    telCtrl.dispose();
+    if (saved && mounted) {
+      final sm = ScaffoldMessenger.of(context);
+      await _loadPerfil();
+      sm.showSnackBar(
+        const SnackBar(
+          content: Text('Perfil atualizado com sucesso!'),
+          backgroundColor: AppTheme.accent,
+        ),
+      );
+    }
   }
 
   @override
