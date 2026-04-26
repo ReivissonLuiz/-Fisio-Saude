@@ -174,7 +174,6 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
           maxWidth: 500,
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             // Header
             Container(
@@ -217,24 +216,20 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Step indicator
                   _buildStepIndicator(),
                 ],
               ),
             ),
 
-            // Body
-            Flexible(
+            // Body — ocupa o espaço restante
+            Expanded(
               child: _loadingDisp || _loadingClinicas
-                  ? const Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : _buildStepContent(),
             ),
 
-            // Footer buttons
-            if (!_loadingDisp && !_loadingClinicas) _buildFooter(),
+            // Footer — sempre visível na parte inferior
+            _buildFooter(),
           ],
         ),
       ),
@@ -421,18 +416,19 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
   Widget _buildTimeStep() {
     final horarios = _dispPorData[_dataSelecionada] ?? [];
     if (horarios.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(32),
-        child: Text('Nenhum horário disponível para esta data.',
-            style: TextStyle(color: AppTheme.textSecondary)),
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Text('Nenhum horário disponível para esta data.',
+              style: TextStyle(color: AppTheme.textSecondary)),
+        ),
       );
     }
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             DateFormat("dd 'de' MMMM, EEEE", 'pt_BR')
@@ -442,41 +438,50 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
                 fontSize: 15,
                 color: AppTheme.textPrimary),
           ),
-          const SizedBox(height: 12),
-          Flexible(
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: horarios.map<Widget>((h) {
-                final hora = h['hora_inicio'] as String;
-                final selected = _horarioSelecionado == h;
-                return GestureDetector(
-                  onTap: () => setState(() => _horarioSelecionado = h),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    decoration: BoxDecoration(
+          const SizedBox(height: 4),
+          const Text('Selecione um horário:',
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: horarios.map<Widget>((h) {
+              final hora = h['hora_inicio'] as String;
+              final selected = _horarioSelecionado == h;
+              return GestureDetector(
+                onTap: () => setState(() => _horarioSelecionado = h),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? AppTheme.primary
+                        : AppTheme.primary.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
                       color: selected
                           ? AppTheme.primary
-                          : AppTheme.primary.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: selected
-                            ? AppTheme.primary
-                            : AppTheme.primary.withValues(alpha: 0.2),
-                      ),
+                          : AppTheme.primary.withValues(alpha: 0.2),
                     ),
-                    child: Text(hora,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color:
-                                selected ? Colors.white : AppTheme.primary)),
                   ),
-                );
-              }).toList(),
-            ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.access_time_rounded,
+                          size: 16,
+                          color: selected ? Colors.white : AppTheme.primary),
+                      const SizedBox(width: 6),
+                      Text(hora,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: selected ? Colors.white : AppTheme.primary)),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
