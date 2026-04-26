@@ -560,7 +560,7 @@ class ApiService {
     try {
       final data = await _sb
           .from('usuario')
-          .select('id, nome, especialidade, crefito, telefone, cidade, uf')
+          .select('id, nome, email, especialidade, crefito, telefone, cidade, uf')
           .eq('id_permissao', Permissao.profissional)
           .eq('ativo', true)
           .order('nome');
@@ -853,6 +853,75 @@ class ApiService {
         'success': false,
         'message': 'Erro ao excluir usuário permanentemente.'
       };
+    }
+  }
+
+  // --- Agendamento -----------------------------------------------------------
+
+  /// Busca todas as clínicas ativas.
+  Future<Map<String, dynamic>> getClinicas() async {
+    try {
+      final data = await _sb
+          .from('clinica')
+          .select()
+          .eq('ativo', true)
+          .order('nome');
+      return {'success': true, 'data': data};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar clínicas.'};
+    }
+  }
+
+  /// Busca disponibilidades de um profissional a partir de hoje.
+  Future<Map<String, dynamic>> getDisponibilidades(String profissionalId) async {
+    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
+    try {
+      final hoje = DateTime.now().toIso8601String().substring(0, 10);
+      final data = await _sb
+          .from('disponibilidade')
+          .select()
+          .eq('id_profissional', profissionalId)
+          .gte('data', hoje)
+          .eq('disponivel', true)
+          .order('data')
+          .order('hora_inicio');
+      return {'success': true, 'data': data};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar disponibilidades.'};
+    }
+  }
+
+  /// Cria uma nova consulta (agendamento).
+  Future<Map<String, dynamic>> criarConsulta({
+    required String idPaciente,
+    required String idProfissional,
+    required String dataHora,
+    String? idClinica,
+    String? observacao,
+  }) async {
+    try {
+      final data = await _sb.from('consulta').insert({
+        'id_paciente': idPaciente,
+        'id_profissional': idProfissional,
+        'data_hora': dataHora,
+        'id_clinica': idClinica,
+        'observacao': observacao,
+        'status': 'Agendada',
+      }).select().single();
+
+      // Marca o horário como indisponível
+      await _sb
+          .from('disponibilidade')
+          .update({'disponivel': false})
+          .eq('id_profissional', idProfissional)
+          .eq('data', dataHora.substring(0, 10))
+          .eq('hora_inicio', dataHora.substring(11, 16));
+
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao criar consulta.'};
     }
   }
 

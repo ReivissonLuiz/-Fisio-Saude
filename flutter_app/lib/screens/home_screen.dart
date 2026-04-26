@@ -356,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // ---------------------------------------------------------------
     final patientTabs = [
       PacienteHomeTab(pacienteId: _usuarioId ?? '', nome: _nome),
-      const BuscarFisioTab(),
+      BuscarFisioTab(pacienteId: _usuarioId ?? '', pacienteNome: _nome),
       MinhaSaudeTab(pacienteId: _usuarioId ?? ''),
       MeuPerfilTab(
           pacienteId: _usuarioId ?? '',

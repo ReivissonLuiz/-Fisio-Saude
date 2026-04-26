@@ -1,13 +1,21 @@
-﻿/// buscar_fisio_tab.dart
+/// buscar_fisio_tab.dart
 /// Aba "Buscar Fisio" — lista e pesquisa de profissionais ativos — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../widgets/agendamento_dialog.dart';
 
 class BuscarFisioTab extends StatefulWidget {
-  const BuscarFisioTab({super.key});
+  final String pacienteId;
+  final String pacienteNome;
+
+  const BuscarFisioTab({
+    super.key,
+    required this.pacienteId,
+    required this.pacienteNome,
+  });
 
   @override
   State<BuscarFisioTab> createState() => _BuscarFisioTabState();
@@ -66,6 +74,17 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
         }).toList();
       }
     });
+  }
+
+  void _abrirAgendamento(Map<String, dynamic> profissional) {
+    showDialog(
+      context: context,
+      builder: (_) => AgendamentoDialog(
+        profissional: profissional,
+        pacienteId: widget.pacienteId,
+        pacienteNome: widget.pacienteNome,
+      ),
+    );
   }
 
   @override
@@ -179,7 +198,11 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
                                 const SizedBox(height: 10),
                             itemBuilder: (context, index) {
                               final p = _filtered[index];
-                              return _ProfissionalCard(profissional: p);
+                              return _ProfissionalCard(
+                                profissional: p,
+                                onAgendar: () => _abrirAgendamento(
+                                    Map<String, dynamic>.from(p)),
+                              );
                             },
                           ),
                         ),
@@ -191,7 +214,8 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
 
 class _ProfissionalCard extends StatelessWidget {
   final Map<String, dynamic> profissional;
-  const _ProfissionalCard({required this.profissional});
+  final VoidCallback onAgendar;
+  const _ProfissionalCard({required this.profissional, required this.onAgendar});
 
   @override
   Widget build(BuildContext context) {
@@ -291,13 +315,7 @@ class _ProfissionalCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.calendar_month_rounded,
                       color: AppTheme.primary, size: 22),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Agendamento disponível em breve!')),
-                    );
-                  },
+                  onPressed: onAgendar,
                   tooltip: 'Agendar',
                 ),
               ],
@@ -308,4 +326,3 @@ class _ProfissionalCard extends StatelessWidget {
     );
   }
 }
-

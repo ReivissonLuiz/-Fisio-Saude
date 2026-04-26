@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
+import '../../widgets/notificacoes_panel.dart';
 
 class ProfissionalHomeTab extends StatefulWidget {
   final String profissionalId;
@@ -18,9 +20,11 @@ class ProfissionalHomeTab extends StatefulWidget {
 
 class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
   final _api = ApiService();
+  final _notif = NotificationService();
   bool _isLoading = true;
   List<dynamic> _consultasHoje = [];
   int _totalPacientes = 0;
+  int _notifCount = 0;
 
   @override
   void initState() {
@@ -33,6 +37,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
     try {
       final resConsultas = await _api.getConsultasProfissional(widget.profissionalId);
       final resPacientes = await _api.getPacientesDoProfissional(widget.profissionalId);
+      final nCount = await _notif.contarNaoLidas(widget.profissionalId);
 
       if (mounted) {
         setState(() {
@@ -46,6 +51,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
           if (resPacientes['success']) {
             _totalPacientes = (resPacientes['data'] as List).length;
           }
+          _notifCount = nCount;
           _isLoading = false;
         });
       }
@@ -103,16 +109,30 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                               ),
                             ],
                           ),
-                          CircleAvatar(
-                            radius: 26,
-                            backgroundColor: Colors.white.withValues(alpha: 0.25),
-                            child: Text(
-                              widget.nome.isNotEmpty ? widget.nome[0].toUpperCase() : 'F',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold),
-                            ),
+                          Stack(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.notifications_rounded, color: Colors.white, size: 26),
+                                onPressed: () {
+                                  Navigator.push(context, MaterialPageRoute(
+                                    builder: (_) => NotificacoesPanel(usuarioId: widget.profissionalId),
+                                  )).then((_) => _loadDashboardData());
+                                },
+                              ),
+                              if (_notifCount > 0)
+                                Positioned(
+                                  right: 4, top: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text('$_notifCount',
+                                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
