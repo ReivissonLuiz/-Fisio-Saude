@@ -925,6 +925,41 @@ class ApiService {
     }
   }
 
+  /// Cria um slot de disponibilidade para o profissional.
+  Future<Map<String, dynamic>> criarDisponibilidade({
+    required String idProfissional,
+    required String data,      // 'yyyy-MM-dd'
+    required String horaInicio, // 'HH:MM'
+    String? horaFim,
+  }) async {
+    try {
+      final row = await _sb.from('disponibilidade').insert({
+        'id_profissional': idProfissional,
+        'data': data,
+        'hora_inicio': horaInicio,
+        if (horaFim != null) 'hora_fim': horaFim,
+        'disponivel': true,
+      }).select().single();
+      return {'success': true, 'data': row};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao criar disponibilidade.'};
+    }
+  }
+
+  /// Remove um slot de disponibilidade pelo id.
+  Future<Map<String, dynamic>> deletarDisponibilidade(String id) async {
+    try {
+      await _sb.from('disponibilidade').delete().eq('id', id);
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao remover disponibilidade.'};
+    }
+  }
+
   // --- Logs ----------------------------------------------------------------
 
   /// Registra evento de login na tabela `login`.

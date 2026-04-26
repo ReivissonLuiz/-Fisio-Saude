@@ -167,11 +167,12 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
     final profEsp =
         widget.profissional['especialidade'] as String? ?? 'Fisioterapia';
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      child: Material(
-        color: Colors.white,
-        child: Column(
+    return SizedBox.expand(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: Material(
+          color: Colors.white,
+          child: Column(
           children: [
             // Handle bar
             Container(
@@ -237,7 +238,8 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildStepIndicator() {

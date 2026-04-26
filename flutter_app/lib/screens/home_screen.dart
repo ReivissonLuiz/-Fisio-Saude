@@ -12,6 +12,7 @@ import 'paciente/minha_saude_tab.dart';
 import 'paciente/meu_perfil_tab.dart';
 import 'profissional/profissional_home_tab.dart';
 import 'profissional/agenda_tab.dart';
+import 'profissional/minha_disponibilidade_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
@@ -302,6 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ProfissionalHomeTab(
             profissionalId: _usuarioId ?? '', nome: _nome),
         AgendaTab(profissionalId: _usuarioId ?? ''),
+        MinhaDisponibilidadeTab(profissionalId: _usuarioId ?? ''),
         PerfilProfissionalTab(
           key: UniqueKey(),
           profissionalId: _usuarioId ?? '',
@@ -341,6 +343,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 selectedIcon: Icon(Icons.event_note_rounded,
                     color: Color(0xFF9C27B0)),
                 label: 'Agenda'),
+            NavigationDestination(
+                icon: Icon(Icons.calendar_month_outlined),
+                selectedIcon: Icon(Icons.calendar_month_rounded,
+                    color: AppTheme.primary),
+                label: 'Horários'),
             NavigationDestination(
                 icon: Icon(Icons.person_outline),
                 selectedIcon:
