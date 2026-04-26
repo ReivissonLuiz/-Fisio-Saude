@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../services/notification_service.dart';
@@ -47,7 +48,9 @@ class _AgendamentoDialogState extends State<AgendamentoDialog> {
   @override
   void initState() {
     super.initState();
-    _carregarDados();
+    initializeDateFormatting('pt_BR', null).then((_) {
+      if (mounted) _carregarDados();
+    });
   }
 
   @override
