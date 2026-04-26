@@ -44,10 +44,12 @@ class _AgendamentoDialogState extends State<AgendamentoDialog> {
   final _obsCtrl = TextEditingController();
 
   int _step = 0; // 0=data, 1=horário, 2=clínica, 3=confirmar
+  late DateTime _mesAtual;
 
   @override
   void initState() {
     super.initState();
+    _mesAtual = DateTime.now();
     initializeDateFormatting('pt_BR', null).then((_) {
       if (mounted) _carregarDados();
     });
@@ -167,12 +169,10 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-          maxWidth: 500,
-        ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.80,
+        width: 500,
         child: Column(
           children: [
             // Header
@@ -299,116 +299,171 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
     }
   }
 
-  // Step 0: Selecionar data
+  // Step 0: Calendário para selecionar data
   Widget _buildDateStep() {
-    if (_dispPorData.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.event_busy_rounded, size: 48, color: AppTheme.textHint),
-            SizedBox(height: 12),
-            Text('Nenhuma data disponível',
-                style: TextStyle(
-                    color: AppTheme.textSecondary,
+    final availableDates = _dispPorData.keys.toSet();
+    final hoje = DateTime.now();
+    final firstDay = DateTime(_mesAtual.year, _mesAtual.month, 1);
+    final lastDay = DateTime(_mesAtual.year, _mesAtual.month + 1, 0);
+    // Sunday=0 offset: Flutter weekday: Mon=1..Sun=7 → we want Sun=0
+    final startOffset = firstDay.weekday % 7;
+    final canGoPrev = _mesAtual.year > hoje.year ||
+        (_mesAtual.year == hoje.year && _mesAtual.month > hoje.month);
+
+    const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Column(
+        children: [
+          // Navegação do mês
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left_rounded),
+                onPressed: canGoPrev
+                    ? () => setState(() => _mesAtual =
+                        DateTime(_mesAtual.year, _mesAtual.month - 1))
+                    : null,
+                color: canGoPrev ? AppTheme.primary : AppTheme.textHint,
+              ),
+              Text(
+                DateFormat('MMMM yyyy', 'pt_BR').format(_mesAtual),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: 15,
-                    fontWeight: FontWeight.w600)),
-            SizedBox(height: 4),
-            Text('Este profissional não possui horários disponíveis.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppTheme.textHint, fontSize: 13)),
-          ],
-        ),
-      );
-    }
+                    color: AppTheme.textPrimary),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right_rounded),
+                color: AppTheme.primary,
+                onPressed: () => setState(() =>
+                    _mesAtual = DateTime(_mesAtual.year, _mesAtual.month + 1)),
+              ),
+            ],
+          ),
+          // Labels dos dias da semana
+          Row(
+            children: diasSemana
+                .map((d) => Expanded(
+                      child: Center(
+                        child: Text(d,
+                            style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textSecondary)),
+                      ),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 4),
+          // Grade do calendário
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              childAspectRatio: 1,
+            ),
+            itemCount: startOffset + lastDay.day,
+            itemBuilder: (_, index) {
+              if (index < startOffset) return const SizedBox.shrink();
+              final day = index - startOffset + 1;
+              final date = DateTime(_mesAtual.year, _mesAtual.month, day);
+              final dateStr = DateFormat('yyyy-MM-dd').format(date);
+              final isPast =
+                  date.isBefore(DateTime(hoje.year, hoje.month, hoje.day));
+              final isAvailable =
+                  availableDates.contains(dateStr) && !isPast;
+              final isSelected = _dataSelecionada == dateStr;
+              final isToday = date.year == hoje.year &&
+                  date.month == hoje.month &&
+                  date.day == hoje.day;
 
-    final datas = _dispPorData.keys.toList()..sort();
-    return ListView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(16),
-      itemCount: datas.length,
-      itemBuilder: (_, i) {
-        final dataStr = datas[i];
-        final dt = DateTime.parse(dataStr);
-        final fmt = DateFormat("EEEE, dd 'de' MMMM", 'pt_BR').format(dt);
-        final qtdHorarios = _dispPorData[dataStr]!.length;
-        final selected = _dataSelecionada == dataStr;
-
-        return GestureDetector(
-          onTap: () => setState(() => _dataSelecionada = dataStr),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: selected
-                  ? AppTheme.primary.withValues(alpha: 0.08)
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: selected ? AppTheme.primary : AppTheme.divider,
-                width: selected ? 2 : 1,
+              return GestureDetector(
+                onTap: isAvailable
+                    ? () => setState(() => _dataSelecionada = dateStr)
+                    : null,
+                child: Container(
+                  margin: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected
+                        ? AppTheme.primary
+                        : isAvailable
+                            ? AppTheme.primary.withValues(alpha: 0.12)
+                            : Colors.transparent,
+                    border: isToday && !isSelected
+                        ? Border.all(color: AppTheme.primary, width: 1.5)
+                        : null,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$day',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isAvailable || isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? Colors.white
+                            : isPast
+                                ? AppTheme.textHint
+                                : isAvailable
+                                    ? AppTheme.primary
+                                    : AppTheme.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          // Data selecionada + qtd horários
+          if (_dataSelecionada != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border:
+                    Border.all(color: AppTheme.primary.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded,
+                      color: AppTheme.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      DateFormat("EEEE, dd 'de' MMMM", 'pt_BR')
+                          .format(DateTime.parse(_dataSelecionada!)),
+                      style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13),
+                    ),
+                  ),
+                  Text(
+                    '${_dispPorData[_dataSelecionada]?.length ?? 0} horário(s)',
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 11),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? AppTheme.primary.withValues(alpha: 0.12)
-                        : AppTheme.background,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    children: [
-                      Text('${dt.day}'.padLeft(2, '0'),
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: selected
-                                  ? AppTheme.primary
-                                  : AppTheme.textPrimary)),
-                      Text(
-                          DateFormat('MMM', 'pt_BR')
-                              .format(dt)
-                              .toUpperCase(),
-                          style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: selected
-                                  ? AppTheme.primary
-                                  : AppTheme.textSecondary)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(fmt,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: selected
-                                  ? AppTheme.primary
-                                  : AppTheme.textPrimary)),
-                      Text('$qtdHorarios horário${qtdHorarios > 1 ? 's' : ''} disponíve${qtdHorarios > 1 ? 'is' : 'l'}',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 12)),
-                    ],
-                  ),
-                ),
-                if (selected)
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppTheme.primary, size: 22),
-              ],
+          ] else ...[
+            const SizedBox(height: 10),
+            const Text(
+              'Selecione uma data destacada em azul',
+              style: TextStyle(color: AppTheme.textHint, fontSize: 12),
             ),
-          ),
-        );
-      },
+          ],
+        ],
+      ),
     );
   }
 
