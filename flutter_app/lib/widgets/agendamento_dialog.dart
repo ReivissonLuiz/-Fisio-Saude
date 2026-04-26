@@ -167,24 +167,28 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
     final profEsp =
         widget.profissional['especialidade'] as String? ?? 'Fisioterapia';
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.80,
-        width: 500,
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: Material(
+        color: Colors.white,
         child: Column(
           children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             // Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 12, 12, 16),
               decoration: const BoxDecoration(
                 gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
               ),
               child: Column(
                 children: [
@@ -199,7 +203,7 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
                                     color: Colors.white,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text('com $profNome',
                                 style: const TextStyle(
                                     color: Colors.white70, fontSize: 13)),
@@ -215,7 +219,7 @@ ${_obsCtrl.text.trim().isNotEmpty ? '<p><b>Obs:</b> ${_obsCtrl.text.trim()}</p>'
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   _buildStepIndicator(),
                 ],
               ),

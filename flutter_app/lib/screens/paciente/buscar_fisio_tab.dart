@@ -77,12 +77,17 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
   }
 
   void _abrirAgendamento(Map<String, dynamic> profissional) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AgendamentoDialog(
-        profissional: profissional,
-        pacienteId: widget.pacienteId,
-        pacienteNome: widget.pacienteNome,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.92,
+        child: AgendamentoDialog(
+          profissional: profissional,
+          pacienteId: widget.pacienteId,
+          pacienteNome: widget.pacienteNome,
+        ),
       ),
     );
   }
