@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -21,7 +22,9 @@ class _AgendaTabState extends State<AgendaTab> {
   @override
   void initState() {
     super.initState();
-    _loadAgenda();
+    initializeDateFormatting('pt_BR', null).then((_) {
+      if (mounted) _loadAgenda();
+    });
   }
 
   Future<void> _loadAgenda() async {
