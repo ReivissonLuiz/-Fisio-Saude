@@ -137,7 +137,7 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
           const Text('Consulta Agendada!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(
-            'Sua consulta com ${_profissional!['nome']} foi confirmada.\nVocê e o profissional receberão uma notificação.',
+            'Sua consulta com ${_profissional!['nome']} foi confirmada.\nO profissional será informado sobre o agendamento.',
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppTheme.textSecondary),
           ),
