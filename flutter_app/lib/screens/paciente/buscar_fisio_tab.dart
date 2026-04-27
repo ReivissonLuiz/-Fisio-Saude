@@ -1,13 +1,15 @@
-﻿/// buscar_fisio_tab.dart
+/// buscar_fisio_tab.dart
 /// Aba "Buscar Fisio" — lista e pesquisa de profissionais ativos — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import 'agendar_consulta_screen.dart';
 
 class BuscarFisioTab extends StatefulWidget {
-  const BuscarFisioTab({super.key});
+  final String pacienteId;
+  const BuscarFisioTab({super.key, required this.pacienteId});
 
   @override
   State<BuscarFisioTab> createState() => _BuscarFisioTabState();
@@ -179,7 +181,10 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
                                 const SizedBox(height: 10),
                             itemBuilder: (context, index) {
                               final p = _filtered[index];
-                              return _ProfissionalCard(profissional: p);
+                              return _ProfissionalCard(
+                                profissional: p,
+                                pacienteId: widget.pacienteId,
+                              );
                             },
                           ),
                         ),
@@ -191,7 +196,8 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
 
 class _ProfissionalCard extends StatelessWidget {
   final Map<String, dynamic> profissional;
-  const _ProfissionalCard({required this.profissional});
+  final String pacienteId;
+  const _ProfissionalCard({required this.profissional, required this.pacienteId});
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +207,6 @@ class _ProfissionalCard extends StatelessWidget {
     final crefito = profissional['crefito'] as String? ?? '';
     final telefone = profissional['telefone'] as String?;
 
-    // Cor do avatar baseada na inicial do nome
     final cores = [
       AppTheme.primary,
       AppTheme.secondary,
@@ -292,11 +297,12 @@ class _ProfissionalCard extends StatelessWidget {
                   icon: const Icon(Icons.calendar_month_rounded,
                       color: AppTheme.primary, size: 22),
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Agendamento disponível em breve!')),
-                    );
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => AgendarConsultaScreen(
+                        pacienteId: pacienteId,
+                        profissionalIdPreSelecionado: profissional['id'] as String?,
+                      ),
+                    ));
                   },
                   tooltip: 'Agendar',
                 ),
@@ -308,4 +314,5 @@ class _ProfissionalCard extends StatelessWidget {
     );
   }
 }
+
 

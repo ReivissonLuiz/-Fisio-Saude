@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/notificacoes_panel.dart';
 import 'paciente/paciente_home_tab.dart';
 import 'paciente/buscar_fisio_tab.dart';
 import 'paciente/minha_saude_tab.dart';
@@ -354,12 +355,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // ---------------------------------------------------------------
     // Visão do Paciente (padrão)
     // ---------------------------------------------------------------
+    final usuarioIdFinal = _usuarioId ?? '';
     final patientTabs = [
-      PacienteHomeTab(pacienteId: _usuarioId ?? '', nome: _nome),
-      const BuscarFisioTab(),
-      MinhaSaudeTab(pacienteId: _usuarioId ?? ''),
+      PacienteHomeTab(pacienteId: usuarioIdFinal, nome: _nome),
+      BuscarFisioTab(pacienteId: usuarioIdFinal),
+      MinhaSaudeTab(pacienteId: usuarioIdFinal),
       MeuPerfilTab(
-          pacienteId: _usuarioId ?? '',
+          pacienteId: usuarioIdFinal,
           nome: _nome,
           email: _email,
           onLogout: _logout),
@@ -367,6 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
+      endDrawer: NotificacoesPanel(usuarioId: usuarioIdFinal),
       body: SafeArea(
         child: Column(
           children: [
