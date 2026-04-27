@@ -1152,7 +1152,7 @@ class ApiService {
           .from('consulta')
           .update({
             'data_hora': novaDataHora.toIso8601String(),
-            'status': 'Agendada',
+            'status': 'agendada',
           })
           .eq('id', consultaId);
 

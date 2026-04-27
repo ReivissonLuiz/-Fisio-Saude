@@ -168,7 +168,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                         child: _StatCard(
                           label: 'Consultas\nRealizadas',
                           value:
-                              '${_consultas.where((c) => c['status'] == 'Realizada').length}',
+                              '${_consultas.where((c) => (c['status'] as String?)?.toLowerCase() == 'realizada').length}',
                           icon: Icons.medical_services_rounded,
                           color: AppTheme.primary,
                         ),
@@ -186,7 +186,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
 
   Widget _proximaConsulta() {
     final proximas = _consultas
-        .where((c) => c['status'] == 'Agendada')
+        .where((c) => (c['status'] as String?)?.toLowerCase() == 'agendada')
         .toList();
 
     if (proximas.isEmpty) {
