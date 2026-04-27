@@ -653,6 +653,41 @@ class ApiService {
     }
   }
 
+  /// Busca o resumo do paciente para exibir na agenda (histórico com o prof e sintomas)
+  Future<Map<String, dynamic>> getResumoPacienteParaProfissional({
+    required String pacienteId,
+    required String profissionalId,
+  }) async {
+    try {
+      // Busca consultas passadas realizadas com este profissional
+      final hist = await _sb
+          .from('consulta')
+          .select('id')
+          .eq('id_paciente', pacienteId)
+          .eq('id_profissional', profissionalId)
+          .eq('status', 'realizada');
+      final totalConsultas = (hist as List).length;
+
+      // Busca os últimos sintomas registrados pelo paciente (max 5)
+      final sint = await _sb
+          .from('registro_sintomas')
+          .select('*')
+          .eq('id_paciente', pacienteId)
+          .order('data_hora', ascending: false)
+          .limit(5);
+
+      return {
+        'success': true,
+        'data': {
+          'consultas_realizadas': totalConsultas,
+          'sintomas': sint,
+        }
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar detalhes.'};
+    }
+  }
+
   // --- Administrador: Gestão -----------------------------------------------
 
   /// Busca todos os usuários de um determinado nível de permissão.

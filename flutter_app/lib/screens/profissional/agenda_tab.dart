@@ -117,6 +117,7 @@ class _AgendaTabState extends State<AgendaTab> {
                             consulta: c,
                             onReagendar: () => _reagendar(c),
                             onCancelar: () => _cancelar(c),
+                            onDetalhes: () => _mostrarDetalhes(c),
                           );
                         },
                       ),
@@ -209,6 +210,45 @@ class _AgendaTabState extends State<AgendaTab> {
       );
     }
   }
+
+  void _mostrarDetalhes(dynamic c) {
+    final paciente = c['paciente'];
+    if (paciente == null) return;
+
+    final pacienteId = c['id_paciente'] as String? ?? '';
+    
+    int idade = 0;
+    if (paciente['data_nasc'] != null) {
+      final nascimento = DateTime.tryParse(paciente['data_nasc']);
+      if (nascimento != null) {
+        final hoje = DateTime.now();
+        idade = hoje.year - nascimento.year;
+        if (hoje.month < nascimento.month || (hoje.month == nascimento.month && hoje.day < nascimento.day)) {
+          idade--;
+        }
+      }
+    }
+    
+    final genero = paciente['genero'] as String? ?? 'Não informado';
+    final nome = paciente['nome'] as String? ?? 'Paciente';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return _DetalhesModal(
+          consulta: c,
+          pacienteId: pacienteId,
+          profissionalId: widget.profissionalId,
+          nome: nome,
+          idade: idade,
+          genero: genero,
+          api: _api,
+        );
+      },
+    );
+  }
 }
 
 class _EmptyState extends StatelessWidget {
@@ -275,11 +315,13 @@ class _ConsultaAgendaTile extends StatelessWidget {
   final dynamic consulta;
   final VoidCallback onReagendar;
   final VoidCallback onCancelar;
+  final VoidCallback onDetalhes;
 
   const _ConsultaAgendaTile({
     required this.consulta,
     required this.onReagendar,
     required this.onCancelar,
+    required this.onDetalhes,
   });
 
   @override
@@ -372,7 +414,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
                   const Spacer(),
                 ],
                 TextButton(
-                  onPressed: () {},
+                  onPressed: onDetalhes,
                   child: const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 if (!isPassada) ...[
@@ -392,6 +434,218 @@ class _ConsultaAgendaTile extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetalhesModal extends StatefulWidget {
+  final dynamic consulta;
+  final String pacienteId;
+  final String profissionalId;
+  final String nome;
+  final int idade;
+  final String genero;
+  final ApiService api;
+
+  const _DetalhesModal({
+    super.key,
+    required this.consulta,
+    required this.pacienteId,
+    required this.profissionalId,
+    required this.nome,
+    required this.idade,
+    required this.genero,
+    required this.api,
+  });
+
+  @override
+  State<_DetalhesModal> createState() => _DetalhesModalState();
+}
+
+class _DetalhesModalState extends State<_DetalhesModal> {
+  bool _isLoading = true;
+  int _consultasRealizadas = 0;
+  List<dynamic> _sintomas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDados();
+  }
+
+  Future<void> _loadDados() async {
+    final res = await widget.api.getResumoPacienteParaProfissional(
+      pacienteId: widget.pacienteId,
+      profissionalId: widget.profissionalId,
+    );
+    if (!mounted) return;
+    if (res['success'] == true) {
+      final data = res['data'];
+      setState(() {
+        _consultasRealizadas = data['consultas_realizadas'] as int;
+        _sintomas = data['sintomas'] as List;
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        top: 24,
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).padding.bottom + 20,
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Detalhes do Paciente', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Resumo Demográfico
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.divider),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
+                  child: Text(
+                    widget.nome.isNotEmpty ? widget.nome.substring(0, 1).toUpperCase() : 'P',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primary),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.nome, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.idade} anos • ${widget.genero}',
+                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          
+          if (_isLoading)
+            const Expanded(child: Center(child: CircularProgressIndicator()))
+          else
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Histórico de Consultas
+                    const Text('Histórico', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _consultasRealizadas <= 1 ? AppTheme.accent.withValues(alpha: 0.1) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: _consultasRealizadas <= 1 ? AppTheme.accent : AppTheme.divider),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _consultasRealizadas <= 1 ? Icons.star_rounded : Icons.history_rounded,
+                            color: _consultasRealizadas <= 1 ? AppTheme.accent : AppTheme.textSecondary,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _consultasRealizadas <= 1
+                                  ? 'Primeira consulta com você!'
+                                  : 'Já realizou $_consultasRealizadas consulta(s) com você.',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _consultasRealizadas <= 1 ? AppTheme.accent : AppTheme.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Sintomas Registrados
+                    const Text('Sintomas Recentes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 8),
+                    if (_sintomas.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+                        child: const Text('Nenhum sintoma registrado pelo paciente.', style: TextStyle(color: AppTheme.textHint, fontStyle: FontStyle.italic)),
+                      )
+                    else
+                      ..._sintomas.map((s) {
+                        final nivel = s['nivel_dor'] as int? ?? 0;
+                        final corNivel = nivel <= 3 ? AppTheme.accent : nivel <= 6 ? AppTheme.warning : AppTheme.error;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(color: corNivel.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                                child: Center(child: Text('$nivel/10', style: TextStyle(fontWeight: FontWeight.bold, color: corNivel))),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(s['descricao'] ?? 'Sem descrição', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    if (s['regiao'] != null && (s['regiao'] as String).isNotEmpty) 
+                                      Text('Região: ${s['regiao']}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
