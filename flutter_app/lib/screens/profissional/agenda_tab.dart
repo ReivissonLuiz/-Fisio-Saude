@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../shared/reagendar_screen.dart';
 
 class AgendaTab extends StatefulWidget {
   final String profissionalId;
@@ -112,7 +113,11 @@ class _AgendaTabState extends State<AgendaTab> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemBuilder: (context, index) {
                           final c = _consultasFiltradas[index];
-                          return _ConsultaAgendaTile(consulta: c);
+                          return _ConsultaAgendaTile(
+                            consulta: c,
+                            onReagendar: () => _reagendar(c),
+                            onCancelar: () => _cancelar(c),
+                          );
                         },
                       ),
           ),
@@ -124,6 +129,85 @@ class _AgendaTabState extends State<AgendaTab> {
         child: const Icon(Icons.add_rounded, color: Colors.white),
       ),
     );
+  }
+
+  Future<void> _reagendar(dynamic c) async {
+    final pacienteId = c['id_paciente'] as String? ?? '';
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReagendarScreen(
+          consultaId: c['id'] as String,
+          pacienteId: pacienteId,
+          profissionalId: widget.profissionalId,
+          api: _api,
+          iniciadoPorProfissional: true,
+        ),
+      ),
+    );
+    if (result == true && mounted) _loadAgenda();
+  }
+
+  Future<void> _cancelar(dynamic c) async {
+    final pacienteId = c['id_paciente'] as String? ?? '';
+    final ctrl = TextEditingController();
+    final motivo = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Cancelar Consulta'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Tem certeza que deseja cancelar esta consulta?'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ctrl,
+                decoration: const InputDecoration(hintText: 'Motivo (opcional)'),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Voltar')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.error,
+                  foregroundColor: Colors.white),
+              onPressed: () => Navigator.pop(ctx, ctrl.text),
+              child: const Text('Cancelar Consulta'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (motivo == null || !mounted) return;
+
+    final res = await _api.cancelarConsulta(
+      consultaId: c['id'] as String,
+      pacienteId: pacienteId,
+      profissionalId: widget.profissionalId,
+      motivo: motivo.isEmpty ? null : motivo,
+      iniciadoPorProfissional: true,
+    );
+
+    if (!mounted) return;
+
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text('Consulta cancelada. O paciente foi notificado.')),
+      );
+      _loadAgenda();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(res['message'] as String? ?? 'Erro ao cancelar.')),
+      );
+    }
   }
 }
 
@@ -189,8 +273,14 @@ class _FilterChip extends StatelessWidget {
 
 class _ConsultaAgendaTile extends StatelessWidget {
   final dynamic consulta;
+  final VoidCallback onReagendar;
+  final VoidCallback onCancelar;
 
-  const _ConsultaAgendaTile({required this.consulta});
+  const _ConsultaAgendaTile({
+    required this.consulta,
+    required this.onReagendar,
+    required this.onCancelar,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -266,6 +356,21 @@ class _ConsultaAgendaTile extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                if (!isPassada && (consulta['status'] as String?)?.toLowerCase() != 'cancelada') ...[
+                  TextButton.icon(
+                    onPressed: onCancelar,
+                    icon: const Icon(Icons.event_busy_rounded, size: 16),
+                    label: const Text('Cancelar'),
+                    style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+                  ),
+                  const SizedBox(width: 4),
+                  TextButton.icon(
+                    onPressed: onReagendar,
+                    icon: const Icon(Icons.edit_calendar_rounded, size: 16),
+                    label: const Text('Reagendar'),
+                  ),
+                  const Spacer(),
+                ],
                 TextButton(
                   onPressed: () {},
                   child: const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold)),

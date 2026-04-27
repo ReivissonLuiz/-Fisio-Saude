@@ -1082,12 +1082,13 @@ class ApiService {
     }
   }
 
-  /// Cancela uma consulta agendada e notifica o profissional.
+  /// Cancela uma consulta agendada e notifica a outra parte.
   Future<Map<String, dynamic>> cancelarConsulta({
     required String consultaId,
     required String pacienteId,
     required String profissionalId,
     String? motivo,
+    bool iniciadoPorProfissional = false,
   }) async {
     try {
       await _sb
@@ -1101,14 +1102,30 @@ class ApiService {
           .select('nome')
           .eq('id', pacienteId)
           .single();
+      final profData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', profissionalId)
+          .single();
+          
       final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
+      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
 
-      await _criarNotificacao(
-        idDestinatario: profissionalId,
-        titulo: 'Consulta Cancelada',
-        mensagem: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
-        tipo: 'cancelamento',
-      );
+      if (iniciadoPorProfissional) {
+        await _criarNotificacao(
+          idDestinatario: pacienteId,
+          titulo: 'Consulta Cancelada',
+          mensagem: 'O profissional $nomeProfissional cancelou a sua consulta.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
+          tipo: 'cancelamento',
+        );
+      } else {
+        await _criarNotificacao(
+          idDestinatario: profissionalId,
+          titulo: 'Consulta Cancelada',
+          mensagem: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
+          tipo: 'cancelamento',
+        );
+      }
 
       return {'success': true};
     } on PostgrestException catch (e) {
@@ -1118,12 +1135,13 @@ class ApiService {
     }
   }
 
-  /// Reagenda uma consulta e notifica o profissional.
+  /// Reagenda uma consulta e notifica a outra parte.
   Future<Map<String, dynamic>> reagendarConsulta({
     required String consultaId,
     required String pacienteId,
     required String profissionalId,
     required DateTime novaDataHora,
+    bool iniciadoPorProfissional = false,
   }) async {
     try {
       // Verificação de disponibilidade no novo horário
@@ -1161,24 +1179,48 @@ class ApiService {
           .select('nome')
           .eq('id', pacienteId)
           .single();
+      final profData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', profissionalId)
+          .single();
+          
       final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
+      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
       final dataFormatada =
           '${novaDataHora.day.toString().padLeft(2, '0')}/${novaDataHora.month.toString().padLeft(2, '0')}/${novaDataHora.year} às $horario';
 
-      await _criarNotificacao(
-        idDestinatario: profissionalId,
-        titulo: 'Consulta Reagendada',
-        mensagem: '$nomePaciente reagendou a consulta para $dataFormatada.',
-        tipo: 'reagendamento',
-      );
-
-      // Notifica paciente também
-      await _criarNotificacao(
-        idDestinatario: pacienteId,
-        titulo: 'Reagendamento Confirmado',
-        mensagem: 'Sua consulta foi reagendada para $dataFormatada.',
-        tipo: 'reagendamento',
-      );
+      if (iniciadoPorProfissional) {
+        // Notifica paciente
+        await _criarNotificacao(
+          idDestinatario: pacienteId,
+          titulo: 'Consulta Reagendada',
+          mensagem: 'O profissional $nomeProfissional reagendou sua consulta para $dataFormatada.',
+          tipo: 'reagendamento',
+        );
+        // Confirma para o profissional
+        await _criarNotificacao(
+          idDestinatario: profissionalId,
+          titulo: 'Reagendamento Confirmado',
+          mensagem: 'Você reagendou a consulta de $nomePaciente para $dataFormatada.',
+          tipo: 'reagendamento',
+        );
+      } else {
+        // Notifica profissional
+        await _criarNotificacao(
+          idDestinatario: profissionalId,
+          titulo: 'Consulta Reagendada',
+          mensagem: '$nomePaciente reagendou a consulta para $dataFormatada.',
+          tipo: 'reagendamento',
+        );
+        // Confirma para o paciente
+        await _criarNotificacao(
+          idDestinatario: pacienteId,
+          titulo: 'Reagendamento Confirmado',
+          mensagem: 'Sua consulta foi reagendada para $dataFormatada.',
+          tipo: 'reagendamento',
+        );
+      }
 
       return {'success': true};
     } on PostgrestException catch (e) {
