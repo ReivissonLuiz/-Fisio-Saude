@@ -1,10 +1,11 @@
-﻿/// paciente_home_tab.dart
+/// paciente_home_tab.dart
 /// Aba "Início" do dashboard do paciente — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import 'agendar_consulta_screen.dart';
 
 class PacienteHomeTab extends StatefulWidget {
   final String pacienteId;
@@ -189,10 +190,33 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
         .toList();
 
     if (proximas.isEmpty) {
-      return const _EmptyCard(
-        icon: Icons.calendar_today_rounded,
-        message: 'Nenhuma consulta agendada.',
-        sub: 'Busque um fisioterapeuta para agendar.',
+      return Column(
+        children: [
+          const _EmptyCard(
+            icon: Icons.calendar_today_rounded,
+            message: 'Nenhuma consulta agendada.',
+            sub: 'Busque um fisioterapeuta para agendar.',
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Agendar Consulta'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () async {
+                final result = await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => AgendarConsultaScreen(pacienteId: widget.pacienteId)),
+                );
+                if (result == true) _carregarDados();
+              },
+            ),
+          ),
+        ],
       );
     }
 
@@ -216,53 +240,157 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(Icons.calendar_month_rounded,
-                color: AppTheme.primary, size: 28),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.calendar_month_rounded,
+                    color: AppTheme.primary, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(profissional?['nome'] ?? 'Profissional',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(profissional?['especialidade'] ?? '',
+                        style: const TextStyle(
+                            color: AppTheme.textSecondary, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(dtFormatada,
+                        style: const TextStyle(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13)),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.secondary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('Agendada',
+                    style: TextStyle(
+                        color: AppTheme.secondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(profissional?['nome'] ?? 'Profissional',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15)),
-                Text(profissional?['especialidade'] ?? '',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12)),
-                const SizedBox(height: 4),
-                Text(dtFormatada,
-                    style: const TextStyle(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13)),
-              ],
-            ),
-          ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppTheme.secondary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Text('Agendada',
-                style: TextStyle(
-                    color: AppTheme.secondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.edit_calendar_rounded, size: 16),
+                  label: const Text('Reagendar', style: TextStyle(fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primary,
+                    side: const BorderSide(color: AppTheme.primary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  onPressed: () => _reagendar(c),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.event_busy_rounded, size: 16),
+                  label: const Text('Cancelar', style: TextStyle(fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.error,
+                    side: const BorderSide(color: AppTheme.error),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  onPressed: () => _cancelar(c),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _cancelar(Map<String, dynamic> c) async {
+    final motivo = await showDialog<String>(
+      context: context,
+      builder: (ctx) {
+        final ctrl = TextEditingController();
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Cancelar Consulta'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Tem certeza que deseja cancelar esta consulta?'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ctrl,
+                decoration: const InputDecoration(hintText: 'Motivo (opcional)'),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Voltar')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.error, foregroundColor: Colors.white),
+              onPressed: () => Navigator.pop(ctx, ctrl.text),
+              child: const Text('Cancelar Consulta'),
+            ),
+          ],
+        );
+      },
+    );
+    if (motivo == null || !mounted) return;
+    final profissional = c['profissional'] as Map<String, dynamic>?;
+    final profId = c['id_profissional'] as String? ?? '';
+    final res = await _api.cancelarConsulta(
+      consultaId: c['id'] as String,
+      pacienteId: widget.pacienteId,
+      profissionalId: profId,
+      motivo: motivo.isEmpty ? null : motivo,
+    );
+    if (!mounted) return;
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Consulta cancelada. O profissional foi notificado.')),
+      );
+      _carregarDados();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] as String? ?? 'Erro ao cancelar.')),
+      );
+    }
+  }
+
+  Future<void> _reagendar(Map<String, dynamic> c) async {
+    final profId = c['id_profissional'] as String? ?? '';
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _ReagendarScreen(
+          consultaId: c['id'] as String,
+          pacienteId: widget.pacienteId,
+          profissionalId: profId,
+          api: _api,
+        ),
+      ),
+    );
+    if (result == true && mounted) _carregarDados();
   }
 
   Widget _ultimoSintoma() {
@@ -447,5 +575,113 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+// ─── Tela de Reagendamento ────────────────────────────────────────────────────
 
+class _ReagendarScreen extends StatefulWidget {
+  final String consultaId;
+  final String pacienteId;
+  final String profissionalId;
+  final ApiService api;
+  const _ReagendarScreen({required this.consultaId, required this.pacienteId, required this.profissionalId, required this.api});
 
+  @override
+  State<_ReagendarScreen> createState() => _ReagendarScreenState();
+}
+
+class _ReagendarScreenState extends State<_ReagendarScreen> {
+  DateTime? _data;
+  String? _horario;
+  List<String> _horarios = [];
+  bool _loading = false;
+  bool _salvando = false;
+
+  Future<void> _carregarHorarios(DateTime data) async {
+    setState(() { _loading = true; _horarios = []; _horario = null; });
+    final res = await widget.api.getHorariosDisponiveis(profissionalId: widget.profissionalId, data: data);
+    if (!mounted) return;
+    setState(() { _loading = false; if (res['success'] == true) _horarios = (res['data'] as List).cast<String>(); });
+  }
+
+  Future<void> _confirmar() async {
+    if (_data == null || _horario == null) return;
+    setState(() => _salvando = true);
+    final h = _horario!.split(':');
+    final novaDataHora = DateTime(_data!.year, _data!.month, _data!.day, int.parse(h[0]), int.parse(h[1]));
+    final res = await widget.api.reagendarConsulta(consultaId: widget.consultaId, pacienteId: widget.pacienteId, profissionalId: widget.profissionalId, novaDataHora: novaDataHora);
+    if (!mounted) return;
+    setState(() => _salvando = false);
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Consulta reagendada! O profissional foi notificado.')));
+      Navigator.of(context).pop(true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] as String? ?? 'Erro ao reagendar.')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white, elevation: 0,
+        title: const Text('Reagendar Consulta', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary), onPressed: () => Navigator.of(context).pop()),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Escolha a nova data:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppTheme.divider)),
+            child: CalendarDatePicker(
+              initialDate: _data ?? DateTime.now().add(const Duration(days: 1)),
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 90)),
+              onDateChanged: (d) { setState(() { _data = d; _horario = null; }); _carregarHorarios(d); },
+            ),
+          ),
+          if (_data != null) ...[
+            const SizedBox(height: 24),
+            const Text('Escolha o horário:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 12),
+            if (_loading) const Center(child: CircularProgressIndicator())
+            else if (_horarios.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: AppTheme.warning.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                child: const Row(children: [Icon(Icons.event_busy_rounded, color: AppTheme.warning), SizedBox(width: 10), Expanded(child: Text('Nenhum horário disponível nesta data.', style: TextStyle(color: AppTheme.warning)))]),
+              )
+            else Wrap(
+              spacing: 10, runSpacing: 10,
+              children: _horarios.map((h) {
+                final sel = _horario == h;
+                return GestureDetector(
+                  onTap: () => setState(() => _horario = h),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(color: sel ? AppTheme.primary : Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: sel ? AppTheme.primary : AppTheme.divider)),
+                    child: Text(h, style: TextStyle(color: sel ? Colors.white : AppTheme.textPrimary, fontWeight: FontWeight.w600)),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+          const SizedBox(height: 32),
+          if (_data != null && _horario != null)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _salvando ? null : _confirmar,
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                child: _salvando
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Confirmar Reagendamento', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+        ]),
+      ),
+    );
+  }
+}

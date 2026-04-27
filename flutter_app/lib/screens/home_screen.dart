@@ -6,13 +6,13 @@ library;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/notificacoes_panel.dart';
 import 'paciente/paciente_home_tab.dart';
 import 'paciente/buscar_fisio_tab.dart';
 import 'paciente/minha_saude_tab.dart';
 import 'paciente/meu_perfil_tab.dart';
 import 'profissional/profissional_home_tab.dart';
 import 'profissional/agenda_tab.dart';
-import 'profissional/minha_disponibilidade_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
@@ -303,7 +303,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ProfissionalHomeTab(
             profissionalId: _usuarioId ?? '', nome: _nome),
         AgendaTab(profissionalId: _usuarioId ?? ''),
-        MinhaDisponibilidadeTab(profissionalId: _usuarioId ?? ''),
         PerfilProfissionalTab(
           key: UniqueKey(),
           profissionalId: _usuarioId ?? '',
@@ -344,11 +343,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Color(0xFF9C27B0)),
                 label: 'Agenda'),
             NavigationDestination(
-                icon: Icon(Icons.calendar_month_outlined),
-                selectedIcon: Icon(Icons.calendar_month_rounded,
-                    color: AppTheme.primary),
-                label: 'Horários'),
-            NavigationDestination(
                 icon: Icon(Icons.person_outline),
                 selectedIcon:
                     Icon(Icons.person_rounded, color: AppTheme.accent),
@@ -361,12 +355,13 @@ class _HomeScreenState extends State<HomeScreen> {
     // ---------------------------------------------------------------
     // Visão do Paciente (padrão)
     // ---------------------------------------------------------------
+    final usuarioIdFinal = _usuarioId ?? '';
     final patientTabs = [
-      PacienteHomeTab(pacienteId: _usuarioId ?? '', nome: _nome),
-      BuscarFisioTab(pacienteId: _usuarioId ?? '', pacienteNome: _nome),
-      MinhaSaudeTab(pacienteId: _usuarioId ?? ''),
+      PacienteHomeTab(pacienteId: usuarioIdFinal, nome: _nome),
+      BuscarFisioTab(pacienteId: usuarioIdFinal),
+      MinhaSaudeTab(pacienteId: usuarioIdFinal),
       MeuPerfilTab(
-          pacienteId: _usuarioId ?? '',
+          pacienteId: usuarioIdFinal,
           nome: _nome,
           email: _email,
           onLogout: _logout),
@@ -374,6 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
+      endDrawer: NotificacoesPanel(usuarioId: usuarioIdFinal),
       body: SafeArea(
         child: Column(
           children: [

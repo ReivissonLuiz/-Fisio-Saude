@@ -560,7 +560,7 @@ class ApiService {
     try {
       final data = await _sb
           .from('usuario')
-          .select('id, nome, email, especialidade, crefito, telefone, cidade, uf')
+          .select('id, nome, especialidade, crefito, telefone, cidade, uf')
           .eq('id_permissao', Permissao.profissional)
           .eq('ativo', true)
           .order('nome');
@@ -856,108 +856,462 @@ class ApiService {
     }
   }
 
-  // --- Agendamento -----------------------------------------------------------
+  // --- Agendamento: Disponibilidade ----------------------------------------
 
-  /// Busca todas as clínicas ativas.
-  Future<Map<String, dynamic>> getClinicas() async {
+  /// Retorna os slots de disponibilidade de um profissional.
+  Future<Map<String, dynamic>> getDisponibilidade(String profissionalId) async {
     try {
       final data = await _sb
-          .from('clinica')
-          .select()
-          .eq('ativo', true)
-          .order('nome');
-      return {'success': true, 'data': data};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao carregar clínicas.'};
-    }
-  }
-
-  /// Busca disponibilidades de um profissional a partir de hoje.
-  Future<Map<String, dynamic>> getDisponibilidades(String profissionalId) async {
-    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
-    try {
-      final hoje = DateTime.now().toIso8601String().substring(0, 10);
-      final data = await _sb
-          .from('disponibilidade')
+          .from('disponibilidade_profissional')
           .select()
           .eq('id_profissional', profissionalId)
-          .gte('data', hoje)
-          .eq('disponivel', true)
-          .order('data')
+          .eq('ativo', true)
+          .order('dia_semana')
           .order('hora_inicio');
       return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao carregar disponibilidades.'};
+      return {'success': false, 'message': 'Erro de conexão.'};
     }
   }
 
-  /// Cria uma nova consulta (agendamento).
-  Future<Map<String, dynamic>> criarConsulta({
-    required String idPaciente,
-    required String idProfissional,
-    required String dataHora,
-    String? idClinica,
-    String? observacao,
+  /// Retorna as especialidades distintas de profissionais ativos.
+  Future<Map<String, dynamic>> getEspecialidades() async {
+    try {
+      final data = await _sb
+          .from('usuario')
+          .select('especialidade')
+          .eq('id_permissao', Permissao.profissional)
+          .eq('ativo', true)
+          .not('especialidade', 'is', null);
+
+      final especialidades = (data as List)
+          .map((e) => e['especialidade'] as String? ?? '')
+          .where((e) => e.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+      return {'success': true, 'data': especialidades};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Busca profissionais disponíveis para uma especialidade e data específica.
+  /// Retorna apenas profissionais que têm um slot de disponibilidade no
+  /// dia da semana correspondente e que não possuem consulta agendada no mesmo horário.
+  Future<Map<String, dynamic>> getProfissionaisDisponiveis({
+    required String? especialidade,
+    required DateTime data,
+    required String horario, // formato 'HH:MM'
   }) async {
     try {
-      final data = await _sb.from('consulta').insert({
-        'id_paciente': idPaciente,
-        'id_profissional': idProfissional,
-        'data_hora': dataHora,
-        'id_clinica': idClinica,
-        'observacao': observacao,
-        'status': 'Agendada',
-      }).select().single();
+      // dia da semana: 0=Dom, 1=Seg, ..., 6=Sab (Dart weekday: 1=Mon, 7=Sun)
+      final diaIndex = data.weekday % 7; // converte para 0=Dom
 
-      // Marca o horário como indisponível
+      // Busca profissionais com disponibilidade no dia/hora solicitados
+      var query = _sb
+          .from('disponibilidade_profissional')
+          .select(
+              'id_profissional, hora_inicio, hora_fim, profissional:id_profissional(id, nome, especialidade, crefito, telefone)')
+          .eq('dia_semana', diaIndex)
+          .eq('ativo', true)
+          .lte('hora_inicio', horario)
+          .gt('hora_fim', horario);
+
+      final disponivel = await query;
+
+      // Filtra por especialidade se informada
+      List<dynamic> filtrado = (disponivel as List).where((d) {
+        final prof = d['profissional'] as Map<String, dynamic>?;
+        if (especialidade != null && especialidade.isNotEmpty) {
+          final esp = (prof?['especialidade'] as String? ?? '').toLowerCase();
+          return esp.contains(especialidade.toLowerCase());
+        }
+        return true;
+      }).toList();
+
+      // Para cada profissional, verifica se já tem consulta agendada neste horário
+      final dataInicio = DateTime(data.year, data.month, data.day,
+          int.parse(horario.split(':')[0]), int.parse(horario.split(':')[1]));
+      final dataFim = dataInicio.add(const Duration(hours: 1));
+
+      final consultasExistentes = await _sb
+          .from('consulta')
+          .select('id_profissional, data_hora')
+          .gte('data_hora', dataInicio.toIso8601String())
+          .lt('data_hora', dataFim.toIso8601String())
+          .inFilter('status', ['agendada', 'Agendada']);
+
+      final ocupados = (consultasExistentes as List)
+          .map((c) => c['id_profissional'] as String)
+          .toSet();
+
+      final disponivelFinal = filtrado.where((d) {
+        final prof = d['profissional'] as Map<String, dynamic>?;
+        return !ocupados.contains(prof?['id']);
+      }).toList();
+
+      final profissionais = disponivelFinal
+          .map((d) => d['profissional'] as Map<String, dynamic>?)
+          .where((p) => p != null)
+          .cast<Map<String, dynamic>>()
+          .toList();
+
+      return {'success': true, 'data': profissionais};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Busca horários disponíveis de um profissional em uma data específica.
+  Future<Map<String, dynamic>> getHorariosDisponiveis({
+    required String profissionalId,
+    required DateTime data,
+  }) async {
+    try {
+      final diaIndex = data.weekday % 7;
+
+      final slots = await _sb
+          .from('disponibilidade_profissional')
+          .select('hora_inicio, hora_fim')
+          .eq('id_profissional', profissionalId)
+          .eq('dia_semana', diaIndex)
+          .eq('ativo', true)
+          .order('hora_inicio');
+
+      // Consultas já agendadas neste dia
+      final inicioDia = DateTime(data.year, data.month, data.day);
+      final fimDia = inicioDia.add(const Duration(days: 1));
+
+      final consultasDia = await _sb
+          .from('consulta')
+          .select('data_hora')
+          .eq('id_profissional', profissionalId)
+          .gte('data_hora', inicioDia.toIso8601String())
+          .lt('data_hora', fimDia.toIso8601String())
+          .inFilter('status', ['agendada', 'Agendada']);
+
+      final horariosOcupados = (consultasDia as List).map((c) {
+        final dt = DateTime.parse(c['data_hora'] as String);
+        return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      }).toSet();
+
+      // Gera lista de horários disponíveis (slots de 1h)
+      final horariosDisponiveis = <String>[];
+      for (final slot in (slots as List)) {
+        final hi = slot['hora_inicio'] as String; // '09:00:00' or '09:00'
+        final hf = slot['hora_fim'] as String;
+        final hiParts = hi.split(':');
+        final hfParts = hf.split(':');
+        int hAtual = int.parse(hiParts[0]);
+        int mAtual = int.parse(hiParts[1]);
+        final hFim = int.parse(hfParts[0]);
+        final mFim = int.parse(hfParts[1]);
+
+        while (hAtual * 60 + mAtual < hFim * 60 + mFim) {
+          final horario =
+              '${hAtual.toString().padLeft(2, '0')}:${mAtual.toString().padLeft(2, '0')}';
+          // Não mostra horários no passado
+          final slotDt =
+              DateTime(data.year, data.month, data.day, hAtual, mAtual);
+          if (!horariosOcupados.contains(horario) &&
+              slotDt.isAfter(DateTime.now())) {
+            horariosDisponiveis.add(horario);
+          }
+          mAtual += 60;
+          if (mAtual >= 60) {
+            hAtual++;
+            mAtual -= 60;
+          }
+        }
+      }
+
+      return {'success': true, 'data': horariosDisponiveis};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  // --- Agendamento: Consultas -----------------------------------------------
+
+  /// Cria uma nova consulta e envia notificações para ambas as partes.
+  Future<Map<String, dynamic>> agendarConsulta({
+    required String pacienteId,
+    required String profissionalId,
+    required DateTime dataHora,
+    String? observacoes,
+  }) async {
+    try {
+      // Verificação dupla de disponibilidade
+      final horario =
+          '${dataHora.hour.toString().padLeft(2, '0')}:${dataHora.minute.toString().padLeft(2, '0')}';
+      final dataFim = dataHora.add(const Duration(hours: 1));
+
+      final conflito = await _sb
+          .from('consulta')
+          .select('id')
+          .eq('id_profissional', profissionalId)
+          .gte('data_hora', dataHora.toIso8601String())
+          .lt('data_hora', dataFim.toIso8601String())
+          .inFilter('status', ['agendada', 'Agendada'])
+          .maybeSingle();
+
+      if (conflito != null) {
+        return {
+          'success': false,
+          'message': 'Este horário já foi reservado. Por favor, escolha outro.'
+        };
+      }
+
+      // Cria a consulta
+      final consulta = await _sb
+          .from('consulta')
+          .insert({
+            'id_paciente': pacienteId,
+            'id_profissional': profissionalId,
+            'data_hora': dataHora.toIso8601String(),
+            'status': 'Agendada',
+            'observacoes': observacoes,
+          })
+          .select()
+          .single();
+
+      final consultaId = consulta['id'] as String;
+
+      // Busca nomes para notificação
+      final profData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', profissionalId)
+          .single();
+      final pacData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', pacienteId)
+          .single();
+
+      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
+      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
+      final dataFormatada =
+          '${dataHora.day.toString().padLeft(2, '0')}/${dataHora.month.toString().padLeft(2, '0')}/${dataHora.year} às $horario';
+
+      // Notifica paciente
+      await _criarNotificacao(
+        idDestinatario: pacienteId,
+        titulo: 'Consulta Agendada!',
+        corpo:
+            'Sua consulta com $nomeProfissional foi confirmada para $dataFormatada.',
+        tipo: 'agendamento',
+        idConsulta: consultaId,
+      );
+
+      // Notifica profissional
+      await _criarNotificacao(
+        idDestinatario: profissionalId,
+        titulo: 'Nova Consulta Agendada',
+        corpo:
+            '$nomePaciente agendou uma consulta para $dataFormatada.',
+        tipo: 'agendamento',
+        idConsulta: consultaId,
+      );
+
+      return {'success': true, 'data': consulta};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao realizar agendamento.'};
+    }
+  }
+
+  /// Cancela uma consulta agendada e notifica o profissional.
+  Future<Map<String, dynamic>> cancelarConsulta({
+    required String consultaId,
+    required String pacienteId,
+    required String profissionalId,
+    String? motivo,
+  }) async {
+    try {
       await _sb
-          .from('disponibilidade')
-          .update({'disponivel': false})
-          .eq('id_profissional', idProfissional)
-          .eq('data', dataHora.substring(0, 10))
-          .eq('hora_inicio', dataHora.substring(11, 16));
+          .from('consulta')
+          .update({'status': 'Cancelada', 'observacoes': motivo})
+          .eq('id', consultaId);
 
-      return {'success': true, 'data': data};
-    } on PostgrestException catch (e) {
-      return {'success': false, 'message': e.message};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao criar consulta.'};
-    }
-  }
+      // Busca dados para notificação
+      final pacData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', pacienteId)
+          .single();
+      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
 
-  /// Cria um slot de disponibilidade para o profissional.
-  Future<Map<String, dynamic>> criarDisponibilidade({
-    required String idProfissional,
-    required String data,      // 'yyyy-MM-dd'
-    required String horaInicio, // 'HH:MM'
-    String? horaFim,
-  }) async {
-    try {
-      final row = await _sb.from('disponibilidade').insert({
-        'id_profissional': idProfissional,
-        'data': data,
-        'hora_inicio': horaInicio,
-        if (horaFim != null) 'hora_fim': horaFim,
-        'disponivel': true,
-      }).select().single();
-      return {'success': true, 'data': row};
-    } on PostgrestException catch (e) {
-      return {'success': false, 'message': e.message};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao criar disponibilidade.'};
-    }
-  }
+      await _criarNotificacao(
+        idDestinatario: profissionalId,
+        titulo: 'Consulta Cancelada',
+        corpo: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
+        tipo: 'cancelamento',
+        idConsulta: consultaId,
+      );
 
-  /// Remove um slot de disponibilidade pelo id.
-  Future<Map<String, dynamic>> deletarDisponibilidade(String id) async {
-    try {
-      await _sb.from('disponibilidade').delete().eq('id', id);
       return {'success': true};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
-      return {'success': false, 'message': 'Erro ao remover disponibilidade.'};
+      return {'success': false, 'message': 'Erro ao cancelar consulta.'};
     }
+  }
+
+  /// Reagenda uma consulta e notifica o profissional.
+  Future<Map<String, dynamic>> reagendarConsulta({
+    required String consultaId,
+    required String pacienteId,
+    required String profissionalId,
+    required DateTime novaDataHora,
+  }) async {
+    try {
+      // Verificação de disponibilidade no novo horário
+      final dataFim = novaDataHora.add(const Duration(hours: 1));
+      final horario =
+          '${novaDataHora.hour.toString().padLeft(2, '0')}:${novaDataHora.minute.toString().padLeft(2, '0')}';
+
+      final conflito = await _sb
+          .from('consulta')
+          .select('id')
+          .eq('id_profissional', profissionalId)
+          .neq('id', consultaId)
+          .gte('data_hora', novaDataHora.toIso8601String())
+          .lt('data_hora', dataFim.toIso8601String())
+          .inFilter('status', ['agendada', 'Agendada'])
+          .maybeSingle();
+
+      if (conflito != null) {
+        return {
+          'success': false,
+          'message': 'Este horário já está ocupado. Escolha outro.'
+        };
+      }
+
+      await _sb
+          .from('consulta')
+          .update({
+            'data_hora': novaDataHora.toIso8601String(),
+            'status': 'Agendada',
+          })
+          .eq('id', consultaId);
+
+      final pacData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', pacienteId)
+          .single();
+      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
+      final dataFormatada =
+          '${novaDataHora.day.toString().padLeft(2, '0')}/${novaDataHora.month.toString().padLeft(2, '0')}/${novaDataHora.year} às $horario';
+
+      await _criarNotificacao(
+        idDestinatario: profissionalId,
+        titulo: 'Consulta Reagendada',
+        corpo:
+            '$nomePaciente reagendou a consulta para $dataFormatada.',
+        tipo: 'reagendamento',
+        idConsulta: consultaId,
+      );
+
+      // Notifica paciente também
+      await _criarNotificacao(
+        idDestinatario: pacienteId,
+        titulo: 'Reagendamento Confirmado',
+        corpo: 'Sua consulta foi reagendada para $dataFormatada.',
+        tipo: 'reagendamento',
+        idConsulta: consultaId,
+      );
+
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao reagendar consulta.'};
+    }
+  }
+
+  // --- Notificações ----------------------------------------------------------
+
+  /// Cria uma notificação interna.
+  Future<void> _criarNotificacao({
+    required String idDestinatario,
+    required String titulo,
+    required String corpo,
+    required String tipo,
+    String? idConsulta,
+  }) async {
+    try {
+      await _sb.from('notificacao').insert({
+        'id_destinatario': idDestinatario,
+        'titulo': titulo,
+        'corpo': corpo,
+        'tipo': tipo,
+        if (idConsulta != null) 'id_consulta': idConsulta,
+      });
+    } catch (_) {
+      // Falha de notificação não bloqueia o fluxo principal
+    }
+  }
+
+  /// Busca notificações do usuário atual.
+  Future<Map<String, dynamic>> getNotificacoes(String usuarioId) async {
+    try {
+      final data = await _sb
+          .from('notificacao')
+          .select()
+          .eq('id_destinatario', usuarioId)
+          .order('created_at', ascending: false)
+          .limit(30);
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Conta notificações não lidas.
+  Future<int> getNotificacoesNaoLidas(String usuarioId) async {
+    try {
+      final data = await _sb
+          .from('notificacao')
+          .select('id')
+          .eq('id_destinatario', usuarioId)
+          .eq('lida', false);
+      return (data as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Marca uma notificação como lida.
+  Future<void> marcarNotificacaoLida(String notificacaoId) async {
+    try {
+      await _sb
+          .from('notificacao')
+          .update({'lida': true})
+          .eq('id', notificacaoId);
+    } catch (_) {}
+  }
+
+  /// Marca todas as notificações do usuário como lidas.
+  Future<void> marcarTodasNotificacoesLidas(String usuarioId) async {
+    try {
+      await _sb
+          .from('notificacao')
+          .update({'lida': true})
+          .eq('id_destinatario', usuarioId)
+          .eq('lida', false);
+    } catch (_) {}
   }
 
   // --- Logs ----------------------------------------------------------------

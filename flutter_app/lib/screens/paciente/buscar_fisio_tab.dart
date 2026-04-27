@@ -5,17 +5,11 @@ library;
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
-import '../../widgets/agendamento_dialog.dart';
+import 'agendar_consulta_screen.dart';
 
 class BuscarFisioTab extends StatefulWidget {
   final String pacienteId;
-  final String pacienteNome;
-
-  const BuscarFisioTab({
-    super.key,
-    required this.pacienteId,
-    required this.pacienteNome,
-  });
+  const BuscarFisioTab({super.key, required this.pacienteId});
 
   @override
   State<BuscarFisioTab> createState() => _BuscarFisioTabState();
@@ -74,22 +68,6 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
         }).toList();
       }
     });
-  }
-
-  void _abrirAgendamento(Map<String, dynamic> profissional) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.92,
-        child: AgendamentoDialog(
-          profissional: profissional,
-          pacienteId: widget.pacienteId,
-          pacienteNome: widget.pacienteNome,
-        ),
-      ),
-    );
   }
 
   @override
@@ -205,8 +183,7 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
                               final p = _filtered[index];
                               return _ProfissionalCard(
                                 profissional: p,
-                                onAgendar: () => _abrirAgendamento(
-                                    Map<String, dynamic>.from(p)),
+                                pacienteId: widget.pacienteId,
                               );
                             },
                           ),
@@ -219,8 +196,8 @@ class _BuscarFisioTabState extends State<BuscarFisioTab> {
 
 class _ProfissionalCard extends StatelessWidget {
   final Map<String, dynamic> profissional;
-  final VoidCallback onAgendar;
-  const _ProfissionalCard({required this.profissional, required this.onAgendar});
+  final String pacienteId;
+  const _ProfissionalCard({required this.profissional, required this.pacienteId});
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +207,6 @@ class _ProfissionalCard extends StatelessWidget {
     final crefito = profissional['crefito'] as String? ?? '';
     final telefone = profissional['telefone'] as String?;
 
-    // Cor do avatar baseada na inicial do nome
     final cores = [
       AppTheme.primary,
       AppTheme.secondary,
@@ -320,7 +296,14 @@ class _ProfissionalCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.calendar_month_rounded,
                       color: AppTheme.primary, size: 22),
-                  onPressed: onAgendar,
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => AgendarConsultaScreen(
+                        pacienteId: pacienteId,
+                        profissionalIdPreSelecionado: profissional['id'] as String?,
+                      ),
+                    ));
+                  },
                   tooltip: 'Agendar',
                 ),
               ],
@@ -331,3 +314,5 @@ class _ProfissionalCard extends StatelessWidget {
     );
   }
 }
+
+
