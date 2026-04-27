@@ -1,10 +1,11 @@
-﻿/// main.dart
+/// main.dart
 /// Ponto de entrada do app +Fisio +Saúde.
 /// Configura tema, rotas e listener global de autenticação (recovery de senha).
 library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
 import 'theme/app_theme.dart';
@@ -21,6 +22,9 @@ import 'screens/register/admin_register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializa os dados de locale para formatação de datas em pt_BR
+  await initializeDateFormatting('pt_BR', null);
 
   // Inicializa o Supabase antes de qualquer widget
   await Supabase.initialize(
