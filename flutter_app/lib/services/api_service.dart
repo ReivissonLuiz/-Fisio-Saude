@@ -1096,20 +1096,19 @@ class ApiService {
           .update({'status': 'cancelada', 'observacoes': motivo})
           .eq('id', consultaId);
 
-      // Busca dados para notificação
       final pacData = await _sb
           .from('usuario')
           .select('nome')
           .eq('id', pacienteId)
-          .single();
+          .maybeSingle();
       final profData = await _sb
           .from('usuario')
           .select('nome')
           .eq('id', profissionalId)
-          .single();
+          .maybeSingle();
           
-      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
-      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
+      final nomePaciente = pacData?['nome'] as String? ?? 'Paciente';
+      final nomeProfissional = profData?['nome'] as String? ?? 'Profissional';
 
       if (iniciadoPorProfissional) {
         await _criarNotificacao(
@@ -1149,7 +1148,7 @@ class ApiService {
       final horario =
           '${novaDataHora.hour.toString().padLeft(2, '0')}:${novaDataHora.minute.toString().padLeft(2, '0')}';
 
-      final conflito = await _sb
+      final conflitoList = await _sb
           .from('consulta')
           .select('id')
           .eq('id_profissional', profissionalId)
@@ -1157,9 +1156,9 @@ class ApiService {
           .gte('data_hora', novaDataHora.toIso8601String())
           .lt('data_hora', dataFim.toIso8601String())
           .inFilter('status', ['agendada', 'Agendada'])
-          .maybeSingle();
+          .limit(1);
 
-      if (conflito != null) {
+      if (conflitoList.isNotEmpty) {
         return {
           'success': false,
           'message': 'Este horário já está ocupado. Escolha outro.'
@@ -1178,15 +1177,15 @@ class ApiService {
           .from('usuario')
           .select('nome')
           .eq('id', pacienteId)
-          .single();
+          .maybeSingle();
       final profData = await _sb
           .from('usuario')
           .select('nome')
           .eq('id', profissionalId)
-          .single();
+          .maybeSingle();
           
-      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
-      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
+      final nomePaciente = pacData?['nome'] as String? ?? 'Paciente';
+      final nomeProfissional = profData?['nome'] as String? ?? 'Profissional';
       final dataFormatada =
           '${novaDataHora.day.toString().padLeft(2, '0')}/${novaDataHora.month.toString().padLeft(2, '0')}/${novaDataHora.year} às $horario';
 
