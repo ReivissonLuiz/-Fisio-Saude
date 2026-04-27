@@ -5,6 +5,8 @@ library;
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/notification_service.dart';
+import '../../widgets/notificacoes_panel.dart';
 import '../shared/reagendar_screen.dart';
 import 'agendar_consulta_screen.dart';
 
@@ -24,10 +26,12 @@ class PacienteHomeTab extends StatefulWidget {
 
 class _PacienteHomeTabState extends State<PacienteHomeTab> {
   final _api = ApiService();
+  final _notif = NotificationService();
 
   List<dynamic> _sintomas = [];
   List<dynamic> _consultas = [];
   bool _loading = true;
+  int _notifCount = 0;
 
   @override
   void initState() {
@@ -38,22 +42,24 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
   Future<void> _carregarDados() async {
     setState(() => _loading = true);
 
-    final futures = await Future.wait([
+    final results = await Future.wait([
       _api.getPaciente(widget.pacienteId),
       _api.getSintomas(widget.pacienteId),
       _api.getConsultas(widget.pacienteId),
     ]);
+    final nCount = await _notif.contarNaoLidas(widget.pacienteId);
 
     if (!mounted) return;
 
     setState(() {
       _loading = false;
-      if (futures[1]['success'] == true) {
-        _sintomas = futures[1]['data'] as List? ?? [];
+      if (results[1]['success'] == true) {
+        _sintomas = results[1]['data'] as List? ?? [];
       }
-      if (futures[2]['success'] == true) {
-        _consultas = futures[2]['data'] as List? ?? [];
+      if (results[2]['success'] == true) {
+        _consultas = results[2]['data'] as List? ?? [];
       }
+      _notifCount = nCount;
     });
   }
 
@@ -111,11 +117,50 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh_rounded,
-                            color: Colors.white70),
-                        onPressed: _carregarDados,
-                        tooltip: 'Atualizar',
+                      // Botão de notificações com badge
+                      Stack(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.notifications_rounded,
+                                color: Colors.white, size: 26),
+                            tooltip: 'Notificações',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => NotificacoesPanel(
+                                    usuarioId: widget.pacienteId,
+                                    // Ao clicar em "Acessar Agenda" numa notif
+                                    // de reagendamento, simplesmente fecha o
+                                    // painel — o paciente já está na aba de
+                                    // consultas (Início).
+                                    onNavigateToAgenda: () =>
+                                        Navigator.pop(context),
+                                  ),
+                                ),
+                              ).then((_) => _carregarDados());
+                            },
+                          ),
+                          if (_notifCount > 0)
+                            Positioned(
+                              right: 4,
+                              top: 4,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  _notifCount > 9 ? '9+' : '$_notifCount',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),
