@@ -898,45 +898,43 @@ class ApiService {
     }
   }
 
-  /// Busca profissionais disponíveis para uma especialidade e data específica.
-  /// Retorna apenas profissionais que têm disponibilidade marcada na data
-  /// e que não possuem consulta agendada no mesmo horário.
+  /// Busca profissionais disponíveis para uma especialidade, data e horário.
+  /// Lógica: qualquer profissional ativo pode ser agendado das 08h–19h,
+  /// desde que não tenha consulta agendada naquele slot.
   Future<Map<String, dynamic>> getProfissionaisDisponiveis({
     required String? especialidade,
     required DateTime data,
-    required String horario, // formato 'HH:MM'
+    required String horario,
   }) async {
     try {
-      final dataStr = '${data.year}-${data.month.toString().padLeft(2, '0')}-${data.day.toString().padLeft(2, '0')}';
+      // 1. Busca todos os profissionais ativos (filtrado por especialidade)
+      var query = _sb
+          .from('usuario')
+          .select('id, nome, especialidade, crefito, telefone')
+          .eq('id_permissao', Permissao.profissional)
+          .eq('ativo', true);
 
-      // Busca registros de disponibilidade para esta data
-      final disponivel = await _sb
-          .from('disponibilidade')
-          .select(
-              'id_profissional, hora_inicio, hora_fim, profissional:id_profissional(id, nome, especialidade, crefito, telefone)')
-          .eq('data', dataStr)
-          .eq('disponivel', true)
-          .lte('hora_inicio', horario)
-          .gt('hora_fim', horario);
+      final todos = await query;
 
-      // Filtra por especialidade se informada
-      List<dynamic> filtrado = (disponivel as List).where((d) {
-        final prof = d['profissional'] as Map<String, dynamic>?;
-        if (especialidade != null && especialidade.isNotEmpty) {
-          final esp = (prof?['especialidade'] as String? ?? '').toLowerCase();
-          return esp.contains(especialidade.toLowerCase());
-        }
-        return true;
-      }).toList();
+      List<Map<String, dynamic>> profissionais = (todos as List)
+          .cast<Map<String, dynamic>>()
+          .where((p) {
+            if (especialidade != null && especialidade.isNotEmpty) {
+              final esp = (p['especialidade'] as String? ?? '').toLowerCase();
+              return esp.contains(especialidade.toLowerCase());
+            }
+            return true;
+          })
+          .toList();
 
-      // Para cada profissional, verifica se já tem consulta agendada neste horário
-      final dataInicio = DateTime(data.year, data.month, data.day,
-          int.parse(horario.split(':')[0]), int.parse(horario.split(':')[1]));
+      // 2. Verifica quais já têm consulta agendada neste slot
+      final h = horario.split(':');
+      final dataInicio = DateTime(data.year, data.month, data.day, int.parse(h[0]), int.parse(h[1]));
       final dataFim = dataInicio.add(const Duration(hours: 1));
 
       final consultasExistentes = await _sb
           .from('consulta')
-          .select('id_profissional, data_hora')
+          .select('id_profissional')
           .gte('data_hora', dataInicio.toIso8601String())
           .lt('data_hora', dataFim.toIso8601String())
           .inFilter('status', ['agendada', 'Agendada']);
@@ -945,18 +943,9 @@ class ApiService {
           .map((c) => c['id_profissional'] as String)
           .toSet();
 
-      final disponivelFinal = filtrado.where((d) {
-        final prof = d['profissional'] as Map<String, dynamic>?;
-        return !ocupados.contains(prof?['id']);
-      }).toList();
+      final disponiveis = profissionais.where((p) => !ocupados.contains(p['id'] as String)).toList();
 
-      final profissionais = disponivelFinal
-          .map((d) => d['profissional'] as Map<String, dynamic>?)
-          .where((p) => p != null)
-          .cast<Map<String, dynamic>>()
-          .toList();
-
-      return {'success': true, 'data': profissionais};
+      return {'success': true, 'data': disponiveis};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
@@ -964,23 +953,14 @@ class ApiService {
     }
   }
 
-  /// Busca horários disponíveis de um profissional em uma data específica.
+  /// Retorna slots de 08:00–19:00 para um profissional em uma data,
+  /// excluindo horários já agendados e horários passados.
   Future<Map<String, dynamic>> getHorariosDisponiveis({
     required String profissionalId,
     required DateTime data,
   }) async {
     try {
-      final dataStr = '${data.year}-${data.month.toString().padLeft(2, '0')}-${data.day.toString().padLeft(2, '0')}';
-
-      final slots = await _sb
-          .from('disponibilidade')
-          .select('hora_inicio, hora_fim')
-          .eq('id_profissional', profissionalId)
-          .eq('data', dataStr)
-          .eq('disponivel', true)
-          .order('hora_inicio');
-
-      // Consultas já agendadas neste dia
+      // Consultas já agendadas neste dia para este profissional
       final inicioDia = DateTime(data.year, data.month, data.day);
       final fimDia = inicioDia.add(const Duration(days: 1));
 
@@ -993,37 +973,17 @@ class ApiService {
           .inFilter('status', ['agendada', 'Agendada']);
 
       final horariosOcupados = (consultasDia as List).map((c) {
-        final dt = DateTime.parse(c['data_hora'] as String);
+        final dt = DateTime.parse(c['data_hora'] as String).toLocal();
         return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
       }).toSet();
 
-      // Gera lista de horários disponíveis (slots de 1h)
+      // Gera slots das 08:00 às 19:00 (último início às 18:00)
       final horariosDisponiveis = <String>[];
-      for (final slot in (slots as List)) {
-        final hi = slot['hora_inicio'] as String; // '09:00:00' or '09:00'
-        final hf = slot['hora_fim'] as String;
-        final hiParts = hi.split(':');
-        final hfParts = hf.split(':');
-        int hAtual = int.parse(hiParts[0]);
-        int mAtual = int.parse(hiParts[1]);
-        final hFim = int.parse(hfParts[0]);
-        final mFim = int.parse(hfParts[1]);
-
-        while (hAtual * 60 + mAtual < hFim * 60 + mFim) {
-          final horario =
-              '${hAtual.toString().padLeft(2, '0')}:${mAtual.toString().padLeft(2, '0')}';
-          // Não mostra horários no passado
-          final slotDt =
-              DateTime(data.year, data.month, data.day, hAtual, mAtual);
-          if (!horariosOcupados.contains(horario) &&
-              slotDt.isAfter(DateTime.now())) {
-            horariosDisponiveis.add(horario);
-          }
-          mAtual += 60;
-          if (mAtual >= 60) {
-            hAtual++;
-            mAtual -= 60;
-          }
+      for (int h = 8; h < 19; h++) {
+        final horario = '${h.toString().padLeft(2, '0')}:00';
+        final slotDt = DateTime(data.year, data.month, data.day, h, 0);
+        if (!horariosOcupados.contains(horario) && slotDt.isAfter(DateTime.now())) {
+          horariosDisponiveis.add(horario);
         }
       }
 
