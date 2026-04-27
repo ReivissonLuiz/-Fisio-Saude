@@ -862,11 +862,11 @@ class ApiService {
   Future<Map<String, dynamic>> getDisponibilidade(String profissionalId) async {
     try {
       final data = await _sb
-          .from('disponibilidade_profissional')
+          .from('disponibilidade')
           .select()
           .eq('id_profissional', profissionalId)
-          .eq('ativo', true)
-          .order('dia_semana')
+          .eq('disponivel', true)
+          .order('data')
           .order('hora_inicio');
       return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
@@ -898,48 +898,43 @@ class ApiService {
     }
   }
 
-  /// Busca profissionais disponíveis para uma especialidade e data específica.
-  /// Retorna apenas profissionais que têm um slot de disponibilidade no
-  /// dia da semana correspondente e que não possuem consulta agendada no mesmo horário.
+  /// Busca profissionais disponíveis para uma especialidade, data e horário.
+  /// Lógica: qualquer profissional ativo pode ser agendado das 08h–19h,
+  /// desde que não tenha consulta agendada naquele slot.
   Future<Map<String, dynamic>> getProfissionaisDisponiveis({
     required String? especialidade,
     required DateTime data,
-    required String horario, // formato 'HH:MM'
+    required String horario,
   }) async {
     try {
-      // dia da semana: 0=Dom, 1=Seg, ..., 6=Sab (Dart weekday: 1=Mon, 7=Sun)
-      final diaIndex = data.weekday % 7; // converte para 0=Dom
-
-      // Busca profissionais com disponibilidade no dia/hora solicitados
+      // 1. Busca todos os profissionais ativos (filtrado por especialidade)
       var query = _sb
-          .from('disponibilidade_profissional')
-          .select(
-              'id_profissional, hora_inicio, hora_fim, profissional:id_profissional(id, nome, especialidade, crefito, telefone)')
-          .eq('dia_semana', diaIndex)
-          .eq('ativo', true)
-          .lte('hora_inicio', horario)
-          .gt('hora_fim', horario);
+          .from('usuario')
+          .select('id, nome, especialidade, crefito, telefone')
+          .eq('id_permissao', Permissao.profissional)
+          .eq('ativo', true);
 
-      final disponivel = await query;
+      final todos = await query;
 
-      // Filtra por especialidade se informada
-      List<dynamic> filtrado = (disponivel as List).where((d) {
-        final prof = d['profissional'] as Map<String, dynamic>?;
-        if (especialidade != null && especialidade.isNotEmpty) {
-          final esp = (prof?['especialidade'] as String? ?? '').toLowerCase();
-          return esp.contains(especialidade.toLowerCase());
-        }
-        return true;
-      }).toList();
+      List<Map<String, dynamic>> profissionais = (todos as List)
+          .cast<Map<String, dynamic>>()
+          .where((p) {
+            if (especialidade != null && especialidade.isNotEmpty) {
+              final esp = (p['especialidade'] as String? ?? '').toLowerCase();
+              return esp.contains(especialidade.toLowerCase());
+            }
+            return true;
+          })
+          .toList();
 
-      // Para cada profissional, verifica se já tem consulta agendada neste horário
-      final dataInicio = DateTime(data.year, data.month, data.day,
-          int.parse(horario.split(':')[0]), int.parse(horario.split(':')[1]));
+      // 2. Verifica quais já têm consulta agendada neste slot
+      final h = horario.split(':');
+      final dataInicio = DateTime(data.year, data.month, data.day, int.parse(h[0]), int.parse(h[1]));
       final dataFim = dataInicio.add(const Duration(hours: 1));
 
       final consultasExistentes = await _sb
           .from('consulta')
-          .select('id_profissional, data_hora')
+          .select('id_profissional')
           .gte('data_hora', dataInicio.toIso8601String())
           .lt('data_hora', dataFim.toIso8601String())
           .inFilter('status', ['agendada', 'Agendada']);
@@ -948,18 +943,9 @@ class ApiService {
           .map((c) => c['id_profissional'] as String)
           .toSet();
 
-      final disponivelFinal = filtrado.where((d) {
-        final prof = d['profissional'] as Map<String, dynamic>?;
-        return !ocupados.contains(prof?['id']);
-      }).toList();
+      final disponiveis = profissionais.where((p) => !ocupados.contains(p['id'] as String)).toList();
 
-      final profissionais = disponivelFinal
-          .map((d) => d['profissional'] as Map<String, dynamic>?)
-          .where((p) => p != null)
-          .cast<Map<String, dynamic>>()
-          .toList();
-
-      return {'success': true, 'data': profissionais};
+      return {'success': true, 'data': disponiveis};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
@@ -967,23 +953,14 @@ class ApiService {
     }
   }
 
-  /// Busca horários disponíveis de um profissional em uma data específica.
+  /// Retorna slots de 08:00–19:00 para um profissional em uma data,
+  /// excluindo horários já agendados e horários passados.
   Future<Map<String, dynamic>> getHorariosDisponiveis({
     required String profissionalId,
     required DateTime data,
   }) async {
     try {
-      final diaIndex = data.weekday % 7;
-
-      final slots = await _sb
-          .from('disponibilidade_profissional')
-          .select('hora_inicio, hora_fim')
-          .eq('id_profissional', profissionalId)
-          .eq('dia_semana', diaIndex)
-          .eq('ativo', true)
-          .order('hora_inicio');
-
-      // Consultas já agendadas neste dia
+      // Consultas já agendadas neste dia para este profissional
       final inicioDia = DateTime(data.year, data.month, data.day);
       final fimDia = inicioDia.add(const Duration(days: 1));
 
@@ -996,37 +973,17 @@ class ApiService {
           .inFilter('status', ['agendada', 'Agendada']);
 
       final horariosOcupados = (consultasDia as List).map((c) {
-        final dt = DateTime.parse(c['data_hora'] as String);
+        final dt = DateTime.parse(c['data_hora'] as String).toLocal();
         return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
       }).toSet();
 
-      // Gera lista de horários disponíveis (slots de 1h)
+      // Gera slots das 08:00 às 19:00 (último início às 18:00)
       final horariosDisponiveis = <String>[];
-      for (final slot in (slots as List)) {
-        final hi = slot['hora_inicio'] as String; // '09:00:00' or '09:00'
-        final hf = slot['hora_fim'] as String;
-        final hiParts = hi.split(':');
-        final hfParts = hf.split(':');
-        int hAtual = int.parse(hiParts[0]);
-        int mAtual = int.parse(hiParts[1]);
-        final hFim = int.parse(hfParts[0]);
-        final mFim = int.parse(hfParts[1]);
-
-        while (hAtual * 60 + mAtual < hFim * 60 + mFim) {
-          final horario =
-              '${hAtual.toString().padLeft(2, '0')}:${mAtual.toString().padLeft(2, '0')}';
-          // Não mostra horários no passado
-          final slotDt =
-              DateTime(data.year, data.month, data.day, hAtual, mAtual);
-          if (!horariosOcupados.contains(horario) &&
-              slotDt.isAfter(DateTime.now())) {
-            horariosDisponiveis.add(horario);
-          }
-          mAtual += 60;
-          if (mAtual >= 60) {
-            hAtual++;
-            mAtual -= 60;
-          }
+      for (int h = 8; h < 19; h++) {
+        final horario = '${h.toString().padLeft(2, '0')}:00';
+        final slotDt = DateTime(data.year, data.month, data.day, h, 0);
+        if (!horariosOcupados.contains(horario) && slotDt.isAfter(DateTime.now())) {
+          horariosDisponiveis.add(horario);
         }
       }
 
@@ -1105,20 +1062,16 @@ class ApiService {
       await _criarNotificacao(
         idDestinatario: pacienteId,
         titulo: 'Consulta Agendada!',
-        corpo:
-            'Sua consulta com $nomeProfissional foi confirmada para $dataFormatada.',
+        mensagem: 'Sua consulta com $nomeProfissional foi confirmada para $dataFormatada.',
         tipo: 'agendamento',
-        idConsulta: consultaId,
       );
 
       // Notifica profissional
       await _criarNotificacao(
         idDestinatario: profissionalId,
         titulo: 'Nova Consulta Agendada',
-        corpo:
-            '$nomePaciente agendou uma consulta para $dataFormatada.',
+        mensagem: '$nomePaciente agendou uma consulta para $dataFormatada.',
         tipo: 'agendamento',
-        idConsulta: consultaId,
       );
 
       return {'success': true, 'data': consulta};
@@ -1153,9 +1106,8 @@ class ApiService {
       await _criarNotificacao(
         idDestinatario: profissionalId,
         titulo: 'Consulta Cancelada',
-        corpo: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
+        mensagem: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
         tipo: 'cancelamento',
-        idConsulta: consultaId,
       );
 
       return {'success': true};
@@ -1216,19 +1168,16 @@ class ApiService {
       await _criarNotificacao(
         idDestinatario: profissionalId,
         titulo: 'Consulta Reagendada',
-        corpo:
-            '$nomePaciente reagendou a consulta para $dataFormatada.',
+        mensagem: '$nomePaciente reagendou a consulta para $dataFormatada.',
         tipo: 'reagendamento',
-        idConsulta: consultaId,
       );
 
       // Notifica paciente também
       await _criarNotificacao(
         idDestinatario: pacienteId,
         titulo: 'Reagendamento Confirmado',
-        corpo: 'Sua consulta foi reagendada para $dataFormatada.',
+        mensagem: 'Sua consulta foi reagendada para $dataFormatada.',
         tipo: 'reagendamento',
-        idConsulta: consultaId,
       );
 
       return {'success': true};
@@ -1245,17 +1194,15 @@ class ApiService {
   Future<void> _criarNotificacao({
     required String idDestinatario,
     required String titulo,
-    required String corpo,
+    required String mensagem,
     required String tipo,
-    String? idConsulta,
   }) async {
     try {
       await _sb.from('notificacao').insert({
         'id_destinatario': idDestinatario,
         'titulo': titulo,
-        'corpo': corpo,
+        'mensagem': mensagem,
         'tipo': tipo,
-        if (idConsulta != null) 'id_consulta': idConsulta,
       });
     } catch (_) {
       // Falha de notificação não bloqueia o fluxo principal

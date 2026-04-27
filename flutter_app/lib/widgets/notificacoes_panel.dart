@@ -165,7 +165,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Text(n['corpo'] as String? ?? '',
+                                            Text(n['mensagem'] as String? ?? '',
                                                 style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
                                             const SizedBox(height: 4),
                                             Text(dtStr, style: const TextStyle(color: AppTheme.textHint, fontSize: 10)),
