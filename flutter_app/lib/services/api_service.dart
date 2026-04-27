@@ -1277,7 +1277,7 @@ class ApiService {
       await _sb.from('notificacao').insert({
         'id_destinatario': idDestinatario,
         'titulo': titulo,
-        'mensagem': mensagem,
+        'corpo': mensagem,
         'tipo': tipo,
       });
     } catch (_) {
