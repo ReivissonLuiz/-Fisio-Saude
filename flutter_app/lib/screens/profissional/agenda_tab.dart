@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../../theme/app_theme.dart';
@@ -614,7 +614,7 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                       )
                     else
                       ..._sintomas.map((s) {
-                        final nivel = s['nivel_dor'] as int? ?? 0;
+                        final nivel = s['intensidade'] as int? ?? 0;
                         final corNivel = nivel <= 3 ? AppTheme.accent : nivel <= 6 ? AppTheme.warning : AppTheme.error;
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
@@ -633,8 +633,8 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(s['descricao'] ?? 'Sem descrição', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                    if (s['regiao'] != null && (s['regiao'] as String).isNotEmpty) 
-                                      Text('Região: ${s['regiao']}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                                    if (s['categoria'] != null && (s['categoria'] as String).isNotEmpty) 
+                                      Text('Região: ${s['categoria']}', style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                                   ],
                                 ),
                               ),

@@ -1,4 +1,4 @@
-﻿/// minha_saude_tab.dart
+/// minha_saude_tab.dart
 /// Aba "Minha Saúde" — registro e histórico de sintomas — +Fisio +Saúde
 library;
 
@@ -58,7 +58,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
 
   String _dorMedia() {
     if (_sintomas.isEmpty) return '—';
-    final niveis = _sintomas.map((s) => s['nivel_dor'] as int? ?? 0).toList();
+    final niveis = _sintomas.map((s) => s['intensidade'] as int? ?? 0).toList();
     final media = niveis.reduce((a, b) => a + b) / niveis.length;
     return media.toStringAsFixed(1);
   }
@@ -182,9 +182,9 @@ class _SintomaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nivel = sintoma['nivel_dor'] as int? ?? 0;
+    final nivel = sintoma['intensidade'] as int? ?? 0;
     final descricao = sintoma['descricao'] as String? ?? '';
-    final regiao = sintoma['regiao'] as String?;
+    final regiao = sintoma['categoria'] as String?;
     final dt = DateTime.tryParse(sintoma['data_hora'] as String? ?? '');
     final dtFmt = dt != null
         ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
@@ -307,8 +307,8 @@ class _RegistroSintomaSheetState extends State<_RegistroSintomaSheet> {
       'id_paciente': widget.pacienteId,
       'data_hora': DateTime.now().toIso8601String(),
       'descricao': _descCtrl.text.trim(),
-      'nivel_dor': _nivelDor.round(),
-      'regiao': _regiaoSelecionada,
+      'intensidade': _nivelDor.round(),
+      'categoria': _regiaoSelecionada,
     });
     if (!mounted) return;
     if (result['success'] == true) {

@@ -58,7 +58,7 @@ class _PacienteDetalhesScreenState extends State<PacienteDetalhesScreen> {
 
   String _dorMedia() {
     if (_sintomas.isEmpty) return '-';
-    final niveis = _sintomas.map((s) => s['nivel_dor'] as int? ?? 0).toList();
+    final niveis = _sintomas.map((s) => s['intensidade'] as int? ?? 0).toList();
     final media = niveis.reduce((a, b) => a + b) / niveis.length;
     return media.toStringAsFixed(1);
   }
@@ -224,9 +224,9 @@ class _SintomaViewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nivel = sintoma['nivel_dor'] as int? ?? 0;
+    final nivel = sintoma['intensidade'] as int? ?? 0;
     final descricao = sintoma['descricao'] as String? ?? '';
-    final regiao = sintoma['regiao'] as String?;
+    final regiao = sintoma['categoria'] as String?;
     final dt = DateTime.tryParse(sintoma['data_hora'] as String? ?? '');
     final dtFmt = dt != null
         ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} às ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'

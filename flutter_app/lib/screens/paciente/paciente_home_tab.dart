@@ -417,9 +417,9 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       );
     }
     final s = _sintomas.first;
-    final nivel = s['nivel_dor'] as int? ?? 0;
+    final nivel = s['intensidade'] as int? ?? 0;
     final descricao = s['descricao'] as String? ?? 'Sem descrição';
-    final regiao = s['regiao'] as String?;
+    final regiao = s['categoria'] as String?;
     final dataHora = s['data_hora'] as String? ?? '';
     final dt = DateTime.tryParse(dataHora);
     final dtFormatada = dt != null

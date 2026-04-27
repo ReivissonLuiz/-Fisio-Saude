@@ -95,7 +95,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
     if (_listaSintomas.isEmpty) return 'N/A';
     final Map<String, int> contagem = {};
     for (final s in _listaSintomas) {
-      final r = s['regiao']?.toString() ?? 'Não informado';
+      final r = s['categoria']?.toString() ?? 'Não informado';
       contagem[r] = (contagem[r] ?? 0) + 1;
     }
     return contagem.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
@@ -103,7 +103,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
 
   double get _dorMedio {
     if (_listaSintomas.isEmpty) return 0;
-    final sum = _listaSintomas.fold<num>(0, (acc, s) => acc + ((s['nivel_dor'] as num?) ?? 0));
+    final sum = _listaSintomas.fold<num>(0, (acc, s) => acc + ((s['intensidade'] as num?) ?? 0));
     return sum / _listaSintomas.length;
   }
 
@@ -534,8 +534,8 @@ class _DetalhesBottomSheet extends StatelessWidget {
                   );
                 }
                 if (tipoInfo == 'sintoma') {
-                  final nivel = d['nivel_dor'] ?? 0;
-                  final regiao = d['regiao'] ?? 'Genérico';
+                  final nivel = d['intensidade'] ?? 0;
+                  final regiao = d['categoria'] ?? 'Genérico';
                   final desc = d['descricao'] ?? '';
                   final nivelInt = nivel is int ? nivel : (nivel as num).toInt();
                   final cor = nivelInt >= 7 ? Colors.red : (nivelInt >= 4 ? Colors.orange : Colors.green);
