@@ -133,9 +133,9 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
               padding: const EdgeInsets.all(20),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  // --- Próxima Consulta -------------------------------------------
+                  // --- Consultas Agendadas -------------------------------------------
                   const _SectionTitle(
-                      title: 'Próxima Consulta',
+                      title: 'Consultas Agendadas',
                       icon: Icons.calendar_month_rounded),
                   const SizedBox(height: 10),
                   _proximaConsulta(),
@@ -220,108 +220,121 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       );
     }
 
-    final c = proximas.first;
-    final profissional = c['profissional'] as Map<String, dynamic>?;
-    final dataHora = c['data_hora'] as String? ?? '';
-    final dt = DateTime.tryParse(dataHora);
-    final dtFormatada = dt != null
-        ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
-        : dataHora;
+    // Sort by date ascending (closest date first)
+    proximas.sort((a, b) {
+      final da = DateTime.tryParse(a['data_hora'] ?? '') ?? DateTime(2100);
+      final db = DateTime.tryParse(b['data_hora'] ?? '') ?? DateTime(2100);
+      return da.compareTo(db);
+    });
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primary.withValues(alpha: 0.08),
-            AppTheme.secondary.withValues(alpha: 0.08)
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.calendar_month_rounded,
-                    color: AppTheme.primary, size: 28),
+    return Column(
+      children: proximas.map((c) {
+        final profissional = c['profissional'] as Map<String, dynamic>?;
+        final dataHora = c['data_hora'] as String? ?? '';
+        final dt = DateTime.tryParse(dataHora);
+        final dtFormatada = dt != null
+            ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
+            : dataHora;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primary.withValues(alpha: 0.08),
+                  AppTheme.secondary.withValues(alpha: 0.08)
+                ],
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              children: [
+                Row(
                   children: [
-                    Text(profissional?['nome'] ?? 'Profissional',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 15)),
-                    Text(profissional?['especialidade'] ?? '',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 12)),
-                    const SizedBox(height: 4),
-                    Text(dtFormatada,
-                        style: const TextStyle(
-                            color: AppTheme.primary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13)),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.calendar_month_rounded,
+                          color: AppTheme.primary, size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(profissional?['nome'] ?? 'Profissional',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text(profissional?['especialidade'] ?? '',
+                              style: const TextStyle(
+                                  color: AppTheme.textSecondary, fontSize: 12)),
+                          const SizedBox(height: 4),
+                          Text(dtFormatada,
+                              style: const TextStyle(
+                                  color: AppTheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text('Agendada',
+                          style: TextStyle(
+                              color: AppTheme.secondary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600)),
+                    ),
                   ],
                 ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.secondary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.edit_calendar_rounded, size: 16),
+                        label: const Text('Reagendar', style: TextStyle(fontSize: 13)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          side: const BorderSide(color: AppTheme.primary),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        onPressed: () => _reagendar(c),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.event_busy_rounded, size: 16),
+                        label: const Text('Cancelar', style: TextStyle(fontSize: 13)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.error,
+                          side: const BorderSide(color: AppTheme.error),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        onPressed: () => _cancelar(c),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('Agendada',
-                    style: TextStyle(
-                        color: AppTheme.secondary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.edit_calendar_rounded, size: 16),
-                  label: const Text('Reagendar', style: TextStyle(fontSize: 13)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.primary,
-                    side: const BorderSide(color: AppTheme.primary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  onPressed: () => _reagendar(c),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.event_busy_rounded, size: 16),
-                  label: const Text('Cancelar', style: TextStyle(fontSize: 13)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.error,
-                    side: const BorderSide(color: AppTheme.error),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                  onPressed: () => _cancelar(c),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
