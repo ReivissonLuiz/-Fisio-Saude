@@ -1033,7 +1033,7 @@ class ApiService {
             'id_paciente': pacienteId,
             'id_profissional': profissionalId,
             'data_hora': dataHora.toIso8601String(),
-            'status': 'Agendada',
+            'status': 'agendada',
             'observacoes': observacoes,
           })
           .select()
@@ -1092,7 +1092,7 @@ class ApiService {
     try {
       await _sb
           .from('consulta')
-          .update({'status': 'Cancelada', 'observacoes': motivo})
+          .update({'status': 'cancelada', 'observacoes': motivo})
           .eq('id', consultaId);
 
       // Busca dados para notificação
