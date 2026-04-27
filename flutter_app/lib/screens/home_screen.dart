@@ -256,41 +256,49 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ];
 
-      return Scaffold(
-        backgroundColor: AppTheme.background,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildViewSwitcherBanner(),
-              Expanded(child: adminTabs[_tabIndex]),
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && _tabIndex != 0) {
+            setState(() => _tabIndex = 0);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppTheme.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildViewSwitcherBanner(),
+                Expanded(child: adminTabs[_tabIndex]),
+              ],
+            ),
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _tabIndex,
+            onDestinationSelected: (i) => setState(() => _tabIndex = i),
+            backgroundColor: Colors.white,
+            indicatorColor: Colors.purple.withValues(alpha: 0.12),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+            destinations: const [
+              NavigationDestination(
+                  icon: Icon(Icons.analytics_outlined),
+                  selectedIcon:
+                      Icon(Icons.analytics_rounded, color: Colors.purple),
+                  label: 'Dashboard'),
+              NavigationDestination(
+                  icon: Icon(Icons.settings_suggest_outlined),
+                  selectedIcon: Icon(Icons.settings_suggest_rounded,
+                      color: Colors.orange),
+                  label: 'Gestão'),
+              NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon:
+                      Icon(Icons.person_rounded, color: AppTheme.accent),
+                  label: 'Perfil'),
             ],
           ),
-        ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _tabIndex,
-          onDestinationSelected: (i) => setState(() => _tabIndex = i),
-          backgroundColor: Colors.white,
-          indicatorColor: Colors.purple.withValues(alpha: 0.12),
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-          destinations: const [
-            NavigationDestination(
-                icon: Icon(Icons.analytics_outlined),
-                selectedIcon:
-                    Icon(Icons.analytics_rounded, color: Colors.purple),
-                label: 'Dashboard'),
-            NavigationDestination(
-                icon: Icon(Icons.settings_suggest_outlined),
-                selectedIcon: Icon(Icons.settings_suggest_rounded,
-                    color: Colors.orange),
-                label: 'Gestão'),
-            NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon:
-                    Icon(Icons.person_rounded, color: AppTheme.accent),
-                label: 'Perfil'),
-          ],
         ),
       );
     }
@@ -313,41 +321,49 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ];
 
-      return Scaffold(
-        backgroundColor: AppTheme.background,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildViewSwitcherBanner(),
-              Expanded(child: profTabs[_tabIndex]),
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && _tabIndex != 0) {
+            setState(() => _tabIndex = 0);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppTheme.background,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildViewSwitcherBanner(),
+                Expanded(child: profTabs[_tabIndex]),
+              ],
+            ),
+          ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _tabIndex,
+            onDestinationSelected: (i) => setState(() => _tabIndex = i),
+            backgroundColor: Colors.white,
+            indicatorColor: AppTheme.secondary.withValues(alpha: 0.12),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+            destinations: const [
+              NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard_rounded,
+                      color: AppTheme.secondary),
+                  label: 'Início'),
+              NavigationDestination(
+                  icon: Icon(Icons.event_note_outlined),
+                  selectedIcon: Icon(Icons.event_note_rounded,
+                      color: Color(0xFF9C27B0)),
+                  label: 'Agenda'),
+              NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon:
+                      Icon(Icons.person_rounded, color: AppTheme.accent),
+                  label: 'Perfil'),
             ],
           ),
-        ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _tabIndex,
-          onDestinationSelected: (i) => setState(() => _tabIndex = i),
-          backgroundColor: Colors.white,
-          indicatorColor: AppTheme.secondary.withValues(alpha: 0.12),
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-          destinations: const [
-            NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard_rounded,
-                    color: AppTheme.secondary),
-                label: 'Início'),
-            NavigationDestination(
-                icon: Icon(Icons.event_note_outlined),
-                selectedIcon: Icon(Icons.event_note_rounded,
-                    color: Color(0xFF9C27B0)),
-                label: 'Agenda'),
-            NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon:
-                    Icon(Icons.person_rounded, color: AppTheme.accent),
-                label: 'Perfil'),
-          ],
         ),
       );
     }
@@ -367,50 +383,58 @@ class _HomeScreenState extends State<HomeScreen> {
           onLogout: _logout),
     ];
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      endDrawer: NotificacoesPanel(
-        usuarioId: usuarioIdFinal,
-        onNavigateToAgenda: () => setState(() => _tabIndex = 0),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildViewSwitcherBanner(),
-            Expanded(child: patientTabs[_tabIndex]),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _tabIndex != 0) {
+          setState(() => _tabIndex = 0);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        endDrawer: NotificacoesPanel(
+          usuarioId: usuarioIdFinal,
+          onNavigateToAgenda: () => setState(() => _tabIndex = 0),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildViewSwitcherBanner(),
+              Expanded(child: patientTabs[_tabIndex]),
+            ],
+          ),
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _tabIndex,
+          onDestinationSelected: (i) => setState(() => _tabIndex = i),
+          backgroundColor: Colors.white,
+          indicatorColor: AppTheme.primary.withValues(alpha: 0.12),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+          destinations: const [
+            NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon:
+                    Icon(Icons.home_rounded, color: AppTheme.primary),
+                label: 'Início'),
+            NavigationDestination(
+                icon: Icon(Icons.search_outlined),
+                selectedIcon:
+                    Icon(Icons.search_rounded, color: AppTheme.primary),
+                label: 'Buscar Fisio'),
+            NavigationDestination(
+                icon: Icon(Icons.monitor_heart_outlined),
+                selectedIcon: Icon(Icons.monitor_heart_rounded,
+                    color: Color(0xFFE91E63)),
+                label: 'Saúde'),
+            NavigationDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon:
+                    Icon(Icons.person_rounded, color: AppTheme.accent),
+                label: 'Meu Perfil'),
           ],
         ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tabIndex,
-        onDestinationSelected: (i) => setState(() => _tabIndex = i),
-        backgroundColor: Colors.white,
-        indicatorColor: AppTheme.primary.withValues(alpha: 0.12),
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon:
-                  Icon(Icons.home_rounded, color: AppTheme.primary),
-              label: 'Início'),
-          NavigationDestination(
-              icon: Icon(Icons.search_outlined),
-              selectedIcon:
-                  Icon(Icons.search_rounded, color: AppTheme.primary),
-              label: 'Buscar Fisio'),
-          NavigationDestination(
-              icon: Icon(Icons.monitor_heart_outlined),
-              selectedIcon: Icon(Icons.monitor_heart_rounded,
-                  color: Color(0xFFE91E63)),
-              label: 'Saúde'),
-          NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon:
-                  Icon(Icons.person_rounded, color: AppTheme.accent),
-              label: 'Meu Perfil'),
-        ],
       ),
     );
   }
