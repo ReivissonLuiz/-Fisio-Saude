@@ -115,7 +115,10 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                                 icon: const Icon(Icons.notifications_rounded, color: Colors.white, size: 26),
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => NotificacoesPanel(usuarioId: widget.profissionalId),
+                                    builder: (_) => NotificacoesPanel(
+                                      usuarioId: widget.profissionalId,
+                                      onNavigateToAgenda: () => Navigator.pop(context),
+                                    ),
                                   )).then((_) => _loadDashboardData());
                                 },
                               ),

@@ -369,7 +369,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
-      endDrawer: NotificacoesPanel(usuarioId: usuarioIdFinal),
+      endDrawer: NotificacoesPanel(
+        usuarioId: usuarioIdFinal,
+        onNavigateToAgenda: () => setState(() => _tabIndex = 0),
+      ),
       body: SafeArea(
         child: Column(
           children: [

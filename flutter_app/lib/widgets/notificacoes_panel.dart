@@ -8,7 +8,8 @@ import '../services/api_service.dart';
 
 class NotificacoesPanel extends StatefulWidget {
   final String usuarioId;
-  const NotificacoesPanel({super.key, required this.usuarioId});
+  final VoidCallback? onNavigateToAgenda;
+  const NotificacoesPanel({super.key, required this.usuarioId, this.onNavigateToAgenda});
 
   @override
   State<NotificacoesPanel> createState() => _NotificacoesPanelState();
@@ -165,10 +166,27 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Text(n['mensagem'] as String? ?? '',
+                                            Text(n['corpo'] as String? ?? '',
                                                 style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
                                             const SizedBox(height: 4),
                                             Text(dtStr, style: const TextStyle(color: AppTheme.textHint, fontSize: 10)),
+                                            if (tipo == 'reagendamento' && widget.onNavigateToAgenda != null) ...[
+                                              const SizedBox(height: 8),
+                                              OutlinedButton.icon(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  widget.onNavigateToAgenda!();
+                                                },
+                                                icon: Icon(Icons.calendar_month_rounded, size: 12, color: cor),
+                                                label: Text('Acessar Agenda', style: TextStyle(fontSize: 11, color: cor)),
+                                                style: OutlinedButton.styleFrom(
+                                                  side: BorderSide(color: cor.withValues(alpha: 0.5)),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                                                  minimumSize: const Size(0, 26),
+                                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                ),
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),
