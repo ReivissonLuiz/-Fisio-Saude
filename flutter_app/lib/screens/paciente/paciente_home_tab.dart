@@ -416,7 +416,6 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       },
     );
     if (motivo == null || !mounted) return;
-    final profissional = c['profissional'] as Map<String, dynamic>?;
     final profId = c['id_profissional'] as String? ?? '';
     final res = await _api.cancelarConsulta(
       consultaId: c['id'] as String,

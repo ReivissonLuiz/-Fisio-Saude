@@ -53,20 +53,35 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
   int get _pacientesAtivos     => _listaPacientes.where((p) => p['ativo'] == true).length;
   int get _totalProf           => _listaProfissionais.length;
   int get _profAtivos          => _listaProfissionais.where((p) => p['ativo'] == true).length;
-  int get _totalConsultas      => _listaConsultas.length;
-  int get _totalSintomas       => _listaSintomas.length;
-  double get _receitaEstimada  => _totalConsultas * 120.0;
+  int get _totalConsultas  => _listaConsultas.length;
+  int get _totalSintomas   => _listaSintomas.length;
 
-  String get _receitaFmt {
-    final v = _receitaEstimada;
-    return 'R\$ ${v.toStringAsFixed(2).replaceAll('.', ',')}';
+  // Consultas em status ativo (agendada ou em_andamento)
+  List<dynamic> get _consultasAtivas => _listaConsultas
+      .where((c) {
+        final s = (c['status'] as String? ?? '').toLowerCase();
+        return s == 'agendada' || s == 'em_andamento' || s == 'em andamento';
+      })
+      .toList();
+  int get _totalConsultasAtivas => _consultasAtivas.length;
+
+
+  /// Consultas do último mês
+  List<dynamic> get _consultasUltimoMes {
+    final limite = DateTime.now().subtract(const Duration(days: 30));
+    return _listaConsultas.where((c) {
+      final dt = c['data_hora'] as String?;
+      if (dt == null) return false;
+      return DateTime.tryParse(dt)?.isAfter(limite) ?? false;
+    }).toList();
   }
 
-  /// Profissional com mais consultas
+  /// Profissional com mais consultas no último mês
   String get _topProfissionalNome {
-    if (_listaConsultas.isEmpty || _listaProfissionais.isEmpty) return 'N/A';
+    final consultas = _consultasUltimoMes;
+    if (consultas.isEmpty || _listaProfissionais.isEmpty) return 'N/A';
     final Map<String, int> contagem = {};
-    for (final c in _listaConsultas) {
+    for (final c in consultas) {
       final id = c['id_profissional']?.toString() ?? '';
       if (id.isNotEmpty) contagem[id] = (contagem[id] ?? 0) + 1;
     }
@@ -80,9 +95,10 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
   }
 
   int get _topProfissionalConsultas {
-    if (_listaConsultas.isEmpty) return 0;
+    final consultas = _consultasUltimoMes;
+    if (consultas.isEmpty) return 0;
     final Map<String, int> contagem = {};
-    for (final c in _listaConsultas) {
+    for (final c in consultas) {
       final id = c['id_profissional']?.toString() ?? '';
       if (id.isNotEmpty) contagem[id] = (contagem[id] ?? 0) + 1;
     }
@@ -90,21 +106,67 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
     return contagem.values.reduce((a, b) => a >= b ? a : b);
   }
 
-  /// Região de sintoma mais comum
-  String get _regiaoMaisComum {
-    if (_listaSintomas.isEmpty) return 'N/A';
+  /// Ranking de profissionais por consultas no último mês (para gráfico de barras)
+  List<MapEntry<String, int>> get _rankingProfissionaisUltimoMes {
+    final consultas = _consultasUltimoMes;
     final Map<String, int> contagem = {};
-    for (final s in _listaSintomas) {
-      final r = s['categoria']?.toString() ?? 'Não informado';
-      contagem[r] = (contagem[r] ?? 0) + 1;
+    for (final c in consultas) {
+      final id = c['id_profissional']?.toString() ?? '';
+      if (id.isEmpty) continue;
+      final prof = _listaProfissionais.firstWhere(
+        (p) => p['id'].toString() == id,
+        orElse: () => null,
+      );
+      final nome = (prof?['nome'] as String? ?? id).split(' ').first;
+      contagem[nome] = (contagem[nome] ?? 0) + 1;
     }
-    return contagem.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+    final entries = contagem.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    return entries.take(5).toList();
+  }
+
+  /// Contagem por categoria de sintoma (para pizza)
+  Map<String, int> get _categoriasCount {
+    final Map<String, int> m = {};
+    for (final s in _listaSintomas) {
+      final r = s['categoria']?.toString() ?? 'Outros';
+      m[r] = (m[r] ?? 0) + 1;
+    }
+    return m;
+  }
+
+  /// Contagem por grupo de intensidade (para pizza)
+  Map<String, int> get _intensidadeGrupos {
+    int leve = 0, moderada = 0, intensa = 0;
+    for (final s in _listaSintomas) {
+      final n = ((s['intensidade'] as num?) ?? 0).toInt();
+      if (n <= 3) { leve++; } else if (n <= 6) { moderada++; } else { intensa++; }
+    }
+    return {'Leve (1-3)': leve, 'Moderada (4-6)': moderada, 'Intensa (7-10)': intensa};
   }
 
   double get _dorMedio {
     if (_listaSintomas.isEmpty) return 0;
     final sum = _listaSintomas.fold<num>(0, (acc, s) => acc + ((s['intensidade'] as num?) ?? 0));
     return sum / _listaSintomas.length;
+  }
+
+  /// Pacientes únicos por profissional (para gráfico de barras)
+  List<MapEntry<String, int>> get _pacientesPorProfissional {
+    final Map<String, Set<String>> mapa = {};
+    for (final c in _listaConsultas) {
+      final profId = c['id_profissional']?.toString() ?? '';
+      final pacId  = c['id_paciente']?.toString() ?? '';
+      if (profId.isEmpty || pacId.isEmpty) continue;
+      final prof = _listaProfissionais.firstWhere(
+        (p) => p['id'].toString() == profId,
+        orElse: () => null,
+      );
+      final nome = (prof?['nome'] as String? ?? profId).split(' ').first;
+      mapa.putIfAbsent(nome, () => {}).add(pacId);
+    }
+    final entries = mapa.entries.map((e) => MapEntry(e.key, e.value.length)).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return entries.take(6).toList();
   }
 
   void _abrirDetalhes(String titulo, List<dynamic> dados, String tipoInfo) {
@@ -202,32 +264,22 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                               onTap: () => _abrirDetalhes('Fisioterapeutas', _listaProfissionais, 'profissional'),
                             ),
                             _KPICard(
-                              label: 'Sessões Marcadas',
-                              value: '$_totalConsultas',
-                              sub: 'total no sistema',
+                              label: 'Sessões Ativas',
+                              value: '$_totalConsultasAtivas',
+                              sub: 'agendadas / em andamento',
                               icon: Icons.event_available_rounded,
                               color: Colors.green,
-                              onTap: () => _abrirDetalhes('Consultas', _listaConsultas, 'consulta'),
+                              onTap: () => _abrirDetalhes('Sessões Ativas', _consultasAtivas, 'consulta'),
                             ),
                             _KPICard(
-                              label: 'Registros de Sintomas',
-                              value: '$_totalSintomas',
-                              sub: 'apontamentos',
-                              icon: Icons.monitor_heart_rounded,
-                              color: const Color(0xFFE91E63),
-                              onTap: () => _abrirDetalhes('Sintomas Globais', _listaSintomas, 'sintoma'),
+                              label: 'Sessões Históricas',
+                              value: '$_totalConsultas',
+                              sub: 'total no sistema',
+                              icon: Icons.history_rounded,
+                              color: Colors.blueGrey,
+                              onTap: () => _abrirDetalhes('Todas as Sessões', _listaConsultas, 'consulta'),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Receita full-width
-                        _FullWidthKPI(
-                          label: 'Receita Estimada Global',
-                          value: _receitaFmt,
-                          sub: 'R\$ 120,00 estimado por sessão',
-                          icon: Icons.payments_rounded,
-                          color: Colors.orange,
                         ),
                         const SizedBox(height: 24),
 
@@ -235,57 +287,52 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                         _sectionTitle('Insights Clínicos'),
                         const SizedBox(height: 12),
 
-                        _InsightCard(
+                        _ExpandableChartCard(
                           icon: Icons.emoji_events_rounded,
                           color: Colors.amber,
                           title: 'Profissional Destaque',
-                          description: _topProfissionalConsultas > 0
-                              ? '$_topProfissionalNome lidera com $_topProfissionalConsultas sessão(ões) registradas.'
-                              : 'Nenhuma consulta registrada ainda.',
-                          onTap: () => _abrirDetalhes('Fisioterapeutas', _listaProfissionais, 'profissional'),
+                          summary: _topProfissionalConsultas > 0
+                              ? '$_topProfissionalNome lidera com $_topProfissionalConsultas sessão(ões) no último mês.'
+                              : 'Nenhuma consulta no último mês.',
+                          chart: _rankingProfissionaisUltimoMes.isEmpty
+                              ? null
+                              : _BarChart(dados: _rankingProfissionaisUltimoMes, color: Colors.amber),
                         ),
-                        _InsightCard(
+                        _ExpandableChartCard(
                           icon: Icons.location_on_rounded,
                           color: const Color(0xFFE91E63),
-                          title: 'Região mais acometida',
-                          description: _totalSintomas > 0
-                              ? '"$_regiaoMaisComum" é a região corporal com maior frequência de sintomas.'
-                              : 'Sem registros de sintomas.',
-                          onTap: () => _abrirDetalhes('Sintomas Globais', _listaSintomas, 'sintoma'),
+                          title: 'Principais Queixas de Dores',
+                          summary: _categoriasCount.isEmpty
+                              ? 'Sem registros de sintomas.'
+                              : 'Categoria mais frequente: ${_categoriasCount.entries.reduce((a,b)=>a.value>=b.value?a:b).key}.',
+                          chart: _categoriasCount.isEmpty
+                              ? null
+                              : _PieChart(dados: _categoriasCount, colors: const [
+                                  Color(0xFFE91E63), Color(0xFF9C27B0), Colors.blue,
+                                  Colors.teal, Colors.orange, Colors.green]),
                         ),
-                        _InsightCard(
+                        _ExpandableChartCard(
                           icon: Icons.speed_rounded,
                           color: Colors.deepOrange,
-                          title: 'Dor média reportada',
-                          description: _totalSintomas > 0
-                              ? 'Os pacientes reportam nível médio de ${_dorMedio.toStringAsFixed(1)}/10 de dor.'
+                          title: 'Distribuição de Intensidade de Dor',
+                          summary: _totalSintomas > 0
+                              ? 'Média geral: ${_dorMedio.toStringAsFixed(1)}/10.'
                               : 'Nenhum sintoma registrado.',
-                          onTap: () => _abrirDetalhes('Sintomas Globais', _listaSintomas, 'sintoma'),
+                          chart: _intensidadeGrupos.values.every((v) => v == 0)
+                              ? null
+                              : _PieChart(dados: _intensidadeGrupos, colors: const [
+                                  Colors.green, Colors.orange, Colors.red]),
                         ),
-                        _InsightCard(
-                          icon: Icons.how_to_reg_rounded,
-                          color: Colors.teal,
-                          title: 'Taxa de ativação',
-                          description: _totalPacientes > 0
-                              ? '${((_pacientesAtivos / _totalPacientes) * 100).toStringAsFixed(0)}% dos pacientes estão com conta ativa (${_totalPacientes - _pacientesAtivos} inativos).'
-                              : 'Nenhum paciente cadastrado.',
-                          onTap: () => _abrirDetalhes('Todos os Pacientes', _listaPacientes, 'paciente'),
-                        ),
-                        _InsightCard(
+                        _ExpandableChartCard(
                           icon: Icons.group_work_rounded,
                           color: Colors.indigo,
-                          title: 'Relação paciente / profissional',
-                          description: _totalProf > 0
+                          title: 'Pacientes por Profissional',
+                          summary: _totalProf > 0
                               ? 'Média de ${(_totalPacientes / _totalProf).toStringAsFixed(1)} pacientes por fisioterapeuta.'
-                              : 'Nenhum profissional cadastrado ainda.',
-                          onTap: () {},
-                        ),
-                        _InsightCard(
-                          icon: Icons.trending_up_rounded,
-                          color: Colors.green,
-                          title: 'Uso da plataforma',
-                          description: 'Total de ${_totalConsultas + _totalSintomas} interações (consultas + sintomas) registradas no sistema.',
-                          onTap: () {},
+                              : 'Nenhum profissional cadastrado.',
+                          chart: _pacientesPorProfissional.isEmpty
+                              ? null
+                              : _BarChart(dados: _pacientesPorProfissional, color: Colors.indigo),
                         ),
 
                         const SizedBox(height: 40),
@@ -356,93 +403,73 @@ class _KPICard extends StatelessWidget {
   }
 }
 
-// ── Full-width KPI ────────────────────────────────────────────────────────────
-class _FullWidthKPI extends StatelessWidget {
-  final String label, value, sub;
+
+// ── Expandable Chart Card ────────────────────────────────────────────────────
+class _ExpandableChartCard extends StatefulWidget {
+  final String title, summary;
   final IconData icon;
   final Color color;
+  final Widget? chart;
 
-  const _FullWidthKPI({
-    required this.label, required this.value, required this.sub,
-    required this.icon, required this.color,
+  const _ExpandableChartCard({
+    required this.title, required this.summary,
+    required this.icon, required this.color, this.chart,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)]),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, fontWeight: FontWeight.w500)),
-                Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-                Text(sub, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  State<_ExpandableChartCard> createState() => _ExpandableChartCardState();
 }
 
-// ── Insight Card ─────────────────────────────────────────────────────────────
-class _InsightCard extends StatelessWidget {
-  final String title, description;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _InsightCard({
-    required this.title, required this.description,
-    required this.icon, required this.color, required this.onTap,
-  });
+class _ExpandableChartCardState extends State<_ExpandableChartCard> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => setState(() => _expanded = !_expanded),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppTheme.divider),
+          boxShadow: [BoxShadow(color: widget.color.withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, 3))],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                  const SizedBox(height: 3),
-                  Text(description, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4)),
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(color: widget.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                    child: Icon(widget.icon, color: widget.color, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        const SizedBox(height: 3),
+                        Text(widget.summary, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4)),
+                      ],
+                    ),
+                  ),
+                  Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                      color: widget.color.withValues(alpha: 0.6), size: 20),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: color.withValues(alpha: 0.4), size: 18),
+            if (_expanded && widget.chart != null) ...[  
+              const Divider(color: AppTheme.divider, height: 1),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                child: widget.chart!,
+              ),
+            ],
           ],
         ),
       ),
@@ -605,4 +632,114 @@ class _DetalhesBottomSheet extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Bar Chart ────────────────────────────────────────────────────────────────
+class _BarChart extends StatelessWidget {
+  final List<MapEntry<String, int>> dados;
+  final Color color;
+  const _BarChart({required this.dados, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    if (dados.isEmpty) return const SizedBox();
+    final maxVal = dados.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    return Column(
+      children: dados.map((e) {
+        final pct = maxVal > 0 ? e.value / maxVal : 0.0;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(e.key, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct.toDouble(),
+                    minHeight: 18,
+                    backgroundColor: color.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('${e.value}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── Pie Chart ────────────────────────────────────────────────────────────────
+class _PieChart extends StatelessWidget {
+  final Map<String, int> dados;
+  final List<Color> colors;
+  const _PieChart({required this.dados, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = dados.values.fold<int>(0, (a, b) => a + b);
+    if (total == 0) return const SizedBox();
+    final entries = dados.entries.toList();
+    return Column(
+      children: [
+        CustomPaint(
+          size: const Size(double.infinity, 140),
+          painter: _PieChartPainter(entries: entries, total: total, colors: colors),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          children: List.generate(entries.length, (i) {
+            final pct = (entries[i].value / total * 100).toStringAsFixed(0);
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 10, height: 10,
+                    decoration: BoxDecoration(color: colors[i % colors.length], borderRadius: BorderRadius.circular(2))),
+                const SizedBox(width: 4),
+                Text('${entries[i].key} $pct%', style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+              ],
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class _PieChartPainter extends CustomPainter {
+  final List<MapEntry<String, int>> entries;
+  final int total;
+  final List<Color> colors;
+  const _PieChartPainter({required this.entries, required this.total, required this.colors});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.height / 2 - 4;
+    double start = -3.14159 / 2;
+    final paint = Paint()..style = PaintingStyle.fill;
+    for (int i = 0; i < entries.length; i++) {
+      final sweep = entries[i].value / total * 2 * 3.14159;
+      paint.color = colors[i % colors.length];
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), start, sweep, true, paint);
+      start += sweep;
+    }
+    // Hole for donut
+    paint.color = Colors.white;
+    canvas.drawCircle(center, radius * 0.55, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => true;
 }

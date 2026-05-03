@@ -33,7 +33,7 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
 
   Future<void> _carregar() async {
     setState(() => _loading = true);
-    final res = await _api.getDisponibilidades(widget.profissionalId);
+    final res = await _api.getDisponibilidade(widget.profissionalId);
     if (!mounted) return;
     setState(() {
       _loading = false;
