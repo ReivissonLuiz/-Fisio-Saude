@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../../theme/app_theme.dart';
@@ -450,7 +450,6 @@ class _DetalhesModal extends StatefulWidget {
   final ApiService api;
 
   const _DetalhesModal({
-    super.key,
     required this.consulta,
     required this.pacienteId,
     required this.profissionalId,
@@ -641,7 +640,7 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                             ],
                           ),
                         );
-                      }).toList(),
+                      }),
                   ],
                 ),
               ),

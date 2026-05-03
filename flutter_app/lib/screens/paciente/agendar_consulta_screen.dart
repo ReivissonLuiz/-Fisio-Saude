@@ -238,7 +238,7 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
   // ── Passo 0: Especialidade ────────────────────────────────────────────────
   Widget _passoEspecialidade() {
     return Column(children: [
-      _Header(titulo: 'Qual especialidade você precisa?', sub: 'Selecione para filtrar profissionais'),
+      const _Header(titulo: 'Qual especialidade você precisa?', sub: 'Selecione para filtrar profissionais'),
       Expanded(
         child: _especialidades.isEmpty
             ? const Center(child: Text('Nenhuma especialidade encontrada.\nVerifique se há profissionais cadastrados.', textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textSecondary)))
@@ -434,7 +434,7 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
     final nome = _profissional?['nome'] as String? ?? '';
     final esp = _profissional?['especialidade'] as String? ?? 'Fisioterapia';
     return Column(children: [
-      _Header(titulo: 'Confirmar Agendamento', sub: 'Revise os dados antes de confirmar'),
+      const _Header(titulo: 'Confirmar Agendamento', sub: 'Revise os dados antes de confirmar'),
       Expanded(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

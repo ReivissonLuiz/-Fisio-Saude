@@ -911,6 +911,34 @@ class ApiService {
     }
   }
 
+  /// Cria um slot de disponibilidade.
+  Future<Map<String, dynamic>> criarDisponibilidade({
+    required String idProfissional,
+    required String data,
+    required String horaInicio,
+    String? horaFim,
+  }) async {
+    try {
+      final res = await _sb.from('disponibilidade').insert({
+        'id_profissional': idProfissional,
+        'data': data,
+        'hora_inicio': horaInicio,
+        'hora_fim': horaFim,
+        'disponivel': true,
+      }).select().single();
+      return {'success': true, 'data': res};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao criar disponibilidade.'};
+    }
+  }
+
+  /// Remove um slot de disponibilidade.
+  Future<Map<String, dynamic>> deletarDisponibilidade(String id) async {
+    return deleteRecord('disponibilidade', id, forceHardDelete: true);
+  }
+
   /// Retorna as especialidades distintas de profissionais ativos.
   Future<Map<String, dynamic>> getEspecialidades() async {
     try {
@@ -1073,8 +1101,6 @@ class ApiService {
           })
           .select()
           .single();
-
-      final consultaId = consulta['id'] as String;
 
       // Busca nomes para notificação
       final profData = await _sb
