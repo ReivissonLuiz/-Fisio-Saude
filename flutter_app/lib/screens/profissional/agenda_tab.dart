@@ -117,6 +117,7 @@ class _AgendaTabState extends State<AgendaTab> {
                             consulta: c,
                             onReagendar: () => _reagendar(c),
                             onCancelar: () => _cancelar(c),
+                            onConfirmar: () => _confirmar(c),
                             onDetalhes: () => _mostrarDetalhes(c),
                           );
                         },
@@ -130,6 +131,27 @@ class _AgendaTabState extends State<AgendaTab> {
         child: const Icon(Icons.add_rounded, color: Colors.white),
       ),
     );
+  }
+
+  Future<void> _confirmar(dynamic c) async {
+    final pacienteId = c['id_paciente'] as String? ?? '';
+    final res = await _api.confirmarConsulta(
+      consultaId: c['id'] as String,
+      pacienteId: pacienteId,
+      profissionalId: widget.profissionalId,
+      iniciadoPorProfissional: true,
+    );
+    if (!mounted) return;
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Presença confirmada! O paciente foi notificado.')),
+      );
+      _loadAgenda();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] as String? ?? 'Erro ao confirmar.')),
+      );
+    }
   }
 
   Future<void> _reagendar(dynamic c) async {
@@ -315,12 +337,14 @@ class _ConsultaAgendaTile extends StatelessWidget {
   final dynamic consulta;
   final VoidCallback onReagendar;
   final VoidCallback onCancelar;
+  final VoidCallback onConfirmar;
   final VoidCallback onDetalhes;
 
   const _ConsultaAgendaTile({
     required this.consulta,
     required this.onReagendar,
     required this.onCancelar,
+    required this.onConfirmar,
     required this.onDetalhes,
   });
 
@@ -393,6 +417,23 @@ class _ConsultaAgendaTile extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: AppTheme.divider),
+          if (!isPassada && (consulta['status'] as String?)?.toLowerCase() == 'agendada' && hoje.isAfter(dataHora.subtract(const Duration(hours: 24))))
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                  label: const Text('Confirmar Presença (Check-in)'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: onConfirmar,
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(

@@ -594,7 +594,14 @@ class _DetalhesBottomSheet extends StatelessWidget {
                   );
                 }
                 if (tipoInfo == 'consulta') {
-                  final dt = d['data_hora'] as String? ?? 'Sem data';
+                  final dtStr = d['data_hora'] as String? ?? '';
+                  String dtFormatada = 'Sem data';
+                  if (dtStr.isNotEmpty) {
+                    final dTime = DateTime.tryParse(dtStr);
+                    if (dTime != null) {
+                      dtFormatada = '${dTime.day.toString().padLeft(2, '0')}/${dTime.month.toString().padLeft(2, '0')}/${dTime.year} às ${dTime.hour.toString().padLeft(2, '0')}:${dTime.minute.toString().padLeft(2, '0')}';
+                    }
+                  }
                   final status = d['status'] as String? ?? '';
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -611,7 +618,7 @@ class _DetalhesBottomSheet extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('Consulta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            Text(dt, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                            Text(dtFormatada, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                           ],
                         )),
                         if (status.isNotEmpty)

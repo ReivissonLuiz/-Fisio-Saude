@@ -232,7 +232,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
 
   Widget _proximaConsulta() {
     final proximas = _consultas
-        .where((c) => (c['status'] as String?)?.toLowerCase() == 'agendada')
+        .where((c) => ['agendada', 'confirmada'].contains((c['status'] as String?)?.toLowerCase()))
         .toList();
 
     if (proximas.isEmpty) {
@@ -333,18 +333,42 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                       padding:
                           const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.secondary.withValues(alpha: 0.12),
+                        color: (c['status'] as String?)?.toLowerCase() == 'confirmada'
+                            ? Colors.green.withValues(alpha: 0.12)
+                            : AppTheme.secondary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('Agendada',
+                      child: Text((c['status'] as String?)?.toLowerCase() == 'confirmada' ? 'Confirmada' : 'Agendada',
                           style: TextStyle(
-                              color: AppTheme.secondary,
+                              color: (c['status'] as String?)?.toLowerCase() == 'confirmada'
+                                  ? Colors.green
+                                  : AppTheme.secondary,
                               fontSize: 11,
                               fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
+                if ((c['status'] as String?)?.toLowerCase() == 'agendada' &&
+                    dt != null &&
+                    DateTime.now().isAfter(dt.subtract(const Duration(hours: 24))) &&
+                    DateTime.now().isBefore(dt))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                        label: const Text('Fazer Check-in (Confirmar Presença)'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () => _confirmar(c),
+                      ),
+                    ),
+                  ),
                 Row(
                   children: [
                     Expanded(
@@ -382,6 +406,27 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
         );
       }).toList(),
     );
+  }
+
+  Future<void> _confirmar(Map<String, dynamic> c) async {
+    final profId = c['id_profissional'] as String? ?? '';
+    final res = await _api.confirmarConsulta(
+      consultaId: c['id'] as String,
+      pacienteId: widget.pacienteId,
+      profissionalId: profId,
+      iniciadoPorProfissional: false,
+    );
+    if (!mounted) return;
+    if (res['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Presença confirmada! O profissional foi notificado.')),
+      );
+      _carregarDados();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] as String? ?? 'Erro ao confirmar.')),
+      );
+    }
   }
 
   Future<void> _cancelar(Map<String, dynamic> c) async {

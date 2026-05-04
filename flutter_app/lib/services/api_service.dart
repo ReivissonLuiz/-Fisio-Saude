@@ -1168,6 +1168,59 @@ class ApiService {
     }
   }
 
+  /// Confirma a consulta (check-in de véspera).
+  Future<Map<String, dynamic>> confirmarConsulta({
+    required String consultaId,
+    required String pacienteId,
+    required String profissionalId,
+    required bool iniciadoPorProfissional,
+  }) async {
+    try {
+      await _sb
+          .from('consulta')
+          .update({'status': 'confirmada'})
+          .eq('id', consultaId);
+
+      final pacData = await _sb.from('usuario').select('nome').eq('id', pacienteId).maybeSingle();
+      final profData = await _sb.from('usuario').select('nome').eq('id', profissionalId).maybeSingle();
+      final nomePaciente = pacData?['nome'] as String? ?? 'Paciente';
+      final nomeProfissional = profData?['nome'] as String? ?? 'Profissional';
+
+      if (iniciadoPorProfissional) {
+        await _criarNotificacao(
+          idDestinatario: pacienteId,
+          titulo: 'Consulta Confirmada',
+          mensagem: 'O profissional $nomeProfissional confirmou a sua consulta.',
+          tipo: 'agendamento',
+        );
+        await _criarNotificacao(
+          idDestinatario: profissionalId,
+          titulo: 'Confirmação Realizada',
+          mensagem: 'Você confirmou a consulta de $nomePaciente.',
+          tipo: 'agendamento',
+        );
+      } else {
+        await _criarNotificacao(
+          idDestinatario: profissionalId,
+          titulo: 'Consulta Confirmada',
+          mensagem: 'O paciente $nomePaciente confirmou a presença na consulta.',
+          tipo: 'agendamento',
+        );
+        await _criarNotificacao(
+          idDestinatario: pacienteId,
+          titulo: 'Confirmação Realizada',
+          mensagem: 'Você confirmou sua presença na consulta com $nomeProfissional.',
+          tipo: 'agendamento',
+        );
+      }
+
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao confirmar consulta.'};
+    }
+  }
   /// Cancela uma consulta agendada e notifica a outra parte.
   Future<Map<String, dynamic>> cancelarConsulta({
     required String consultaId,
@@ -1203,11 +1256,23 @@ class ApiService {
           mensagem: 'O profissional $nomeProfissional cancelou a sua consulta.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
           tipo: 'cancelamento',
         );
+        await _criarNotificacao(
+          idDestinatario: profissionalId,
+          titulo: 'Cancelamento Confirmado',
+          mensagem: 'Você cancelou a consulta de $nomePaciente.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
+          tipo: 'cancelamento',
+        );
       } else {
         await _criarNotificacao(
           idDestinatario: profissionalId,
           titulo: 'Consulta Cancelada',
           mensagem: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
+          tipo: 'cancelamento',
+        );
+        await _criarNotificacao(
+          idDestinatario: pacienteId,
+          titulo: 'Cancelamento Confirmado',
+          mensagem: 'Você cancelou sua consulta com $nomeProfissional.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
           tipo: 'cancelamento',
         );
       }
