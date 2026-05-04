@@ -19,9 +19,12 @@ class LogService {
 
   /// Registra navegação para uma tela.
   Future<void> logTela(String tela, {String? acao, Map<String, dynamic>? dados}) async {
+    // Se não houver ID de usuário, não registra log (evita logs de sistema/pré-login)
+    if (_usuarioId == null) return;
+
     try {
       await _sb.from('log_navegacao').insert({
-        if (_usuarioId != null) 'id_usuario': _usuarioId,
+        'id_usuario': _usuarioId,
         'tela': tela,
         if (acao != null) 'acao': acao,
         if (dados != null) 'dados_extras': dados,
