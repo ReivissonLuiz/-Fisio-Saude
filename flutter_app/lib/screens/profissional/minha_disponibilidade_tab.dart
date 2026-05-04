@@ -333,8 +333,7 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab>
             ),
           )
         else
-          ..._padAtivos.toList()..sort()
-            ..map((i) => _buildDiaPadrao(i)).toList(),
+          ...(_padAtivos.toList()..sort()).map((i) => _buildDiaPadrao(i)),
         const SizedBox(height: 20),
         // Botão salvar
         SizedBox(
