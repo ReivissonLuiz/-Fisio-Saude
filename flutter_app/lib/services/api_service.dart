@@ -6,7 +6,9 @@
 /// A tabela `login` é usada como log de acessos.
 library;
 
+import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'log_service.dart';
 
 /// Acesso global ao cliente Supabase (após Supabase.initialize)
 SupabaseClient get _sb => Supabase.instance.client;
@@ -104,7 +106,8 @@ class ApiService {
       final String tipo = permissaoData?['nome'] as String? ??
           Permissao.nomePorNivel(idPermissao);
 
-      // Registrar acesso bem-sucedido
+      // Registrar acesso bem-sucedido e ativar log de navegação
+      LogService.instance.setUsuario(usuarioId);
       await _registrarLog(
         supabaseUserId: user.id,
         usuarioId: usuarioId,
@@ -126,7 +129,7 @@ class ApiService {
         },
       };
     } on AuthException catch (e) {
-      await _registrarLog(email: email, status: 'falha');
+      await _registrarLog(email: email, status: 'falha', mensagemErro: _traduzirErroAuth(e.message));
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
@@ -1089,7 +1092,36 @@ class ApiService {
         };
       }
 
-      // Cria a consulta
+      // Gerar link do Google Meet e URL do Google Calendar
+      final meetId = _gerarMeetId();
+      final meetUrl = 'https://meet.google.com/$meetId';
+
+      // Busca e-mails e nomes para Calendar e notificação
+      final profData = await _sb
+          .from('usuario')
+          .select('nome, email')
+          .eq('id', profissionalId)
+          .single();
+      final pacData = await _sb
+          .from('usuario')
+          .select('nome, email')
+          .eq('id', pacienteId)
+          .single();
+
+      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
+      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
+      final emailProfissional = profData['email'] as String? ?? '';
+      final emailPaciente = pacData['email'] as String? ?? '';
+
+      final calendarUrl = _gerarCalendarUrl(
+        nomeProfissional: nomeProfissional,
+        emailPaciente: emailPaciente,
+        emailProfissional: emailProfissional,
+        dataHora: dataHora,
+        meetUrl: meetUrl,
+      );
+
+      // Cria a consulta com links Google
       final consulta = await _sb
           .from('consulta')
           .insert({
@@ -1098,24 +1130,12 @@ class ApiService {
             'data_hora': dataHora.toIso8601String(),
             'status': 'agendada',
             'observacoes': observacoes,
+            'link_meet': meetUrl,
+            'link_calendar': calendarUrl,
           })
           .select()
           .single();
 
-      // Busca nomes para notificação
-      final profData = await _sb
-          .from('usuario')
-          .select('nome')
-          .eq('id', profissionalId)
-          .single();
-      final pacData = await _sb
-          .from('usuario')
-          .select('nome')
-          .eq('id', pacienteId)
-          .single();
-
-      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
-      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
       final dataFormatada =
           '${dataHora.day.toString().padLeft(2, '0')}/${dataHora.month.toString().padLeft(2, '0')}/${dataHora.year} às $horario';
 
@@ -1135,7 +1155,12 @@ class ApiService {
         tipo: 'agendamento',
       );
 
-      return {'success': true, 'data': consulta};
+      return {
+        'success': true,
+        'data': consulta,
+        'link_meet': meetUrl,
+        'link_calendar': calendarUrl,
+      };
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
@@ -1365,13 +1390,14 @@ class ApiService {
 
   // --- Logs ----------------------------------------------------------------
 
-  /// Registra evento de login na tabela `login`.
+  /// Registra evento de login/tentativa na tabela `login`.
   Future<void> _registrarLog({
     String? supabaseUserId,
     String? usuarioId,
     required String email,
     required String status,
     String? dispositivo,
+    String? mensagemErro,
   }) async {
     try {
       await _sb.from('login').insert({
@@ -1380,11 +1406,49 @@ class ApiService {
         'email': email,
         'status': status,
         if (dispositivo != null) 'dispositivo': dispositivo,
+        if (mensagemErro != null) 'mensagem_erro': mensagemErro,
       });
     } catch (_) {
       // Falha no log não deve bloquear o fluxo
     }
   }
+
+  // --- Google Meet / Calendar ----------------------------------------------
+
+  /// Gera um ID aleatório no formato xxx-yyyy-zzz para o Google Meet.
+  String _gerarMeetId() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    final rng = Random();
+    String seg(int len) =>
+        List.generate(len, (_) => chars[rng.nextInt(chars.length)]).join();
+    return '${seg(3)}-${seg(4)}-${seg(3)}';
+  }
+
+  /// Gera URL do Google Calendar com todos os dados da consulta e link Meet.
+  String _gerarCalendarUrl({
+    required String nomeProfissional,
+    required String emailPaciente,
+    required String emailProfissional,
+    required DateTime dataHora,
+    required String meetUrl,
+  }) {
+    final inicio = _formatarDataHoraCalendar(dataHora);
+    final fim = _formatarDataHoraCalendar(dataHora.add(const Duration(hours: 1)));
+    final titulo = Uri.encodeComponent('Consulta com $nomeProfissional - +Físio +Saúde');
+    final detalhes = Uri.encodeComponent(
+        'Consulta de fisioterapia agendada pelo app +Físio +Saúde.\n\nLink da sala: $meetUrl');
+    final convidados = Uri.encodeComponent('$emailPaciente,$emailProfissional');
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        '&text=$titulo&dates=$inicio/$fim&details=$detalhes'
+        '&add=$convidados&sf=true&output=xml';
+  }
+
+  String _formatarDataHoraCalendar(DateTime dt) {
+    final d = dt.toUtc();
+    return '${d.year}${_pad(d.month)}${_pad(d.day)}T${_pad(d.hour)}${_pad(d.minute)}00Z';
+  }
+
+  String _pad(int n) => n.toString().padLeft(2, '0');
 
   // --- Helpers -------------------------------------------------------------
 

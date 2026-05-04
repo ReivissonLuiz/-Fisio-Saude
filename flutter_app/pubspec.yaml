@@ -30,6 +30,9 @@ dependencies:
   google_fonts: ^6.2.1
   intl: ^0.19.0
 
+  # ── Abrir URLs externas (Google Calendar, Meet) ───────
+  url_launcher: ^6.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

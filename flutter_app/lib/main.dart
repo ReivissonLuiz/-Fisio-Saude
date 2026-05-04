@@ -19,6 +19,7 @@ import 'screens/register/patient_register_screen.dart';
 import 'screens/register/professional_register_screen.dart';
 import 'screens/register/register_success_screen.dart';
 import 'screens/register/admin_register_screen.dart';
+import 'services/log_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,9 @@ void main() async {
 
 // Chave global para navegar a partir de qualquer lugar no app
 final _navigatorKey = GlobalKey<NavigatorState>();
+
+// Observer de rotas para log de navegação
+final _routeObserver = AppRouteObserver();
 
 class FisioSaudeApp extends StatefulWidget {
   const FisioSaudeApp({super.key});
@@ -78,6 +82,7 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       navigatorKey: _navigatorKey,
+      navigatorObservers: [_routeObserver],
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashScreen(),
