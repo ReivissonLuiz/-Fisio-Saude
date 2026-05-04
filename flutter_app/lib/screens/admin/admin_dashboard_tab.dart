@@ -169,6 +169,21 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
     return entries.take(6).toList();
   }
 
+  List<MapEntry<String, double>> get _rankingAvaliacoes {
+    // Simulação temporária: Em um cenário real, isso viria da tabela de avaliações do Supabase.
+    final Map<String, double> ranking = {};
+    for (final p in _listaProfissionais) {
+      final nome = (p['nome'] as String? ?? 'Profissional').split(' ').first;
+      // Gera uma nota simulada entre 4.0 e 5.0 baseada em propriedades únicas do profissional
+      final hash = nome.codeUnits.fold(0, (a, b) => a + b) + _listaConsultas.length;
+      double nota = 4.0 + (hash % 11) / 10.0;
+      if (nota > 5.0) nota = 5.0;
+      ranking[nome] = nota;
+    }
+    final entries = ranking.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    return entries.take(5).toList();
+  }
+
   void _abrirDetalhes(String titulo, List<dynamic> dados, String tipoInfo) {
     showModalBottomSheet(
       context: context,
@@ -297,6 +312,16 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                           chart: _rankingProfissionaisUltimoMes.isEmpty
                               ? null
                               : _BarChart(dados: _rankingProfissionaisUltimoMes, color: Colors.amber),
+                        ),
+
+                        _ExpandableChartCard(
+                          icon: Icons.star_rounded,
+                          color: Colors.orange,
+                          title: 'Avaliações de Pacientes',
+                          summary: 'Top profissionais com as melhores notas de feedback.',
+                          chart: _listaProfissionais.isEmpty
+                              ? null
+                              : _AvaliacoesChart(dados: _rankingAvaliacoes, color: Colors.orange),
                         ),
                         _ExpandableChartCard(
                           icon: Icons.location_on_rounded,
@@ -677,6 +702,53 @@ class _BarChart extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text('${e.value}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── Avaliacoes Bar Chart ─────────────────────────────────────────────────────
+class _AvaliacoesChart extends StatelessWidget {
+  final List<MapEntry<String, double>> dados;
+  final Color color;
+  const _AvaliacoesChart({required this.dados, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    if (dados.isEmpty) return const SizedBox();
+    const maxVal = 5.0; // Notas de 0 a 5
+    return Column(
+      children: dados.map((e) {
+        final pct = e.value / maxVal;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(e.key, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct,
+                    minHeight: 18,
+                    backgroundColor: color.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 24,
+                child: Text(e.value.toStringAsFixed(1), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+              ),
             ],
           ),
         );

@@ -1168,6 +1168,24 @@ class ApiService {
     }
   }
 
+  /// Finaliza a consulta (checkout) e salva o relatório.
+  Future<Map<String, dynamic>> finalizarConsulta({
+    required String consultaId,
+    required String relatorio,
+  }) async {
+    try {
+      await _sb.from('consulta').update({
+        'status': 'finalizada',
+        'relatorio': relatorio,
+      }).eq('id', consultaId);
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao finalizar consulta.'};
+    }
+  }
+
   /// Confirma a consulta (check-in de véspera).
   Future<Map<String, dynamic>> confirmarConsulta({
     required String consultaId,

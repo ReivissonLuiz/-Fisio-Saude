@@ -41,6 +41,15 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
   String? _linkMeet;
   String? _linkCalendar;
 
+  final _sintomasController = TextEditingController();
+  double _dorNivel = 5;
+
+  @override
+  void dispose() {
+    _sintomasController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -110,10 +119,14 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
     setState(() { _confirmando = true; _erro = null; });
     final h = _horario!.split(':');
     final dataHora = DateTime(_data!.year, _data!.month, _data!.day, int.parse(h[0]), int.parse(h[1]));
+    final obsSintomas = _sintomasController.text.trim();
+    final observacoesFormatadas = 'Sintomas relatados: ${obsSintomas.isEmpty ? "Nenhum" : obsSintomas}\nNível de Dor: ${_dorNivel.toInt()}/10';
+
     final res = await _api.agendarConsulta(
       pacienteId: widget.pacienteId,
       profissionalId: _profissional!['id'] as String,
       dataHora: dataHora,
+      observacoes: observacoesFormatadas,
     );
     if (!mounted) return;
     setState(() => _confirmando = false);
@@ -491,6 +504,39 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
                 const SizedBox(height: 10),
                 _InfoRow(icone: Icons.access_time_rounded, label: 'Horário', valor: _horario ?? '-'),
               ]),
+            ),
+            const SizedBox(height: 24),
+            const Text('Como você está se sentindo?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _sintomasController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Descreva seus sintomas (opcional)',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.divider)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppTheme.divider)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Nível de Dor', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
+            Row(
+              children: [
+                const Text('0', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Slider(
+                    value: _dorNivel,
+                    min: 0,
+                    max: 10,
+                    divisions: 10,
+                    activeColor: _dorNivel <= 3 ? Colors.green : (_dorNivel <= 6 ? Colors.orange : Colors.red),
+                    label: _dorNivel.toInt().toString(),
+                    onChanged: (v) => setState(() => _dorNivel = v),
+                  ),
+                ),
+                const Text('10', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ],
             ),
             if (_erro != null) ...[
               const SizedBox(height: 16),

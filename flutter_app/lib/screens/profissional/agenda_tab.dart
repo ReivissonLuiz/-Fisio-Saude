@@ -118,6 +118,7 @@ class _AgendaTabState extends State<AgendaTab> {
                             onReagendar: () => _reagendar(c),
                             onCancelar: () => _cancelar(c),
                             onConfirmar: () => _confirmar(c),
+                            onCheckout: () => _checkout(c),
                             onDetalhes: () => _mostrarDetalhes(c),
                           );
                         },
@@ -131,6 +132,61 @@ class _AgendaTabState extends State<AgendaTab> {
         child: const Icon(Icons.add_rounded, color: Colors.white),
       ),
     );
+  }
+
+  Future<void> _checkout(dynamic c) async {
+    final status = (c['status'] as String?)?.toLowerCase();
+    if (status == 'cancelada') {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Consulta cancelada.')));
+      return;
+    }
+    
+    final ctrl = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Checkout da Consulta'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Insira o relatório da consulta (máx 300 caracteres):', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              maxLength: 300,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Descreva a evolução do paciente...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.white),
+            child: const Text('Finalizar'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && mounted) {
+      final res = await _api.finalizarConsulta(
+        consultaId: c['id'] as String,
+        relatorio: result,
+      );
+      if (!mounted) return;
+      if (res['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Consulta finalizada e relatório salvo!')));
+        _loadAgenda();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] as String? ?? 'Erro ao finalizar consulta.')));
+      }
+    }
   }
 
   Future<void> _confirmar(dynamic c) async {
@@ -338,6 +394,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
   final VoidCallback onReagendar;
   final VoidCallback onCancelar;
   final VoidCallback onConfirmar;
+  final VoidCallback onCheckout;
   final VoidCallback onDetalhes;
 
   const _ConsultaAgendaTile({
@@ -345,6 +402,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
     required this.onReagendar,
     required this.onCancelar,
     required this.onConfirmar,
+    required this.onCheckout,
     required this.onDetalhes,
   });
 
@@ -458,18 +516,18 @@ class _ConsultaAgendaTile extends StatelessWidget {
                   onPressed: onDetalhes,
                   child: const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-                if (!isPassada) ...[
+                if ((consulta['status'] as String?)?.toLowerCase() != 'cancelada' && (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: onCheckout,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                     ),
-                    child: const Text('Prontuário', style: TextStyle(fontSize: 12)),
+                    child: const Text('Checkout', style: TextStyle(fontSize: 12)),
                   ),
                 ],
               ],
@@ -608,6 +666,18 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (widget.consulta['observacoes'] != null && (widget.consulta['observacoes'] as String).isNotEmpty) ...[
+                      const Text('Relato do Paciente no Agendamento', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
+                        child: Text(widget.consulta['observacoes'] as String, style: const TextStyle(color: AppTheme.textPrimary)),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
                     // Histórico de Consultas
                     const Text('Histórico', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
