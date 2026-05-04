@@ -1,8 +1,9 @@
 /// minha_saude_tab.dart
-/// Aba "Minha Saúde" — registro e histórico de sintomas — +Fisio +Saúde
+/// Aba "Minha Saúde" — registro e histórico de sintomas + exercícios — +Fisio +Saúde
 library;
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -14,15 +15,27 @@ class MinhaSaudeTab extends StatefulWidget {
   State<MinhaSaudeTab> createState() => _MinhaSaudeTabState();
 }
 
-class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
+class _MinhaSaudeTabState extends State<MinhaSaudeTab>
+    with SingleTickerProviderStateMixin {
   final _api = ApiService();
   List<dynamic> _sintomas = [];
+  List<dynamic> _recomendacoes = [];
   bool _loading = true;
+  bool _loadingRec = true;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _carregarSintomas();
+    _carregarRecomendacoes();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _carregarSintomas() async {
@@ -35,6 +48,24 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
         _sintomas = result['data'] as List? ?? [];
       }
     });
+  }
+
+  Future<void> _carregarRecomendacoes() async {
+    setState(() => _loadingRec = true);
+    final result = await _api.getRecomendacoesVideos(widget.pacienteId);
+    if (!mounted) return;
+    setState(() {
+      _loadingRec = false;
+      if (result['success'] == true) {
+        _recomendacoes = result['data'] as List? ?? [];
+      }
+    });
+    // Marca todas como lidas ao abrir a aba
+    for (final rec in _recomendacoes) {
+      if (rec['lida'] == false) {
+        _api.marcarRecomendacaoLida(rec['id'] as String);
+      }
+    }
   }
 
   Future<void> _abrirFormulario() async {
@@ -67,13 +98,16 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _abrirFormulario,
-        backgroundColor: const Color(0xFFE91E63),
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Registrar Sintoma',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-      ),
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton.extended(
+              onPressed: _abrirFormulario,
+              backgroundColor: const Color(0xFFE91E63),
+              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              label: const Text('Registrar Sintoma',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
+            )
+          : null,
       body: Column(
         children: [
           // Header
@@ -89,7 +123,7 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                 bottomRight: Radius.circular(28),
               ),
             ),
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -106,13 +140,13 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text('Registro de sintomas e dores',
+                const Text('Sintomas, dores e exercícios recomendados',
                     style: TextStyle(color: Colors.white70, fontSize: 13)),
                 const SizedBox(height: 14),
                 Row(
                   children: [
                     _MiniStat(
-                        label: 'Total',
+                        label: 'Sintomas',
                         value: '${_sintomas.length}',
                         icon: Icons.list_alt_rounded),
                     const SizedBox(width: 10),
@@ -122,53 +156,130 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab> {
                         icon: Icons.calendar_today_rounded),
                     const SizedBox(width: 10),
                     _MiniStat(
-                        label: 'Dor média',
-                        value: _dorMedia(),
-                        icon: Icons.analytics_rounded),
+                        label: 'Exercícios',
+                        value: '${_recomendacoes.fold<int>(0, (sum, r) => sum + ((r['videos'] as List?)?.length ?? 0))}',
+                        icon: Icons.fitness_center_rounded),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // TabBar dentro do header
+                TabBar(
+                  controller: _tabController,
+                  onTap: (_) => setState(() {}),
+                  indicatorColor: Colors.white,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white60,
+                  labelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 13),
+                  tabs: [
+                    const Tab(text: 'Meus Sintomas'),
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Exercícios'),
+                          if (_recomendacoes.any((r) => r['lida'] == false)) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              width: 8, height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.yellow,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          // Lista
+          // Conteúdo das tabs
           Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _sintomas.isEmpty
-                    ? const Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.healing_rounded,
-                                color: AppTheme.textHint, size: 60),
-                            SizedBox(height: 14),
-                            Text('Nenhum sintoma registrado',
-                                style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500)),
-                            SizedBox(height: 6),
-                            Text(
-                                'Use o Botão abaixo para registrar\ncomo você está sentindo.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: AppTheme.textHint, fontSize: 13)),
-                            SizedBox(height: 80),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _carregarSintomas,
-                        color: const Color(0xFFE91E63),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                          itemCount: _sintomas.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (_, index) =>
-                              _SintomaCard(sintoma: _sintomas[index]),
-                        ),
-                      ),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                // Tab 1: Sintomas
+                _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _sintomas.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.healing_rounded,
+                                    color: AppTheme.textHint, size: 60),
+                                SizedBox(height: 14),
+                                Text('Nenhum sintoma registrado',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500)),
+                                SizedBox(height: 6),
+                                Text(
+                                    'Use o botão abaixo para registrar\ncomo você está se sentindo.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: AppTheme.textHint, fontSize: 13)),
+                                SizedBox(height: 80),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _carregarSintomas,
+                            color: const Color(0xFFE91E63),
+                            child: ListView.separated(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                              itemCount: _sintomas.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: (_, index) =>
+                                  _SintomaCard(sintoma: _sintomas[index]),
+                            ),
+                          ),
+
+                // Tab 2: Exercícios Recomendados
+                _loadingRec
+                    ? const Center(child: CircularProgressIndicator())
+                    : _recomendacoes.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.fitness_center_rounded,
+                                    color: AppTheme.textHint, size: 60),
+                                const SizedBox(height: 14),
+                                const Text('Nenhum exercício recomendado',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 6),
+                                const Text(
+                                    'Após uma consulta, seu fisioterapeuta\npode enviar exercícios personalizados.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        color: AppTheme.textHint, fontSize: 13)),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _carregarRecomendacoes,
+                            color: const Color(0xFFE91E63),
+                            child: ListView.builder(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                              itemCount: _recomendacoes.length,
+                              itemBuilder: (_, idx) =>
+                                  _RecomendacaoCard(
+                                      recomendacao: _recomendacoes[idx]),
+                            ),
+                          ),
+              ],
+            ),
           ),
         ],
       ),
@@ -532,3 +643,292 @@ class _MiniStat extends StatelessWidget {
 
 
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Card de Recomendação de Exercícios (Tab Exercícios)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _RecomendacaoCard extends StatefulWidget {
+  final Map<String, dynamic> recomendacao;
+  const _RecomendacaoCard({required this.recomendacao});
+
+  @override
+  State<_RecomendacaoCard> createState() => _RecomendacaoCardState();
+}
+
+class _RecomendacaoCardState extends State<_RecomendacaoCard> {
+  bool _expandido = false;
+
+  Color _corNivel(String nivel) {
+    switch (nivel.toLowerCase()) {
+      case 'iniciante':
+        return Colors.green;
+      case 'intermediario':
+        return Colors.orange;
+      case 'avancado':
+        return AppTheme.error;
+      default:
+        return AppTheme.primary;
+    }
+  }
+
+  Future<void> _abrirVideo(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profissional = widget.recomendacao['profissional'];
+    final nomeProfissional =
+        profissional?['nome'] as String? ?? 'Seu fisioterapeuta';
+    final videos = (widget.recomendacao['videos'] as List?) ?? [];
+    final mensagem = widget.recomendacao['mensagem'] as String?;
+    final dt = DateTime.tryParse(
+        widget.recomendacao['created_at'] as String? ?? '');
+    final dtFmt = dt != null
+        ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}'
+        : '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.divider),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header do card
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 42, height: 42,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.primary, Color(0xFF7C3AED)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.smart_toy_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Exercícios de $nomeProfissional',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.fitness_center_rounded,
+                              size: 12, color: AppTheme.textSecondary),
+                          const SizedBox(width: 3),
+                          Text('${videos.length} exercício(s)',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.textSecondary)),
+                          if (dtFmt.isNotEmpty) ...[ 
+                            const SizedBox(width: 8),
+                            const Icon(Icons.calendar_today_outlined,
+                                size: 11, color: AppTheme.textHint),
+                            const SizedBox(width: 2),
+                            Text(dtFmt,
+                                style: const TextStyle(
+                                    fontSize: 11, color: AppTheme.textHint)),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Badge "Recomendado por IA"
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.purple.shade200),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.psychology_rounded,
+                          size: 11, color: Colors.purple.shade700),
+                      const SizedBox(width: 3),
+                      Text('ML',
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade700)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Mensagem personalizada do profissional
+          if (mensagem != null && mensagem.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                    color: AppTheme.primary.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.message_outlined,
+                      size: 15, color: AppTheme.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      mensagem,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.textPrimary,
+                          fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          const Divider(height: 1, color: AppTheme.divider),
+
+          // Lista de exercícios (expansível)
+          if (videos.isNotEmpty) ...[
+            // Mostrar primeiros 2 sempre, resto ao expandir
+            ...videos.take(_expandido ? videos.length : 2).map((video) {
+              final nome = video['nome_pt'] as String? ?? '';
+              final regiao = video['regiao_display'] as String? ?? '';
+              final nivel = video['nivel_dificuldade'] as String? ?? '';
+              final duracao = video['duracao_min'] as int? ?? 0;
+              final url = video['url_video'] as String? ?? '';
+              final corNivel = _corNivel(nivel);
+
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: corNivel.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.play_circle_rounded,
+                          color: corNivel, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(nome,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13)),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: corNivel.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(nivel,
+                                    style: TextStyle(
+                                        fontSize: 9,
+                                        color: corNivel,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                              const SizedBox(width: 6),
+                              Icon(Icons.location_on_outlined,
+                                  size: 11, color: AppTheme.textSecondary),
+                              const SizedBox(width: 2),
+                              Expanded(
+                                child: Text(regiao,
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppTheme.textSecondary),
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.timer_outlined,
+                                  size: 11, color: AppTheme.textHint),
+                              Text(' ${duracao}min',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppTheme.textHint)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Botão de abrir vídeo
+                    if (url.isNotEmpty && url != 'https://drive.google.com/')
+                      IconButton(
+                        onPressed: () => _abrirVideo(url),
+                        icon: const Icon(Icons.open_in_new_rounded),
+                        color: AppTheme.primary,
+                        iconSize: 20,
+                        tooltip: 'Abrir vídeo',
+                      ),
+                  ],
+                ),
+              );
+            }),
+
+            // Botão expandir/recolher
+            if (videos.length > 2)
+              TextButton.icon(
+                onPressed: () => setState(() => _expandido = !_expandido),
+                icon: Icon(
+                  _expandido
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                ),
+                label: Text(
+                  _expandido
+                      ? 'Ver menos'
+                      : 'Ver mais ${videos.length - 2} exercício(s)',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.primary),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}

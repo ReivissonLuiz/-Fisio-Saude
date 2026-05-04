@@ -1488,6 +1488,93 @@ class ApiService {
     } catch (_) {}
   }
 
+  // --- Recomendações de Vídeos (ML) ----------------------------------------
+
+  /// Envia uma lista de exercícios recomendados pelo profissional ao paciente,
+  /// após o encerramento de uma consulta. Salva no Supabase e cria notificação.
+  Future<Map<String, dynamic>> enviarRecomendacaoVideos({
+    required String pacienteId,
+    required String profissionalId,
+    required String consultaId,
+    required List<Map<String, dynamic>> videos,
+    String? mensagem,
+  }) async {
+    try {
+      final rec = await _sb.from('recomendacao_video').insert({
+        'id_consulta': consultaId,
+        'id_paciente': pacienteId,
+        'id_profissional': profissionalId,
+        'videos': videos,
+        'mensagem': mensagem,
+      }).select().single();
+
+      // Busca nome do profissional para a notificação
+      final profData = await _sb
+          .from('usuario')
+          .select('nome')
+          .eq('id', profissionalId)
+          .maybeSingle();
+      final nomeProfissional = profData?['nome'] as String? ?? 'Seu fisioterapeuta';
+
+      // Notifica o paciente
+      await _criarNotificacao(
+        idDestinatario: pacienteId,
+        titulo: '🏃 Novos Exercícios Recomendados!',
+        mensagem:
+            '$nomeProfissional enviou ${videos.length} exercício(s) personalizado(s) para você. Acesse "Minha Saúde" para ver.',
+        tipo: 'recomendacao',
+      );
+
+      return {'success': true, 'data': rec};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao enviar recomendação.'};
+    }
+  }
+
+  /// Busca as recomendações de vídeos recebidas pelo paciente.
+  Future<Map<String, dynamic>> getRecomendacoesVideos(String pacienteId) async {
+    if (pacienteId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
+    try {
+      final data = await _sb
+          .from('recomendacao_video')
+          .select('*, profissional:id_profissional(nome, especialidade)')
+          .eq('id_paciente', pacienteId)
+          .order('created_at', ascending: false)
+          .limit(20);
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Conta recomendações de vídeos não lidas do paciente.
+  Future<int> getRecomendacoesNaoLidas(String pacienteId) async {
+    try {
+      final data = await _sb
+          .from('recomendacao_video')
+          .select('id')
+          .eq('id_paciente', pacienteId)
+          .eq('lida', false);
+      return (data as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Marca uma recomendação de vídeo como lida pelo paciente.
+  Future<void> marcarRecomendacaoLida(String recomendacaoId) async {
+    try {
+      await _sb.from('recomendacao_video').update({
+        'lida': true,
+        'lida_em': DateTime.now().toIso8601String(),
+      }).eq('id', recomendacaoId);
+    } catch (_) {}
+  }
+
   // --- Logs ----------------------------------------------------------------
 
   /// Registra evento de login/tentativa na tabela `login`.
