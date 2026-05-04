@@ -347,8 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Color(0xFF9C27B0)),
                 label: 'Agenda'),
             NavigationDestination(
-                icon: Icon(Icons.access_time_outlined),
-                selectedIcon: Icon(Icons.access_time_filled_rounded,
+                icon: Icon(Icons.schedule_outlined),
+                selectedIcon: Icon(Icons.schedule_rounded,
                     color: Color(0xFF00897B)),
                 label: 'Horários'),
             NavigationDestination(
