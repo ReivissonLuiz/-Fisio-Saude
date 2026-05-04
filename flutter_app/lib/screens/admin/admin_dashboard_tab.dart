@@ -170,16 +170,31 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
   }
 
   List<MapEntry<String, double>> get _rankingAvaliacoes {
-    // Simulação temporária: Em um cenário real, isso viria da tabela de avaliações do Supabase.
-    final Map<String, double> ranking = {};
-    for (final p in _listaProfissionais) {
-      final nome = (p['nome'] as String? ?? 'Profissional').split(' ').first;
-      // Gera uma nota simulada entre 4.0 e 5.0 baseada em propriedades únicas do profissional
-      final hash = nome.codeUnits.fold(0, (a, b) => a + b) + _listaConsultas.length;
-      double nota = 4.0 + (hash % 11) / 10.0;
-      if (nota > 5.0) nota = 5.0;
-      ranking[nome] = nota;
+    // Calcula a média das avaliações recebidas por cada profissional (com base em consultas finalizadas e avaliadas)
+    final Map<String, List<int>> notasPorProfissional = {};
+    for (final c in _listaConsultas) {
+      final profId = c['id_profissional']?.toString() ?? '';
+      final avaliacao = c['avaliacao']; // int ou null
+      if (profId.isEmpty || avaliacao == null) continue;
+      
+      final prof = _listaProfissionais.firstWhere(
+        (p) => p['id'].toString() == profId,
+        orElse: () => null,
+      );
+      final nome = (prof?['nome'] as String? ?? profId).split(' ').first;
+      
+      notasPorProfissional.putIfAbsent(nome, () => []).add((avaliacao as num).toInt());
     }
+    
+    final Map<String, double> ranking = {};
+    for (final entry in notasPorProfissional.entries) {
+      final notas = entry.value;
+      if (notas.isNotEmpty) {
+        final media = notas.fold<int>(0, (a, b) => a + b) / notas.length;
+        ranking[entry.key] = media;
+      }
+    }
+    
     final entries = ranking.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     return entries.take(5).toList();
   }

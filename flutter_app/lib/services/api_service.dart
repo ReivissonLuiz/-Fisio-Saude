@@ -1186,6 +1186,23 @@ class ApiService {
     }
   }
 
+  /// Avalia a consulta finalizada.
+  Future<Map<String, dynamic>> avaliarConsulta({
+    required String consultaId,
+    required int nota,
+  }) async {
+    try {
+      await _sb.from('consulta').update({
+        'avaliacao': nota,
+      }).eq('id', consultaId);
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao avaliar consulta.'};
+    }
+  }
+
   /// Confirma a consulta (check-in de véspera).
   Future<Map<String, dynamic>> confirmarConsulta({
     required String consultaId,

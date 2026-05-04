@@ -170,15 +170,16 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                                 style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
                                             const SizedBox(height: 4),
                                             Text(dtStr, style: const TextStyle(color: AppTheme.textHint, fontSize: 10)),
-                                            if (tipo == 'reagendamento' && widget.onNavigateToAgenda != null) ...[
+                                            if ((tipo == 'reagendamento' || tipo == 'cancelamento') && widget.onNavigateToAgenda != null) ...[
                                               const SizedBox(height: 8),
                                               OutlinedButton.icon(
                                                 onPressed: () {
-                                                  Navigator.of(context).pop();
+                                                  // O pop do contexto já é feito ou lidado pela callback,
+                                                  // mas na callback adicionamos um navigator push.
                                                   widget.onNavigateToAgenda!();
                                                 },
                                                 icon: Icon(Icons.calendar_month_rounded, size: 12, color: cor),
-                                                label: Text('Acessar Agenda', style: TextStyle(fontSize: 11, color: cor)),
+                                                label: Text('Agendar Nova Consulta', style: TextStyle(fontSize: 11, color: cor)),
                                                 style: OutlinedButton.styleFrom(
                                                   side: BorderSide(color: cor.withValues(alpha: 0.5)),
                                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),

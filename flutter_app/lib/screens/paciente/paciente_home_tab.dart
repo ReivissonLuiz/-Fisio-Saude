@@ -130,12 +130,15 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                                 MaterialPageRoute(
                                   builder: (_) => NotificacoesPanel(
                                     usuarioId: widget.pacienteId,
-                                    // Ao clicar em "Acessar Agenda" numa notif
-                                    // de reagendamento, simplesmente fecha o
-                                    // painel — o paciente já está na aba de
-                                    // consultas (Início).
-                                    onNavigateToAgenda: () =>
-                                        Navigator.pop(context),
+                                    // Ao clicar em "Agendar Nova Consulta" numa notificação
+                                    // de cancelamento ou reagendamento, abre a tela de agendamento.
+                                    onNavigateToAgenda: () {
+                                      Navigator.pop(context); // Fecha o painel de notificações
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => AgendarConsultaScreen(pacienteId: widget.pacienteId)),
+                                      ).then((_) => _carregarDados());
+                                    },
                                   ),
                                 ),
                               ).then((_) => _carregarDados());
@@ -179,6 +182,8 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
               padding: const EdgeInsets.all(20),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
+                  _consultasParaAvaliar(),
+
                   // --- Consultas Agendadas -------------------------------------------
                   const _SectionTitle(
                       title: 'Consultas Agendadas',
@@ -228,6 +233,124 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
         ],
       ),
     );
+  }
+
+  Widget _consultasParaAvaliar() {
+    final paraAvaliar = _consultas.where((c) {
+      final status = (c['status'] as String?)?.toLowerCase();
+      final avaliacao = c['avaliacao']; // int or null
+      return status == 'finalizada' && avaliacao == null;
+    }).toList();
+
+    if (paraAvaliar.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(title: 'Avalie seu Atendimento', icon: Icons.star_rounded),
+        const SizedBox(height: 10),
+        ...paraAvaliar.map((c) {
+          final profissional = c['profissional'] as Map<String, dynamic>?;
+          final nomeProf = profissional?['nome'] ?? 'Profissional';
+          final dataHora = c['data_hora'] as String? ?? '';
+          final dt = DateTime.tryParse(dataHora);
+          final dtFormatada = dt != null ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} às ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}' : dataHora;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.amber),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.stars_rounded, color: Colors.amber, size: 36),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Como foi sua sessão com $nomeProf?', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text('Realizada em $dtFormatada', style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: () => _mostrarDialogAvaliacao(c),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                          minimumSize: const Size(0, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Avaliar Agora', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Future<void> _mostrarDialogAvaliacao(Map<String, dynamic> c) async {
+    int nota = 5;
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (context, setStateSB) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Avalie o Atendimento', textAlign: TextAlign.center),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Quantas estrelas você dá para esta sessão?', textAlign: TextAlign.center),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < nota ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      onPressed: () => setStateSB(() => nota = index + 1),
+                    );
+                  }),
+                ),
+              ],
+            ),
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Mais tarde')),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, nota),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, foregroundColor: Colors.white),
+                child: const Text('Enviar Avaliação'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+
+    if (result != null && mounted) {
+      final res = await _api.avaliarConsulta(consultaId: c['id'] as String, nota: result);
+      if (!mounted) return;
+      if (res['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Avaliação enviada com sucesso! Obrigado pelo feedback.')));
+        _carregarDados();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] as String? ?? 'Erro ao enviar avaliação.')));
+      }
+    }
   }
 
   Widget _proximaConsulta() {
