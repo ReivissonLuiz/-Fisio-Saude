@@ -200,32 +200,57 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _ultimoSintoma(),
                   const SizedBox(height: 24),
 
-                  // --- Resumo Rápido -----------------------------------------------
+                  // --- Meu BI ------------------------------------------------------------------
                   const _SectionTitle(
-                      title: 'Resumo', icon: Icons.bar_chart_rounded),
+                      title: 'Estatísticas de Saúde (BI)', icon: Icons.bar_chart_rounded),
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          label: 'Sintomas\nRegistrados',
-                          value: '${_sintomas.length}',
-                          icon: Icons.healing_rounded,
-                          color: const Color(0xFFE91E63),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          label: 'Consultas\nRealizadas',
-                          value:
-                              '${_consultas.where((c) => (c['status'] as String?)?.toLowerCase() == 'realizada').length}',
-                          icon: Icons.medical_services_rounded,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                    ],
+                  
+                  _ExpandableChartCard(
+                    title: 'Sintomas Registrados',
+                    summary: 'Histórico de sintomas registrados por mês.',
+                    icon: Icons.monitor_heart_rounded,
+                    color: const Color(0xFFE91E63),
+                    chart: _sintomasPorMes.isEmpty
+                        ? null
+                        : _BarChart(dados: _sintomasPorMes, color: const Color(0xFFE91E63)),
                   ),
+                  
+                  _ExpandableChartCard(
+                    title: 'Sessões Marcadas',
+                    summary: 'Histórico de consultas por mês.',
+                    icon: Icons.calendar_month_rounded,
+                    color: AppTheme.primary,
+                    chart: _consultasPorMes.isEmpty
+                        ? null
+                        : _BarChart(dados: _consultasPorMes, color: AppTheme.primary),
+                  ),
+
+                  _ExpandableChartCard(
+                    title: 'Principais Regiões Afetadas',
+                    summary: 'Proporção das regiões com queixas de dor.',
+                    icon: Icons.accessibility_new_rounded,
+                    color: Colors.orange,
+                    chart: _categoriasSintomas.isEmpty
+                        ? null
+                        : _PieChart(
+                            dados: _categoriasSintomas,
+                            colors: const [Colors.orange, Colors.deepOrange, Colors.amber, Colors.redAccent, Colors.yellow],
+                          ),
+                  ),
+
+                  _ExpandableChartCard(
+                    title: 'Intensidade de Dor',
+                    summary: 'Distribuição dos níveis de dor relatados.',
+                    icon: Icons.thermostat_rounded,
+                    color: Colors.red,
+                    chart: _intensidadeSintomas.values.every((v) => v == 0)
+                        ? null
+                        : _PieChart(
+                            dados: _intensidadeSintomas,
+                            colors: const [Colors.green, Colors.orange, Colors.red],
+                          ),
+                  ),
+
                   const SizedBox(height: 32),
                 ]),
               ),
@@ -692,6 +717,50 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       ),
     );
   }
+
+  // --- BI Getters -----------------------------------------------------------
+
+  List<MapEntry<String, int>> get _sintomasPorMes => _agruparPorMes(_sintomas);
+  List<MapEntry<String, int>> get _consultasPorMes => _agruparPorMes(_consultas);
+
+  List<MapEntry<String, int>> _agruparPorMes(List<dynamic> lista) {
+    final Map<String, int> contagem = {};
+    for (final item in lista) {
+      final dataStr = item['data_hora'] ?? item['created_at'] ?? '';
+      final dt = DateTime.tryParse(dataStr);
+      if (dt != null) {
+        final mesAno = '${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+        contagem[mesAno] = (contagem[mesAno] ?? 0) + 1;
+      }
+    }
+    final entries = contagem.entries.toList()..sort((a, b) {
+      final partsA = a.key.split('/');
+      final partsB = b.key.split('/');
+      final valA = int.parse(partsA[1]) * 12 + int.parse(partsA[0]);
+      final valB = int.parse(partsB[1]) * 12 + int.parse(partsB[0]);
+      return valB.compareTo(valA); // descending
+    });
+    return entries.take(6).toList();
+  }
+
+  Map<String, int> get _categoriasSintomas {
+    final Map<String, int> m = {};
+    for (final s in _sintomas) {
+      final c = s['categoria']?.toString() ?? 'Outros';
+      m[c] = (m[c] ?? 0) + 1;
+    }
+    return m;
+  }
+
+  Map<String, int> get _intensidadeSintomas {
+    int leve = 0, moderada = 0, intensa = 0;
+    for (final s in _sintomas) {
+      final n = ((s['intensidade'] as num?) ?? 0).toInt();
+      if (n <= 3) { leve++; } else if (n <= 6) { moderada++; } else { intensa++; }
+    }
+    return {'Leve (1-3)': leve, 'Moderada (4-6)': moderada, 'Intensa (7-10)': intensa};
+  }
+
 }
 
 // --- Widgets auxiliares -----------------------------------------------------
@@ -753,53 +822,186 @@ class _EmptyCard extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
+
+// ── Expandable Chart Card ────────────────────────────────────────────────────
+class _ExpandableChartCard extends StatefulWidget {
+  final String title, summary;
   final IconData icon;
   final Color color;
-  const _StatCard(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      required this.color});
+  final Widget? chart;
+
+  const _ExpandableChartCard({
+    required this.title, required this.summary,
+    required this.icon, required this.color, this.chart,
+  });
+
+  @override
+  State<_ExpandableChartCard> createState() => _ExpandableChartCardState();
+}
+
+class _ExpandableChartCardState extends State<_ExpandableChartCard> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.divider),
+          boxShadow: [BoxShadow(color: widget.color.withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, 3))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(color: widget.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                    child: Icon(widget.icon, color: widget.color, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        const SizedBox(height: 3),
+                        Text(widget.summary, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4)),
+                      ],
+                    ),
+                  ),
+                  Icon(_expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                      color: widget.color.withValues(alpha: 0.6), size: 20),
+                ],
+              ),
             ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 10),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: color)),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.textSecondary,
-                  height: 1.3)),
-        ],
+            if (_expanded && widget.chart != null) ...[  
+              const Divider(color: AppTheme.divider, height: 1),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                child: widget.chart!,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 }
 
+// ── Bar Chart ────────────────────────────────────────────────────────────────
+class _BarChart extends StatelessWidget {
+  final List<MapEntry<String, int>> dados;
+  final Color color;
+  const _BarChart({required this.dados, required this.color});
 
+  @override
+  Widget build(BuildContext context) {
+    if (dados.isEmpty) return const SizedBox();
+    final maxVal = dados.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    return Column(
+      children: dados.map((e) {
+        final pct = maxVal > 0 ? e.value / maxVal : 0.0;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(e.key, style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct.toDouble(),
+                    minHeight: 18,
+                    backgroundColor: color.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('${e.value}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ── Pie Chart ────────────────────────────────────────────────────────────────
+class _PieChart extends StatelessWidget {
+  final Map<String, int> dados;
+  final List<Color> colors;
+  const _PieChart({required this.dados, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = dados.values.fold<int>(0, (a, b) => a + b);
+    if (total == 0) return const SizedBox();
+    final entries = dados.entries.toList();
+    return Column(
+      children: [
+        CustomPaint(
+          size: const Size(double.infinity, 140),
+          painter: _PieChartPainter(entries: entries, total: total, colors: colors),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          children: List.generate(entries.length, (i) {
+            final pct = (entries[i].value / total * 100).toStringAsFixed(0);
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 10, height: 10,
+                    decoration: BoxDecoration(color: colors[i % colors.length], borderRadius: BorderRadius.circular(2))),
+                const SizedBox(width: 4),
+                Text('${entries[i].key} $pct%', style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary)),
+              ],
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class _PieChartPainter extends CustomPainter {
+  final List<MapEntry<String, int>> entries;
+  final int total;
+  final List<Color> colors;
+  const _PieChartPainter({required this.entries, required this.total, required this.colors});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.height / 2 - 4;
+    double start = -3.14159 / 2;
+    final paint = Paint()..style = PaintingStyle.fill;
+    for (int i = 0; i < entries.length; i++) {
+      final sweep = entries[i].value / total * 2 * 3.14159;
+      paint.color = colors[i % colors.length];
+      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), start, sweep, true, paint);
+      start += sweep;
+    }
+    // Hole for donut
+    paint.color = Colors.white;
+    canvas.drawCircle(center, radius * 0.55, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => true;
+}
