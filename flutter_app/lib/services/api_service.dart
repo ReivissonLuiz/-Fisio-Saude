@@ -942,6 +942,64 @@ class ApiService {
     return deleteRecord('disponibilidade', id, forceHardDelete: true);
   }
 
+  // --- Horário Padrão (padrão semanal recorrente) ---------------------------
+
+  /// Retorna o horário padrão configurado pelo profissional.
+  /// Se nenhum padrão existir, retorna lista vazia (o app aplica 07:00–19:00).
+  Future<Map<String, dynamic>> getHorarioPadrao(String profissionalId) async {
+    if (profissionalId.isEmpty) return {'success': false, 'message': 'ID inválido.'};
+    try {
+      final data = await _sb
+          .from('horario_padrao')
+          .select()
+          .eq('id_profissional', profissionalId)
+          .eq('ativo', true)
+          .order('dia_semana');
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Salva (upsert) o horário padrão do profissional.
+  /// [entradas] é uma lista de maps com: dia_semana, hora_inicio, hora_fim.
+  /// Dias não incluídos na lista terão ativo=false (desativados).
+  Future<Map<String, dynamic>> salvarHorarioPadrao({
+    required String profissionalId,
+    required List<Map<String, dynamic>> entradas,
+  }) async {
+    try {
+      // 1. Desativa todos os dias existentes
+      await _sb
+          .from('horario_padrao')
+          .update({'ativo': false})
+          .eq('id_profissional', profissionalId);
+
+      // 2. Upsert dos dias ativos
+      if (entradas.isNotEmpty) {
+        final rows = entradas.map((e) => {
+          'id_profissional': profissionalId,
+          'dia_semana': e['dia_semana'],
+          'hora_inicio': e['hora_inicio'],
+          'hora_fim': e['hora_fim'],
+          'ativo': true,
+        }).toList();
+
+        await _sb
+            .from('horario_padrao')
+            .upsert(rows, onConflict: 'id_profissional,dia_semana');
+      }
+
+      return {'success': true};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao salvar horário padrão.'};
+    }
+  }
+
   /// Retorna as especialidades distintas de profissionais ativos.
   Future<Map<String, dynamic>> getEspecialidades() async {
     try {
