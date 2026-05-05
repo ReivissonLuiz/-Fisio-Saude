@@ -11,8 +11,14 @@
     "palavras_chave": "tornozelo flexao plantar panturrilha reabilitacao equilibrio bilateral entorse pe mobilidade",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no tornozelo", "entorse", "fraqueza na panturrilha", "reabilitacao pos cirurgia tornozelo", "instabilidade de tornozelo"]
+    "url_video": "https://drive.google.com/drive/folders/1vBGgMmc87jUd5I_0VOEeCWGH-Y-NgGQZ",
+    "indicacoes": [
+      "dor no tornozelo",
+      "entorse",
+      "fraqueza na panturrilha",
+      "reabilitacao pos cirurgia tornozelo",
+      "instabilidade de tornozelo"
+    ]
   },
   {
     "id": "arm_circumduction_left",
@@ -26,8 +32,14 @@
     "palavras_chave": "braco esquerdo circunducao ombro amplitude movimento mobilidade rigidez capsulite rotacao",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no ombro esquerdo", "rigidez", "capsulite", "limitacao de movimento", "reabilitacao ombro"]
+    "url_video": "https://drive.google.com/drive/folders/1bZd73tzilxBPwlgYgFCcyXKfipUBg9Cp",
+    "indicacoes": [
+      "dor no ombro esquerdo",
+      "rigidez",
+      "capsulite",
+      "limitacao de movimento",
+      "reabilitacao ombro"
+    ]
   },
   {
     "id": "arm_circumduction_right",
@@ -41,8 +53,14 @@
     "palavras_chave": "braco direito circunducao ombro amplitude movimento mobilidade rigidez capsulite rotacao",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no ombro direito", "rigidez", "capsulite", "limitacao de movimento", "reabilitacao ombro"]
+    "url_video": "https://drive.google.com/drive/folders/1LJUbvZLtsQzesz4Pf3AgXbYMJ1PcgooZ",
+    "indicacoes": [
+      "dor no ombro direito",
+      "rigidez",
+      "capsulite",
+      "limitacao de movimento",
+      "reabilitacao ombro"
+    ]
   },
   {
     "id": "ball_press_left",
@@ -56,8 +74,15 @@
     "palavras_chave": "bola pressao mao esquerda punho dedos forca preensao tunel carpo artrite fratura reabilitacao",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor na mao esquerda", "fraqueza na mao", "tunel do carpo", "artrite", "fratura no punho", "dedos rigidos"]
+    "url_video": "https://drive.google.com/drive/folders/1fxb54anul8IXCicRTqyruIMSDM_LdlyI",
+    "indicacoes": [
+      "dor na mao esquerda",
+      "fraqueza na mao",
+      "tunel do carpo",
+      "artrite",
+      "fratura no punho",
+      "dedos rigidos"
+    ]
   },
   {
     "id": "ball_press_right",
@@ -71,8 +96,15 @@
     "palavras_chave": "bola pressao mao direita punho dedos forca preensao tunel carpo artrite fratura reabilitacao",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor na mao direita", "fraqueza na mao", "tunel do carpo", "artrite", "fratura no punho", "dedos rigidos"]
+    "url_video": "https://drive.google.com/drive/folders/1xyHMZRKmhXXYEpdw-riWZHPqeOnCcQHt",
+    "indicacoes": [
+      "dor na mao direita",
+      "fraqueza na mao",
+      "tunel do carpo",
+      "artrite",
+      "fratura no punho",
+      "dedos rigidos"
+    ]
   },
   {
     "id": "cross_body_shoulder_stretch_left",
@@ -86,8 +118,14 @@
     "palavras_chave": "alongamento ombro esquerdo cruzado flexibilidade tensao tendinite manguito rotador postura",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no ombro esquerdo", "tendinite", "tensao muscular", "limitacao ao levantar braco", "manguito rotador"]
+    "url_video": "https://drive.google.com/drive/folders/1d1hoQHw08J0r0jfFxdvrGQr2joOsIrTv",
+    "indicacoes": [
+      "dor no ombro esquerdo",
+      "tendinite",
+      "tensao muscular",
+      "limitacao ao levantar braco",
+      "manguito rotador"
+    ]
   },
   {
     "id": "cross_body_shoulder_stretch_right",
@@ -101,8 +139,14 @@
     "palavras_chave": "alongamento ombro direito cruzado flexibilidade tensao tendinite manguito rotador postura",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no ombro direito", "tendinite", "tensao muscular", "limitacao ao levantar braco", "manguito rotador"]
+    "url_video": "https://drive.google.com/drive/folders/1tmsaKEeg2hhUCq5roxWiWSXikiqG2h55",
+    "indicacoes": [
+      "dor no ombro direito",
+      "tendinite",
+      "tensao muscular",
+      "limitacao ao levantar braco",
+      "manguito rotador"
+    ]
   },
   {
     "id": "isometric_rotation_left",
@@ -116,8 +160,15 @@
     "palavras_chave": "isometrico rotacao cervical pescoco esquerdo torcicolo cervicalgia fortalecimento sem movimento",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no pescoco", "cervicalgia", "torcicolo", "rigidez cervical", "tensao no pescoco", "dor ao girar a cabeca"]
+    "url_video": "https://drive.google.com/drive/folders/1QUEz4eHMTkR-PFV5B14hFlFkn33dOD4w",
+    "indicacoes": [
+      "dor no pescoco",
+      "cervicalgia",
+      "torcicolo",
+      "rigidez cervical",
+      "tensao no pescoco",
+      "dor ao girar a cabeca"
+    ]
   },
   {
     "id": "isometric_rotation_right",
@@ -131,8 +182,15 @@
     "palavras_chave": "isometrico rotacao cervical pescoco direito torcicolo cervicalgia fortalecimento sem movimento",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no pescoco", "cervicalgia", "torcicolo", "rigidez cervical", "tensao no pescoco", "dor ao girar a cabeca"]
+    "url_video": "https://drive.google.com/drive/folders/1Ksi5SxchswrRMv3ZXrnwLUym0eLwp9mo",
+    "indicacoes": [
+      "dor no pescoco",
+      "cervicalgia",
+      "torcicolo",
+      "rigidez cervical",
+      "tensao no pescoco",
+      "dor ao girar a cabeca"
+    ]
   },
   {
     "id": "isometric_side_bending_left",
@@ -146,8 +204,14 @@
     "palavras_chave": "isometrico inclinacao lateral esquerda pescoco coluna hernia lordose postura fortalecimento",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor lateral no pescoco", "hernia cervical", "lordose", "coluna desviada", "dor ao inclinar cabeca"]
+    "url_video": "https://drive.google.com/drive/folders/1tk6J1ouVRh9ux276H7Yay55pdI0YjHtY",
+    "indicacoes": [
+      "dor lateral no pescoco",
+      "hernia cervical",
+      "lordose",
+      "coluna desviada",
+      "dor ao inclinar cabeca"
+    ]
   },
   {
     "id": "isometric_side_bending_right",
@@ -161,8 +225,14 @@
     "palavras_chave": "isometrico inclinacao lateral direita pescoco coluna hernia lordose postura fortalecimento",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor lateral no pescoco", "hernia cervical", "lordose", "coluna desviada", "dor ao inclinar cabeca"]
+    "url_video": "https://drive.google.com/drive/folders/1v0bXiCFskBVcv-EaGqidK0h4vhdaKxq0",
+    "indicacoes": [
+      "dor lateral no pescoco",
+      "hernia cervical",
+      "lordose",
+      "coluna desviada",
+      "dor ao inclinar cabeca"
+    ]
   },
   {
     "id": "shoulder_abduction_left",
@@ -176,8 +246,14 @@
     "palavras_chave": "abducao ombro esquerdo elevacao lateral manguito rotador deltoide reabilitacao cirurgia lesao",
     "nivel_dificuldade": "intermediario",
     "duracao_min": 8,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor ao levantar o braco esquerdo", "lesao do manguito", "pos cirurgia de ombro", "fraqueza no ombro", "tendinite de ombro"]
+    "url_video": "https://drive.google.com/drive/folders/110f0UtHDY8qdXhj1icA9bJ4JO2AE76IM",
+    "indicacoes": [
+      "dor ao levantar o braco esquerdo",
+      "lesao do manguito",
+      "pos cirurgia de ombro",
+      "fraqueza no ombro",
+      "tendinite de ombro"
+    ]
   },
   {
     "id": "shoulder_abduction_right",
@@ -191,8 +267,14 @@
     "palavras_chave": "abducao ombro direito elevacao lateral manguito rotador deltoide reabilitacao cirurgia lesao",
     "nivel_dificuldade": "intermediario",
     "duracao_min": 8,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor ao levantar o braco direito", "lesao do manguito", "pos cirurgia de ombro", "fraqueza no ombro", "tendinite de ombro"]
+    "url_video": "https://drive.google.com/drive/folders/1TdL-hCYC_pj6AijbM6oKvSWzjQbUQuJJ",
+    "indicacoes": [
+      "dor ao levantar o braco direito",
+      "lesao do manguito",
+      "pos cirurgia de ombro",
+      "fraqueza no ombro",
+      "tendinite de ombro"
+    ]
   },
   {
     "id": "shoulder_flexion_left",
@@ -206,8 +288,13 @@
     "palavras_chave": "flexao ombro esquerdo elevacao frente anterior fortalecimento amplitude tendinite capsulite mobilidade",
     "nivel_dificuldade": "intermediario",
     "duracao_min": 8,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor ao levantar o braco esquerdo para frente", "tendinite", "capsulite adesiva", "limitacao de movimento ombro"]
+    "url_video": "https://drive.google.com/drive/folders/1FQLT2psMES82uMngIDTwxWE9bUBDax6R",
+    "indicacoes": [
+      "dor ao levantar o braco esquerdo para frente",
+      "tendinite",
+      "capsulite adesiva",
+      "limitacao de movimento ombro"
+    ]
   },
   {
     "id": "shoulder_flexion_right",
@@ -221,8 +308,13 @@
     "palavras_chave": "flexao ombro direito elevacao frente anterior fortalecimento amplitude tendinite capsulite mobilidade",
     "nivel_dificuldade": "intermediario",
     "duracao_min": 8,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor ao levantar o braco direito para frente", "tendinite", "capsulite adesiva", "limitacao de movimento ombro"]
+    "url_video": "https://drive.google.com/drive/folders/1XxDgOutOEFKpJzbKLXEy4J4GU3ptuIU-",
+    "indicacoes": [
+      "dor ao levantar o braco direito para frente",
+      "tendinite",
+      "capsulite adesiva",
+      "limitacao de movimento ombro"
+    ]
   },
   {
     "id": "wrist_extension_stretch_left",
@@ -236,8 +328,15 @@
     "palavras_chave": "alongamento extensao punho esquerdo antebraco epicondilite tunel carpo tendinite cotovelo tenista dor",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no punho esquerdo", "epicondilite", "cotovelo de tenista", "tunel do carpo", "tendinite de punho", "dor ao estender a mao"]
+    "url_video": "https://drive.google.com/drive/folders/13Sag2Dk2FpTqQPu1mUbqXUQKZ4npNcJn",
+    "indicacoes": [
+      "dor no punho esquerdo",
+      "epicondilite",
+      "cotovelo de tenista",
+      "tunel do carpo",
+      "tendinite de punho",
+      "dor ao estender a mao"
+    ]
   },
   {
     "id": "wrist_extension_stretch_right",
@@ -251,7 +350,14 @@
     "palavras_chave": "alongamento extensao punho direito antebraco epicondilite tunel carpo tendinite cotovelo tenista dor",
     "nivel_dificuldade": "iniciante",
     "duracao_min": 5,
-    "url_video": "https://drive.google.com/",
-    "indicacoes": ["dor no punho direito", "epicondilite", "cotovelo de tenista", "tunel do carpo", "tendinite de punho", "dor ao estender a mao"]
+    "url_video": "https://drive.google.com/drive/folders/1lj-q1Bel5rkc_95PuqlHdH6JDA4s5lFF",
+    "indicacoes": [
+      "dor no punho direito",
+      "epicondilite",
+      "cotovelo de tenista",
+      "tunel do carpo",
+      "tendinite de punho",
+      "dor ao estender a mao"
+    ]
   }
 ]
