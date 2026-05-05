@@ -208,7 +208,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
           maxY: maxY.toDouble(),
-          barTouchData: const BarTouchData(enabled: true),
+          barTouchData: BarTouchData(enabled: true),
           titlesData: FlTitlesData(
             show: true,
             bottomTitles: AxisTitles(
