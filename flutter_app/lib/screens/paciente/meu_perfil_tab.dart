@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/edit_perfil_dialog.dart';
+import '../../widgets/avatar_picker.dart';
 
 class MeuPerfilTab extends StatefulWidget {
   final String pacienteId;
@@ -110,16 +111,13 @@ class _MeuPerfilTabState extends State<MeuPerfilTab> {
               ),
               child: Column(
                 children: [
-                  CircleAvatar(
+                  AvatarPicker(
+                    usuarioId: widget.pacienteId,
+                    nome: nome,
+                    avatarUrl: _paciente?['avatar_url'] as String?,
                     radius: 40,
-                    backgroundColor: Colors.white.withValues(alpha: 0.25),
-                    child: Text(
-                      nome.isNotEmpty ? nome[0].toUpperCase() : 'P',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                          fontWeight: FontWeight.bold),
-                    ),
+                    accentColor: AppTheme.primary,
+                    onUploaded: (_) => _carregarPerfil(),
                   ),
                   const SizedBox(height: 12),
                   Text(nome,
