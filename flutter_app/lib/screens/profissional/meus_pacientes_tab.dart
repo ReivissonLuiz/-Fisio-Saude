@@ -1,12 +1,20 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../shared/chat_screen.dart';
 import 'paciente_detalhes_screen.dart';
 
 class MeusPacientesTab extends StatefulWidget {
   final String profissionalId;
+  final String profissionalNome;
+  final String? profissionalAvatar;
 
-  const MeusPacientesTab({super.key, required this.profissionalId});
+  const MeusPacientesTab({
+    super.key,
+    required this.profissionalId,
+    this.profissionalNome = 'Profissional',
+    this.profissionalAvatar,
+  });
 
   @override
   State<MeusPacientesTab> createState() => _MeusPacientesTabState();
@@ -96,16 +104,21 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
                 ? const Center(child: CircularProgressIndicator())
                 : _pacientesFiltrados.isEmpty
                     ? _buildEmptyState()
-                    : ListView.builder(
-                        itemCount: _pacientesFiltrados.length,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemBuilder: (context, index) {
-                          final p = _pacientesFiltrados[index];
-                          return _PacienteTile(
-                            paciente: p,
-                            profissionalId: widget.profissionalId,
-                          );
-                        },
+                    : RefreshIndicator(
+                        onRefresh: _loadPacientes,
+                        child: ListView.builder(
+                          itemCount: _pacientesFiltrados.length,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemBuilder: (context, index) {
+                            final p = _pacientesFiltrados[index];
+                            return _PacienteTile(
+                              paciente: p,
+                              profissionalId: widget.profissionalId,
+                              profissionalNome: widget.profissionalNome,
+                              profissionalAvatar: widget.profissionalAvatar,
+                            );
+                          },
+                        ),
                       ),
           ),
         ],
@@ -122,7 +135,7 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
           const SizedBox(height: 16),
           Text(
             _searchController.text.isEmpty
-                ? 'Você ainda Não tem pacientes vinculados.'
+                ? 'Você ainda não tem pacientes vinculados.'
                 : 'Nenhum paciente encontrado.',
             style: const TextStyle(color: AppTheme.textSecondary, fontSize: 16),
           ),
@@ -135,17 +148,24 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
 class _PacienteTile extends StatelessWidget {
   final dynamic paciente;
   final String profissionalId;
+  final String profissionalNome;
+  final String? profissionalAvatar;
 
   const _PacienteTile({
     required this.paciente,
     required this.profissionalId,
+    required this.profissionalNome,
+    this.profissionalAvatar,
   });
 
   @override
   Widget build(BuildContext context) {
-    final nome = paciente['nome'] ?? 'Nome Não cadastrado';
-    final email = paciente['email'] ?? 'E-mail Não informado';
-    final telefone = paciente['telefone'] ?? 'Sem telefone';
+    final nome = paciente['nome'] as String? ?? 'Nome não cadastrado';
+    final email = paciente['email'] as String? ?? 'E-mail não informado';
+    final telefone = paciente['telefone'] as String? ?? 'Sem telefone';
+    final pacienteId = paciente['id'] as String? ?? '';
+    final avatarUrl = paciente['avatar_url'] as String?;
+    final inicial = nome.isNotEmpty ? nome[0].toUpperCase() : 'P';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -154,59 +174,99 @@ class _PacienteTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.divider),
         boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: CircleAvatar(
-          radius: 24,
-          backgroundColor: AppTheme.secondary.withValues(alpha: 0.1),
-          child: Text(
-            nome.isNotEmpty ? nome[0].toUpperCase() : 'P',
-            style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold, fontSize: 18),
+      child: Column(
+        children: [
+          ListTile(
+            contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            leading: avatarUrl != null && avatarUrl.isNotEmpty
+                ? CircleAvatar(radius: 24, backgroundImage: NetworkImage(avatarUrl))
+                : CircleAvatar(
+                    radius: 24,
+                    backgroundColor: AppTheme.secondary.withValues(alpha: 0.1),
+                    child: Text(inicial, style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.bold, fontSize: 18)),
+                  ),
+            title: Text(nome, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Row(children: [
+                  const Icon(Icons.email_outlined, size: 14, color: AppTheme.textSecondary),
+                  const SizedBox(width: 4),
+                  Expanded(child: Text(email, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary), overflow: TextOverflow.ellipsis)),
+                ]),
+                const SizedBox(height: 2),
+                Row(children: [
+                  const Icon(Icons.phone_outlined, size: 14, color: AppTheme.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(telefone, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                ]),
+              ],
+            ),
           ),
-        ),
-        title: Text(nome, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Row(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Row(
               children: [
-                const Icon(Icons.email_outlined, size: 14, color: AppTheme.textSecondary),
-                const SizedBox(width: 4),
-                Expanded(child: Text(email, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary), overflow: TextOverflow.ellipsis)),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                    label: const Text('Chat', style: TextStyle(fontSize: 13)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primary,
+                      side: const BorderSide(color: AppTheme.primary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatScreen(
+                            meuId: profissionalId,
+                            meuNome: profissionalNome,
+                            meuAvatar: profissionalAvatar,
+                            outroId: pacienteId,
+                            outroNome: nome,
+                            outroAvatar: avatarUrl,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.person_outline_rounded, size: 16),
+                    label: const Text('Detalhes', style: TextStyle(fontSize: 13)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.secondary,
+                      side: const BorderSide(color: AppTheme.secondary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PacienteDetalhesScreen(
+                            pacienteDados: paciente,
+                            profissionalId: profissionalId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                const Icon(Icons.phone_outlined, size: 14, color: AppTheme.textSecondary),
-                const SizedBox(width: 4),
-                Text(telefone, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
-              ],
-            ),
-          ],
-        ),
-        trailing: const Icon(Icons.chevron_right_rounded, color: AppTheme.textSecondary),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PacienteDetalhesScreen(
-                pacienteDados: paciente,
-                profissionalId: profissionalId,
-              ),
-            ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 }
-
-

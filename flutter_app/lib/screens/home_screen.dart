@@ -15,6 +15,7 @@ import 'profissional/profissional_home_tab.dart';
 import 'profissional/agenda_tab.dart';
 import 'profissional/perfil_profissional_tab.dart';
 import 'profissional/minha_disponibilidade_tab.dart';
+import 'profissional/meus_pacientes_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
 import 'admin/admin_perfil_tab.dart';
@@ -303,9 +304,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // ---------------------------------------------------------------
     else if (_visaoAtiva == _VisaoAtiva.profissional) {
       final profTabs = [
-        ProfissionalHomeTab(
-            profissionalId: _usuarioId ?? '', nome: _nome),
+        ProfissionalHomeTab(profissionalId: _usuarioId ?? '', nome: _nome),
         AgendaTab(profissionalId: _usuarioId ?? ''),
+        MeusPacientesTab(profissionalId: _usuarioId ?? '', profissionalNome: _nome),
         MinhaDisponibilidadeTab(profissionalId: _usuarioId ?? ''),
         PerfilProfissionalTab(
           key: UniqueKey(),
@@ -338,23 +339,23 @@ class _HomeScreenState extends State<HomeScreen> {
           destinations: const [
             NavigationDestination(
                 icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard_rounded,
-                    color: AppTheme.secondary),
+                selectedIcon: Icon(Icons.dashboard_rounded, color: AppTheme.secondary),
                 label: 'Início'),
             NavigationDestination(
                 icon: Icon(Icons.event_note_outlined),
-                selectedIcon: Icon(Icons.event_note_rounded,
-                    color: Color(0xFF9C27B0)),
+                selectedIcon: Icon(Icons.event_note_rounded, color: Color(0xFF9C27B0)),
                 label: 'Agenda'),
             NavigationDestination(
+                icon: Icon(Icons.people_outline_rounded),
+                selectedIcon: Icon(Icons.people_rounded, color: Color(0xFF00897B)),
+                label: 'Pacientes'),
+            NavigationDestination(
                 icon: Icon(Icons.schedule_outlined),
-                selectedIcon: Icon(Icons.schedule_rounded,
-                    color: Color(0xFF00897B)),
+                selectedIcon: Icon(Icons.schedule_rounded, color: Colors.teal),
                 label: 'Horários'),
             NavigationDestination(
                 icon: Icon(Icons.person_outline),
-                selectedIcon:
-                    Icon(Icons.person_rounded, color: AppTheme.accent),
+                selectedIcon: Icon(Icons.person_rounded, color: AppTheme.accent),
                 label: 'Perfil'),
           ],
         ),

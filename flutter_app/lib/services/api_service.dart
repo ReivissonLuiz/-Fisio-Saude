@@ -7,6 +7,7 @@
 library;
 
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'log_service.dart';
 
@@ -1758,4 +1759,124 @@ class ApiService {
     }
     return 'Erro ao processar solicitação. Tente novamente.';
   }
+
+  // ─── Avatar / Foto de Perfil ──────────────────────────────────────────────
+
+  /// Faz upload de avatar para o Supabase Storage e atualiza avatar_url.
+
+  Future<Map<String, dynamic>> uploadAvatar({
+    required String usuarioId,
+    required List<int> bytes,
+    required String mimeType,
+    required String extensao,
+  }) async {
+    try {
+      final path = 'avatars/$usuarioId.$extensao';
+      await _sb.storage.from('avatars').uploadBinary(
+        path,
+        bytes as Uint8List,
+        fileOptions: FileOptions(contentType: mimeType, upsert: true),
+      );
+      final url = _sb.storage.from('avatars').getPublicUrl(path);
+      final urlComCache = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+      await _sb.from('usuario').update({'avatar_url': urlComCache}).eq('id', usuarioId);
+      return {'success': true, 'url': urlComCache};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao enviar foto: $e'};
+    }
+  }
+
+  Future<String?> getAvatarUrl(String usuarioId) async {
+    try {
+      final data = await _sb.from('usuario').select('avatar_url').eq('id', usuarioId).maybeSingle();
+      return data?['avatar_url'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ─── Chat (Mensagens) ─────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> enviarMensagem({
+    required String remetenteId,
+    required String destinatarioId,
+    required String conteudo,
+    String? consultaId,
+  }) async {
+    try {
+      final data = await _sb.from('mensagem').insert({
+        'id_remetente': remetenteId,
+        'id_destinatario': destinatarioId,
+        'conteudo': conteudo.trim(),
+        if (consultaId != null) 'id_consulta': consultaId,
+        'lida': false,
+      }).select().single();
+      return {'success': true, 'data': data};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao enviar mensagem.'};
+    }
+  }
+
+  Future<Map<String, dynamic>> getMensagens({
+    required String usuarioAId,
+    required String usuarioBId,
+  }) async {
+    try {
+      final data = await _sb
+          .from('mensagem')
+          .select('*')
+          .or('and(id_remetente.eq.$usuarioAId,id_destinatario.eq.$usuarioBId),and(id_remetente.eq.$usuarioBId,id_destinatario.eq.$usuarioAId)')
+          .order('created_at', ascending: true)
+          .limit(200);
+      return {'success': true, 'data': data};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar mensagens.'};
+    }
+  }
+
+  Future<void> marcarMensagensLidas({required String remetenteId, required String destinatarioId}) async {
+    try {
+      await _sb.from('mensagem').update({'lida': true})
+          .eq('id_remetente', remetenteId)
+          .eq('id_destinatario', destinatarioId)
+          .eq('lida', false);
+    } catch (_) {}
+  }
+
+  Future<int> contarMensagensNaoLidas(String usuarioId) async {
+    try {
+      final data = await _sb.from('mensagem').select('id').eq('id_destinatario', usuarioId).eq('lida', false);
+      return (data as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> streamMensagens({required String usuarioAId, required String usuarioBId}) {
+    return _sb.from('mensagem').stream(primaryKey: ['id']).order('created_at', ascending: true).map(
+      (rows) => rows.where((r) =>
+        (r['id_remetente'] == usuarioAId && r['id_destinatario'] == usuarioBId) ||
+        (r['id_remetente'] == usuarioBId && r['id_destinatario'] == usuarioAId)
+      ).toList()
+    );
+  }
+
+  Future<Map<String, dynamic>> getContatosChat(String usuarioId) async {
+    try {
+      final data = await _sb.from('mensagem')
+          .select('id_remetente, id_destinatario, conteudo, created_at, lida')
+          .or('id_remetente.eq.$usuarioId,id_destinatario.eq.$usuarioId')
+          .order('created_at', ascending: false)
+          .limit(100);
+      final Map<String, dynamic> contatos = {};
+      for (final msg in data as List) {
+        final outroId = msg['id_remetente'] == usuarioId ? msg['id_destinatario'] as String : msg['id_remetente'] as String;
+        if (!contatos.containsKey(outroId)) { contatos[outroId] = msg; }
+      }
+      return {'success': true, 'data': contatos.values.toList()};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar contatos.'};
+    }
+  }
 }
+
