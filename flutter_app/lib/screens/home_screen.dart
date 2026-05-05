@@ -425,15 +425,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     }
 
-    return WillPopScope(
-      onWillPop: () async {
-        if (_tabIndex != 0) {
+    return PopScope(
+      canPop: _tabIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
           setState(() {
             _tabIndex = 0;
           });
-          return false;
         }
-        return true;
       },
       child: content,
     );

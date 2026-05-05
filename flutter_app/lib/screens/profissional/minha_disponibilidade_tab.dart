@@ -183,9 +183,9 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
         ),
         const SizedBox(height: 16),
         if (_padAtivos.isEmpty)
-          Center(
+          const Center(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               child: Text('Selecione pelo menos um dia acima.',
                   style: TextStyle(color: AppTheme.textHint, fontSize: 13)),
             ),

@@ -1049,15 +1049,15 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
           // Lista de exercícios
           Expanded(
             child: widget.recomendacoes.isEmpty
-                ? Center(
+                ? const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.fitness_center_rounded, size: 56, color: AppTheme.textHint),
-                        const SizedBox(height: 16),
-                        const Text('Nenhum exercício disponível.', style: TextStyle(color: AppTheme.textSecondary)),
-                        const SizedBox(height: 8),
-                        const Text(
+                        SizedBox(height: 16),
+                        Text('Nenhum exercício disponível.', style: TextStyle(color: AppTheme.textSecondary)),
+                        SizedBox(height: 8),
+                        Text(
                           'Configure a API ML para habilitar as recomendações.',
                           style: TextStyle(color: AppTheme.textHint, fontSize: 12),
                           textAlign: TextAlign.center,
@@ -1125,7 +1125,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                                             : Center(
                                                 child: Text(
                                                   '${idx + 1}',
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: AppTheme.primary,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 13,
@@ -1173,7 +1173,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            Icon(Icons.location_on_outlined, size: 12, color: AppTheme.textSecondary),
+                                            const Icon(Icons.location_on_outlined, size: 12, color: AppTheme.textSecondary),
                                             const SizedBox(width: 3),
                                             Text(regiao, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
                                             const SizedBox(width: 10),
@@ -1189,7 +1189,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                                               ),
                                             ),
                                             const SizedBox(width: 8),
-                                            Icon(Icons.timer_outlined, size: 12, color: AppTheme.textHint),
+                                            const Icon(Icons.timer_outlined, size: 12, color: AppTheme.textHint),
                                             const SizedBox(width: 2),
                                             Text(
                                               '${ex['duracao_min']}min',
@@ -1241,7 +1241,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
             padding: EdgeInsets.fromLTRB(16, 12, 16, mq.padding.bottom + 12),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(top: BorderSide(color: AppTheme.divider)),
+              border: const Border(top: BorderSide(color: AppTheme.divider)),
               boxShadow: [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4)),
               ],
@@ -1274,7 +1274,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                     label: Text(
                       _enviando
                           ? 'Enviando...'
-                          : 'Enviar ${_selecionados.length > 0 ? "(${_selecionados.length})" : ""} Exercícios',
+                          : 'Enviar ${_selecionados.isNotEmpty ? "(${_selecionados.length})" : ""} Exercícios',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),

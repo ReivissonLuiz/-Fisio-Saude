@@ -87,13 +87,6 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab>
     }).length;
   }
 
-  String _dorMedia() {
-    if (_sintomas.isEmpty) return '—';
-    final niveis = _sintomas.map((s) => s['intensidade'] as int? ?? 0).toList();
-    final media = niveis.reduce((a, b) => a + b) / niveis.length;
-    return media.toStringAsFixed(1);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,20 +238,20 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab>
                 _loadingRec
                     ? const Center(child: CircularProgressIndicator())
                     : _recomendacoes.isEmpty
-                        ? Center(
+                        ? const Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.fitness_center_rounded,
                                     color: AppTheme.textHint, size: 60),
-                                const SizedBox(height: 14),
-                                const Text('Nenhum exercício recomendado',
+                                SizedBox(height: 14),
+                                Text('Nenhum exercício recomendado',
                                     style: TextStyle(
                                         color: AppTheme.textSecondary,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500)),
-                                const SizedBox(height: 6),
-                                const Text(
+                                SizedBox(height: 6),
+                                Text(
                                     'Após uma consulta, seu fisioterapeuta\npode enviar exercícios personalizados.',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
@@ -871,7 +864,7 @@ class _RecomendacaoCardState extends State<_RecomendacaoCard> {
                                         fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(width: 6),
-                              Icon(Icons.location_on_outlined,
+                              const Icon(Icons.location_on_outlined,
                                   size: 11, color: AppTheme.textSecondary),
                               const SizedBox(width: 2),
                               Expanded(
@@ -882,7 +875,7 @@ class _RecomendacaoCardState extends State<_RecomendacaoCard> {
                                     overflow: TextOverflow.ellipsis),
                               ),
                               const SizedBox(width: 4),
-                              Icon(Icons.timer_outlined,
+                              const Icon(Icons.timer_outlined,
                                   size: 11, color: AppTheme.textHint),
                               Text(' ${duracao}min',
                                   style: const TextStyle(
