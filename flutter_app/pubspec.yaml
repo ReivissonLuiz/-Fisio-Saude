@@ -33,7 +33,7 @@ dependencies:
   # ── Abrir URLs externas (Google Calendar, Meet) ───────
   url_launcher: ^6.3.0
   fl_chart: ^0.68.0
-  image_picker: ^1.2.1
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
