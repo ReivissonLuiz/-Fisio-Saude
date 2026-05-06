@@ -660,7 +660,7 @@ class _ConsultaTile extends StatelessWidget {
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () {
-                    final pacienteId = paciente?['id'] ?? '';
+                    final pacienteId = consulta['id_paciente'] ?? '';
                     final pacienteNome = paciente?['nome'] ?? 'Paciente';
                     if (pacienteId.isNotEmpty) {
                       Navigator.push(

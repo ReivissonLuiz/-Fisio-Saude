@@ -119,6 +119,16 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                               final dtStr = dt != null
                                   ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
                                   : '';
+                                  
+                              String displayCorpo = n['corpo'] as String? ?? '';
+                              String? acaoId;
+                              if (tipo == 'chat' && displayCorpo.contains('|||')) {
+                                final parts = displayCorpo.split('|||');
+                                displayCorpo = parts[0];
+                                if (parts.length > 1) {
+                                  acaoId = parts[1];
+                                }
+                              }
 
                               return GestureDetector(
                                 onTap: () async {
@@ -127,7 +137,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                     await _carregar();
                                   }
                                   
-                                  if (tipo == 'chat' && n['acao_id'] != null) {
+                                  if (tipo == 'chat' && acaoId != null) {
                                     // ignore: use_build_context_synchronously
                                     Navigator.pop(context); // Fecha o painel
                                     // ignore: use_build_context_synchronously
@@ -137,7 +147,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                         builder: (_) => ChatScreen(
                                           meuId: widget.usuarioId,
                                           meuNome: 'Eu',
-                                          outroId: n['acao_id'] as String,
+                                          outroId: acaoId!,
                                           outroNome: (n['titulo'] as String? ?? '').replaceFirst('Nova mensagem de ', ''),
                                         ),
                                       ),
@@ -186,7 +196,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Text(n['corpo'] as String? ?? '',
+                                            Text(displayCorpo,
                                                 style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
                                             const SizedBox(height: 4),
                                             Text(dtStr, style: const TextStyle(color: AppTheme.textHint, fontSize: 10)),

@@ -1818,12 +1818,13 @@ class ApiService {
       final remetenteData = await _sb.from('usuario').select('nome').eq('id', remetenteId).maybeSingle();
       final nomeRemetente = remetenteData?['nome'] as String? ?? 'Alguém';
 
+      final corpoMensagem = conteudo.trim().length > 50 ? '${conteudo.trim().substring(0, 50)}...' : conteudo.trim();
+      
       await _criarNotificacao(
         idDestinatario: destinatarioId,
         titulo: 'Nova mensagem de $nomeRemetente',
-        mensagem: conteudo.trim().length > 50 ? '${conteudo.trim().substring(0, 50)}...' : conteudo.trim(),
+        mensagem: '$corpoMensagem|||$remetenteId',
         tipo: 'chat',
-        acaoId: remetenteId,
       );
 
       return {'success': true, 'data': data};
