@@ -179,7 +179,6 @@ class _ChatScreenState extends State<ChatScreen> {
                         conteudo: msg['conteudo'] as String? ?? '',
                         ehMeu: ehMeu,
                         hora: msg['created_at'] as String? ?? '',
-                        lida: msg['lida'] as bool? ?? false,
                         meuNome: widget.meuNome,
                         outroNome: widget.outroNome,
                         meuAvatar: widget.meuAvatar,
@@ -205,7 +204,6 @@ class _BubbleMensagem extends StatelessWidget {
   final String conteudo;
   final bool ehMeu;
   final String hora;
-  final bool lida;
   final String meuNome;
   final String outroNome;
   final String? meuAvatar;
@@ -215,7 +213,6 @@ class _BubbleMensagem extends StatelessWidget {
     required this.conteudo,
     required this.ehMeu,
     required this.hora,
-    required this.lida,
     required this.meuNome,
     required this.outroNome,
     this.meuAvatar,
@@ -284,29 +281,14 @@ class _BubbleMensagem extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _formatarHora(hora),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: ehMeu
-                              ? Colors.white60
-                              : AppTheme.textHint,
-                        ),
-                      ),
-                      if (ehMeu) ...[
-                        const SizedBox(width: 4),
-                        Icon(
-                          lida
-                              ? Icons.done_all_rounded
-                              : Icons.done_rounded,
-                          size: 12,
-                          color: lida ? Colors.lightBlue[200] : Colors.white60,
-                        ),
-                      ]
-                    ],
+                  Text(
+                    _formatarHora(hora),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: ehMeu
+                          ? Colors.white60
+                          : AppTheme.textHint,
+                    ),
                   ),
                 ],
               ),
