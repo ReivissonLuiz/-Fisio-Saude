@@ -1833,6 +1833,58 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getContatosChat(String usuarioId) async {
+    try {
+      final sent = await _sb.from('mensagem')
+          .select('id_destinatario, created_at, conteudo, usuario:id_destinatario(id, nome, avatar_url)')
+          .eq('id_remetente', usuarioId);
+          
+      final received = await _sb.from('mensagem')
+          .select('id_remetente, created_at, conteudo, lida, usuario:id_remetente(id, nome, avatar_url)')
+          .eq('id_destinatario', usuarioId);
+
+      final Map<String, dynamic> contatosMap = {};
+
+      void processMessage(dynamic msg, String contatoIdKey) {
+        final contatoId = msg[contatoIdKey] as String?;
+        if (contatoId == null) return;
+        
+        final dt = DateTime.parse(msg['created_at']);
+        final usuarioData = msg['usuario'] as Map<String, dynamic>?;
+        
+        if (!contatosMap.containsKey(contatoId)) {
+          contatosMap[contatoId] = {
+            'id': contatoId,
+            'nome': usuarioData?['nome'] ?? 'Usuário',
+            'avatar_url': usuarioData?['avatar_url'],
+            'ultima_mensagem': msg['conteudo'],
+            'data_hora': dt,
+            'nao_lidas': (contatoIdKey == 'id_remetente' && msg['lida'] == false) ? 1 : 0,
+          };
+        } else {
+          final existing = contatosMap[contatoId];
+          if (dt.isAfter(existing['data_hora'])) {
+            existing['ultima_mensagem'] = msg['conteudo'];
+            existing['data_hora'] = dt;
+          }
+          if (contatoIdKey == 'id_remetente' && msg['lida'] == false) {
+            existing['nao_lidas'] = (existing['nao_lidas'] as int) + 1;
+          }
+        }
+      }
+
+      for (var msg in (sent as List)) processMessage(msg, 'id_destinatario');
+      for (var msg in (received as List)) processMessage(msg, 'id_remetente');
+
+      final contatos = contatosMap.values.toList();
+      contatos.sort((a, b) => (b['data_hora'] as DateTime).compareTo(a['data_hora'] as DateTime));
+
+      return {'success': true, 'data': contatos};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro ao carregar conversas: $e'};
+    }
+  }
+
   Future<Map<String, dynamic>> getMensagens({
     required String usuarioAId,
     required String usuarioBId,
@@ -1876,23 +1928,4 @@ class ApiService {
       ).toList()
     );
   }
-
-  Future<Map<String, dynamic>> getContatosChat(String usuarioId) async {
-    try {
-      final data = await _sb.from('mensagem')
-          .select('id_remetente, id_destinatario, conteudo, created_at, lida')
-          .or('id_remetente.eq.$usuarioId,id_destinatario.eq.$usuarioId')
-          .order('created_at', ascending: false)
-          .limit(100);
-      final Map<String, dynamic> contatos = {};
-      for (final msg in data as List) {
-        final outroId = msg['id_remetente'] == usuarioId ? msg['id_destinatario'] as String : msg['id_remetente'] as String;
-        if (!contatos.containsKey(outroId)) { contatos[outroId] = msg; }
-      }
-      return {'success': true, 'data': contatos.values.toList()};
-    } catch (e) {
-      return {'success': false, 'message': 'Erro ao carregar contatos.'};
-    }
-  }
 }
-

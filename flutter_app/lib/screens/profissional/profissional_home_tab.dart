@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/notificacoes_panel.dart';
 import '../shared/chat_screen.dart';
+import '../shared/contatos_chat_screen.dart';
 
 class ProfissionalHomeTab extends StatefulWidget {
   final String profissionalId;
@@ -308,32 +309,52 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                                   ),
                                 ],
                               ),
-                              Stack(
+                              Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.notifications_rounded, color: Colors.white, size: 28),
+                                    icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 24),
+                                    tooltip: 'Mensagens',
                                     onPressed: () {
-                                      Navigator.push(context, MaterialPageRoute(
-                                        builder: (_) => NotificacoesPanel(
-                                          usuarioId: widget.profissionalId,
-                                          onNavigateToAgenda: () => Navigator.pop(context),
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ContatosChatScreen(
+                                            usuarioId: widget.profissionalId,
+                                            usuarioNome: widget.nome,
+                                            usuarioAvatar: widget.profissionalAvatar,
+                                          ),
                                         ),
-                                      )).then((_) => _loadDashboardData());
+                                      );
                                     },
                                   ),
-                                  if (_notifCount > 0)
-                                    Positioned(
-                                      right: 6, top: 6,
-                                      child: Container(
-                                        padding: const EdgeInsets.all(5),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.red,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Text('$_notifCount',
-                                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  Stack(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.notifications_rounded, color: Colors.white, size: 28),
+                                        onPressed: () {
+                                          Navigator.push(context, MaterialPageRoute(
+                                            builder: (_) => NotificacoesPanel(
+                                              usuarioId: widget.profissionalId,
+                                              onNavigateToAgenda: () => Navigator.pop(context),
+                                            ),
+                                          )).then((_) => _loadDashboardData());
+                                        },
                                       ),
-                                    ),
+                                      if (_notifCount > 0)
+                                        Positioned(
+                                          right: 6, top: 6,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(5),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Text('$_notifCount',
+                                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
