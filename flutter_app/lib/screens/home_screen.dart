@@ -259,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
           email: _email,
           usuarioId: _usuarioId,
           supabaseUserId: _supabaseUserId,
+          avatarUrl: _avatarUrl,
           onLogout: _logout,
         ),
       ];

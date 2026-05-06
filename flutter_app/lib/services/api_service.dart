@@ -1872,8 +1872,12 @@ class ApiService {
         }
       }
 
-      for (var msg in (sent as List)) processMessage(msg, 'id_destinatario');
-      for (var msg in (received as List)) processMessage(msg, 'id_remetente');
+      for (var msg in (sent as List)) {
+        processMessage(msg, 'id_destinatario');
+      }
+      for (var msg in (received as List)) {
+        processMessage(msg, 'id_remetente');
+      }
 
       final contatos = contatosMap.values.toList();
       contatos.sort((a, b) => (b['data_hora'] as DateTime).compareTo(a['data_hora'] as DateTime));

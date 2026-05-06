@@ -1,4 +1,5 @@
-import 'package:supabase/supabase.dart';
+// ignore_for_file: avoid_print
+import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   final supabase = SupabaseClient('https://nkicptibdnuygxxnoaof.supabase.co', 'sb_publishable_h4snGK2lw-KyNdizGFBakA_WgL7xtl_');
   final msg = await supabase.from('mensagem').select('id_destinatario, id_remetente, conteudo').limit(5).order('created_at', ascending: false);

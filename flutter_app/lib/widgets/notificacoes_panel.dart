@@ -138,9 +138,8 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                   }
                                   
                                   if (tipo == 'chat' && acaoId != null) {
-                                    // ignore: use_build_context_synchronously
+                                    if (!context.mounted) return;
                                     Navigator.pop(context); // Fecha o painel
-                                    // ignore: use_build_context_synchronously
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(

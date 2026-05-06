@@ -2,12 +2,14 @@ import "package:flutter/material.dart";
 import "../../theme/app_theme.dart";
 import "../../services/api_service.dart";
 import "../../widgets/edit_perfil_dialog.dart";
+import "../../widgets/user_avatar.dart";
 
 class AdminPerfilTab extends StatefulWidget {
   final String nome;
   final String email;
   final String? supabaseUserId;
   final String? usuarioId;
+  final String? avatarUrl;
   final Future<void> Function() onLogout;
 
   const AdminPerfilTab({
@@ -16,6 +18,7 @@ class AdminPerfilTab extends StatefulWidget {
     required this.email,
     this.supabaseUserId,
     this.usuarioId,
+    this.avatarUrl,
     required this.onLogout,
   });
 
@@ -92,9 +95,7 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
+      body: CustomScrollView(
               slivers: [
                 SliverAppBar(
                   expandedHeight: 180,
@@ -116,13 +117,11 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const SizedBox(height: 40),
-                            CircleAvatar(
+                            UserAvatar(
+                              nome: widget.nome,
+                              avatarUrl: widget.avatarUrl,
                               radius: 40,
-                              backgroundColor: Colors.white.withValues(alpha: 0.25),
-                              child: Text(
-                                widget.nome.isNotEmpty ? widget.nome[0].toUpperCase() : "A",
-                                style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                              ),
+                              backgroundColor: Colors.white,
                             ),
                             const SizedBox(height: 12),
                             Text(widget.nome, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
@@ -153,7 +152,9 @@ class _AdminPerfilTabState extends State<AdminPerfilTab> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Container(
+                      _isLoading
+                          ? const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+                          : Container(
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppTheme.divider)),
                         child: Column(
                           children: [
