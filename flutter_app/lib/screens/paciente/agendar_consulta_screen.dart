@@ -159,34 +159,21 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppTheme.textSecondary),
           ),
-          if (_linkMeet != null || _linkCalendar != null) ...[
+          if (_linkCalendar != null) ...[
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            const Text('Adicione ao seu Google Calendar e entre na sala:', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+            const Text('Adicione ao seu Google Calendar:', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
             const SizedBox(height: 10),
-            if (_linkCalendar != null)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.calendar_month_rounded, size: 18),
-                  label: const Text('Adicionar ao Google Calendar'),
-                  style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF4285F4), side: const BorderSide(color: Color(0xFF4285F4))),
-                  onPressed: () => launchUrl(Uri.parse(_linkCalendar!), mode: LaunchMode.externalApplication),
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_month_rounded, size: 18),
+                label: const Text('Adicionar ao Google Calendar'),
+                style: OutlinedButton.styleFrom(foregroundColor: const Color(0xFF4285F4), side: const BorderSide(color: Color(0xFF4285F4))),
+                onPressed: () => launchUrl(Uri.parse(_linkCalendar!), mode: LaunchMode.externalApplication),
               ),
-            if (_linkMeet != null) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.videocam_rounded, size: 18),
-                  label: const Text('Entrar no Google Meet'),
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F9D58), foregroundColor: Colors.white),
-                  onPressed: () => launchUrl(Uri.parse(_linkMeet!), mode: LaunchMode.externalApplication),
-                ),
-              ),
-            ],
+            ),
           ],
         ]),
         actions: [

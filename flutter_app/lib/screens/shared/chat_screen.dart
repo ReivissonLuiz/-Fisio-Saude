@@ -103,13 +103,21 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() => _enviando = true);
     _ctrl.clear();
 
-    await _api.enviarMensagem(
+    final result = await _api.enviarMensagem(
       remetenteId: widget.meuId,
       destinatarioId: widget.outroId,
       conteudo: texto,
     );
 
-    if (mounted) setState(() => _enviando = false);
+    if (mounted) {
+      if (result['success'] == true) {
+        setState(() {
+          _mensagens.add(result['data'] as Map<String, dynamic>);
+        });
+        _scrollToBottom();
+      }
+      setState(() => _enviando = false);
+    }
   }
 
   @override
