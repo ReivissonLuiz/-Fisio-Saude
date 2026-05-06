@@ -25,6 +25,10 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
   bool _loadingPadrao = true;
   bool _salvandoPadrao = false;
 
+  // --- Dias Específicos ---
+  List<dynamic> _diasEspecificos = [];
+  bool _loadingEspecificos = true;
+
   static const _diasNomes = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
   static const _diaParaBanco = [1, 2, 3, 4, 5, 6, 0];
 
@@ -32,7 +36,10 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
   void initState() {
     super.initState();
     initializeDateFormatting('pt_BR', null).then((_) {
-      if (mounted) _carregarPadrao();
+      if (mounted) {
+        _carregarPadrao();
+        _carregarEspecificos();
+      }
     });
   }
 
@@ -94,12 +101,74 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
         ),
       );
 
+  Future<void> _carregarEspecificos() async {
+    setState(() => _loadingEspecificos = true);
+    final res = await _api.getDisponibilidade(widget.profissionalId);
+    if (!mounted) return;
+    setState(() {
+      _loadingEspecificos = false;
+      if (res['success'] == true) {
+        _diasEspecificos = res['data'] as List? ?? [];
+      }
+    });
+  }
+
+  Future<void> _deletarEspecifico(String id) async {
+    setState(() => _loadingEspecificos = true);
+    await _api.deletarDisponibilidade(id);
+    if (!mounted) return;
+    _carregarEspecificos();
+  }
+
+  Future<void> _adicionarEspecifico() async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 180)),
+    );
+    if (d == null || !mounted) return;
+
+    final tIni = await _pickTime(context, const TimeOfDay(hour: 8, minute: 0));
+    if (tIni == null || !mounted) return;
+
+    final tFim = await _pickTime(context, TimeOfDay(hour: tIni.hour + 1, minute: tIni.minute));
+    if (tFim == null || !mounted) return;
+
+    setState(() => _loadingEspecificos = true);
+    final res = await _api.criarDisponibilidade(
+      idProfissional: widget.profissionalId,
+      data: d.toIso8601String().split('T')[0],
+      horaInicio: '${tIni.hour.toString().padLeft(2, '0')}:${tIni.minute.toString().padLeft(2, '0')}:00',
+      horaFim: '${tFim.hour.toString().padLeft(2, '0')}:${tFim.minute.toString().padLeft(2, '0')}:00',
+    );
+
+    if (!mounted) return;
+    if (res['success'] == true) {
+      _carregarEspecificos();
+    } else {
+      setState(() => _loadingEspecificos = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(res['message'] ?? 'Erro ao adicionar.'),
+        backgroundColor: AppTheme.error,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Column(
-        children: [
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _adicionarEspecifico,
+          backgroundColor: AppTheme.primary,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: const Text('Dia Específico', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+        body: Column(
+          children: [
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
@@ -118,13 +187,32 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
                 SizedBox(height: 2),
                 Text('Gerencie seu horário de atendimento',
                     style: TextStyle(color: Colors.white70, fontSize: 13)),
+                SizedBox(height: 16),
+                TabBar(
+                  indicatorColor: Colors.white,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
+                  indicatorWeight: 3,
+                  labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                  tabs: [
+                    Tab(text: 'Horário Padrão'),
+                    Tab(text: 'Dias Específicos'),
+                  ],
+                ),
               ],
             ),
           ),
-          Expanded(child: _buildTabPadrao()),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildTabPadrao(),
+                _buildTabEspecificos(),
+              ],
+            ),
+          ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildTabPadrao() {
@@ -292,6 +380,76 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTabEspecificos() {
+    if (_loadingEspecificos) return const Center(child: CircularProgressIndicator());
+    if (_diasEspecificos.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.event_available_rounded, size: 64, color: AppTheme.textHint),
+            SizedBox(height: 16),
+            Text('Nenhum dia específico configurado.',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
+            SizedBox(height: 8),
+            Text('Use o botão + para adicionar horários excepcionais.',
+                style: TextStyle(color: AppTheme.textHint, fontSize: 13)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: _diasEspecificos.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (ctx, i) {
+        final item = _diasEspecificos[i];
+        final dtParts = (item['data'] as String).split('-');
+        final dataFmt = '${dtParts[2]}/${dtParts[1]}/${dtParts[0]}';
+        final tIni = (item['hora_inicio'] as String).substring(0, 5);
+        final tFim = item['hora_fim'] != null ? (item['hora_fim'] as String).substring(0, 5) : '';
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.divider),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.calendar_month_rounded, color: AppTheme.accent),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(dataFmt, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text('$tIni ${tFim.isNotEmpty ? '- $tFim' : ''}',
+                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.error),
+                onPressed: () => _deletarEspecifico(item['id'] as String),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

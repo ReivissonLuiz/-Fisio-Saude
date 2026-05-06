@@ -128,11 +128,6 @@ class _AgendaTabState extends State<AgendaTab> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppTheme.primary,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
-      ),
     );
   }
 
@@ -642,6 +637,7 @@ class _DetalhesModalState extends State<_DetalhesModal> {
   bool _isLoading = true;
   int _consultasRealizadas = 0;
   List<dynamic> _sintomas = [];
+  List<dynamic> _historicoConsultas = [];
 
   @override
   void initState() {
@@ -660,6 +656,7 @@ class _DetalhesModalState extends State<_DetalhesModal> {
       setState(() {
         _consultasRealizadas = data['consultas_realizadas'] as int;
         _sintomas = data['sintomas'] as List;
+        _historicoConsultas = data['historico_consultas'] as List? ?? [];
         _isLoading = false;
       });
     } else {
@@ -755,37 +752,66 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                     ],
 
                     // Histórico de Consultas
-                    const Text('Histórico', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text('Histórico de Consultas', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: _consultasRealizadas <= 1 ? AppTheme.accent.withValues(alpha: 0.1) : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _consultasRealizadas <= 1 ? AppTheme.accent : AppTheme.divider),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            _consultasRealizadas <= 1 ? Icons.star_rounded : Icons.history_rounded,
-                            color: _consultasRealizadas <= 1 ? AppTheme.accent : AppTheme.textSecondary,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _consultasRealizadas <= 1
-                                  ? 'Primeira consulta com você!'
-                                  : 'Já realizou $_consultasRealizadas consulta(s) com você.',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _consultasRealizadas <= 1 ? AppTheme.accent : AppTheme.textPrimary,
+                    if (_consultasRealizadas == 0)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accent.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.accent),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.star_rounded, color: AppTheme.accent),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Primeira consulta com você!',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.accent),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      )
+                    else
+                      Column(
+                        children: _historicoConsultas.map((c) {
+                          final dt = DateTime.tryParse(c['data_hora'] ?? '');
+                          final dtFmt = dt != null ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}' : '';
+                          final relatorio = c['relatorio'] as String?;
+                          return Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppTheme.divider),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.history_rounded, size: 18, color: AppTheme.primary),
+                                    const SizedBox(width: 8),
+                                    Text('Consulta Finalizada - $dtFmt', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                  ],
+                                ),
+                                if (relatorio != null && relatorio.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  const Text('Relatório da Sessão:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                                  const SizedBox(height: 4),
+                                  Text(relatorio, style: const TextStyle(fontSize: 13)),
+                                ],
+                              ],
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    ),
                     const SizedBox(height: 24),
                     
                     // Sintomas Registrados

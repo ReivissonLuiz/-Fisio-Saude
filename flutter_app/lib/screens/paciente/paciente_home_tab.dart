@@ -192,6 +192,14 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _proximaConsulta(),
                   const SizedBox(height: 24),
 
+                  // --- Histórico de Consultas (Relatórios) --------------------------
+                  const _SectionTitle(
+                      title: 'Histórico e Relatórios',
+                      icon: Icons.history_edu_rounded),
+                  const SizedBox(height: 10),
+                  _historicoConsultasWidget(),
+                  const SizedBox(height: 24),
+
                   // --- Último Sintoma Registrado -----------------------------------
                   const _SectionTitle(
                       title: 'Último Sintoma Registrado',
@@ -643,6 +651,95 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
       ),
     );
     if (result == true && mounted) _carregarDados();
+  }
+
+  Widget _historicoConsultasWidget() {
+    final passadas = _consultas
+        .where((c) => (c['status'] as String?)?.toLowerCase() == 'finalizada')
+        .toList();
+
+    if (passadas.isEmpty) {
+      return const _EmptyCard(
+        icon: Icons.history_rounded,
+        message: 'Nenhum histórico de consultas.',
+        sub: 'Suas consultas finalizadas aparecerão aqui.',
+      );
+    }
+
+    return Column(
+      children: passadas.map((c) {
+        final profissional = c['profissional'] as Map<String, dynamic>?;
+        final dataHora = c['data_hora'] as String? ?? '';
+        final dt = DateTime.tryParse(dataHora);
+        final dtFormatada = dt != null
+            ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}'
+            : dataHora;
+        final relatorio = c['relatorio'] as String?;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.divider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accent.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.check_circle_rounded, color: AppTheme.accent, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(profissional?['nome'] ?? 'Profissional', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text(dtFormatada, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (relatorio != null && relatorio.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.background,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.divider),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.description_outlined, size: 14, color: AppTheme.textSecondary),
+                          SizedBox(width: 6),
+                          Text('Relatório do Profissional:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(relatorio, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary)),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      }).toList(),
+    );
   }
 
   Widget _ultimoSintoma() {

@@ -35,12 +35,14 @@ class ExtraField {
   final String fieldKey;
   final IconData icon;
   final TextInputType keyboardType;
+  final List<String>? options;
 
   const ExtraField({
     required this.label,
     required this.fieldKey,
     required this.icon,
     this.keyboardType = TextInputType.text,
+    this.options,
   });
 }
 
@@ -78,6 +80,7 @@ class _EditPerfilDialogState extends State<_EditPerfilDialog> {
   late final TextEditingController _ufCtrl;
 
   final Map<String, TextEditingController> _extraCtrls = {};
+  String _crefitoExt = 'F';
 
   final _telMask = MaskTextInputFormatter(
       mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
@@ -109,8 +112,21 @@ class _EditPerfilDialogState extends State<_EditPerfilDialog> {
     _generoSelecionado = p['genero']?.toString();
 
     for (final f in widget.camposExtras) {
-      _extraCtrls[f.fieldKey] = TextEditingController(
-          text: p[f.fieldKey]?.toString() ?? '');
+      if (f.fieldKey == 'crefito') {
+        String val = p[f.fieldKey]?.toString() ?? '';
+        if (val.contains('-')) {
+          final parts = val.split('-');
+          _extraCtrls[f.fieldKey] = TextEditingController(text: parts[0]);
+          if (parts.length > 1 && (parts[1] == 'F' || parts[1] == 'TO')) {
+            _crefitoExt = parts[1];
+          }
+        } else {
+          _extraCtrls[f.fieldKey] = TextEditingController(text: val);
+        }
+      } else {
+        _extraCtrls[f.fieldKey] = TextEditingController(
+            text: p[f.fieldKey]?.toString() ?? '');
+      }
     }
   }
 
@@ -177,7 +193,11 @@ class _EditPerfilDialogState extends State<_EditPerfilDialog> {
     };
 
     for (final f in widget.camposExtras) {
-      dados[f.fieldKey] = _extraCtrls[f.fieldKey]!.text.trim();
+      if (f.fieldKey == 'crefito') {
+        dados[f.fieldKey] = '${_extraCtrls[f.fieldKey]!.text.trim()}-$_crefitoExt';
+      } else {
+        dados[f.fieldKey] = _extraCtrls[f.fieldKey]!.text.trim();
+      }
     }
 
     final res = await _api.updateUsuario(widget.usuarioId, dados);
@@ -289,8 +309,65 @@ class _EditPerfilDialogState extends State<_EditPerfilDialog> {
 
                       // Campos extras (ex: CREFITO, especialidade)
                       for (final f in widget.camposExtras) ...[
-                        _field(f.label, _extraCtrls[f.fieldKey]!,
-                            icon: f.icon, keyboardType: f.keyboardType),
+                        if (f.options != null)
+                          DropdownButtonFormField<String>(
+                            value: f.options!.contains(_extraCtrls[f.fieldKey]!.text)
+                                ? _extraCtrls[f.fieldKey]!.text
+                                : null,
+                            decoration: InputDecoration(
+                              labelText: f.label,
+                              prefixIcon: Icon(f.icon, size: 20),
+                              filled: true,
+                              fillColor: AppTheme.background,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              isDense: true,
+                            ),
+                            items: f.options!.map((o) => DropdownMenuItem(value: o, child: Text(o, style: const TextStyle(fontSize: 13)))).toList(),
+                            onChanged: (v) {
+                              if (v != null) setState(() => _extraCtrls[f.fieldKey]!.text = v);
+                            },
+                          )
+                        else if (f.fieldKey == 'crefito')
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _field(
+                                  f.label, 
+                                  _extraCtrls[f.fieldKey]!,
+                                  icon: f.icon, 
+                                  keyboardType: TextInputType.number,
+                                  mask: MaskTextInputFormatter(mask: '#######', filter: {'#': RegExp(r'\d')}),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 48,
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.background,
+                                  border: Border.all(color: Colors.grey.shade400),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _crefitoExt,
+                                    items: const [
+                                      DropdownMenuItem(value: 'F', child: Text('-F', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      DropdownMenuItem(value: 'TO', child: Text('-TO', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    ],
+                                    onChanged: (v) {
+                                      if (v != null) setState(() => _crefitoExt = v);
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          _field(f.label, _extraCtrls[f.fieldKey]!,
+                              icon: f.icon, keyboardType: f.keyboardType),
                         const SizedBox(height: 10),
                       ],
 

@@ -66,16 +66,30 @@ class _PerfilProfissionalTabState extends State<PerfilProfissionalTab> {
       usuarioId: widget.profissionalId,
       perfilData: _perfilData!,
       accentColor: AppTheme.secondary,
-      camposExtras: [
-        const ExtraField(
-          label: 'CREFITO (ex: 1234567-F)',
+      camposExtras: const [
+        ExtraField(
+          label: 'CREFITO (Somente números)',
           fieldKey: 'crefito',
           icon: Icons.workspace_premium_outlined,
         ),
-        const ExtraField(
+        ExtraField(
           label: 'Especialidade',
           fieldKey: 'especialidade',
           icon: Icons.category_outlined,
+          options: [
+            'Fisioterapia Ortopédica e Traumatológica',
+            'Fisioterapia Neurológica',
+            'Fisioterapia Esportiva',
+            'Fisioterapia Cardiorrespiratória',
+            'Fisioterapia em Saúde da Mulher',
+            'Fisioterapia Pediátrica',
+            'Fisioterapia Geriátrica',
+            'Fisioterapia Aquática',
+            'Fisioterapia Dermato-Funcional',
+            'RPG — Reeducação Postural Global',
+            'Terapia Ocupacional',
+            'Outra',
+          ],
         ),
       ],
     );

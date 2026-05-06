@@ -34,6 +34,7 @@ class NotificationService {
 
   /// Busca notificações de um usuário (mais recentes primeiro).
   Future<Map<String, dynamic>> getNotificacoes(String usuarioId) async {
+    if (usuarioId.isEmpty) return {'success': true, 'data': []};
     try {
       final data = await _sb
           .from('notificacao')
@@ -49,6 +50,7 @@ class NotificationService {
 
   /// Conta notificações não lidas.
   Future<int> contarNaoLidas(String usuarioId) async {
+    if (usuarioId.isEmpty) return 0;
     try {
       final data = await _sb
           .from('notificacao')

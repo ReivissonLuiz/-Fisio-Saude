@@ -1497,6 +1497,7 @@ class ApiService {
 
   /// Busca notificações do usuário atual.
   Future<Map<String, dynamic>> getNotificacoes(String usuarioId) async {
+    if (usuarioId.isEmpty) return {'success': true, 'data': []};
     try {
       final data = await _sb
           .from('notificacao')
@@ -1514,6 +1515,7 @@ class ApiService {
 
   /// Conta notificações não lidas.
   Future<int> getNotificacoesNaoLidas(String usuarioId) async {
+    if (usuarioId.isEmpty) return 0;
     try {
       final data = await _sb
           .from('notificacao')
