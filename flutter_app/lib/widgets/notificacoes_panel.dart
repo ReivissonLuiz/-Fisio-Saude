@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../screens/shared/chat_screen.dart';
 
 class NotificacoesPanel extends StatefulWidget {
   final String usuarioId;
@@ -46,6 +47,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       case 'agendamento': return Icons.calendar_month_rounded;
       case 'cancelamento': return Icons.event_busy_rounded;
       case 'reagendamento': return Icons.edit_calendar_rounded;
+      case 'chat': return Icons.chat_bubble_outline_rounded;
       default: return Icons.notifications_rounded;
     }
   }
@@ -55,6 +57,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       case 'agendamento': return AppTheme.accent;
       case 'cancelamento': return AppTheme.error;
       case 'reagendamento': return AppTheme.warning;
+      case 'chat': return AppTheme.secondary;
       default: return AppTheme.primary;
     }
   }
@@ -122,6 +125,23 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                   if (!lida) {
                                     await _api.marcarNotificacaoLida(n['id'] as String);
                                     await _carregar();
+                                  }
+                                  
+                                  if (tipo == 'chat' && n['acao_id'] != null) {
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.pop(context); // Fecha o painel
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChatScreen(
+                                          meuId: widget.usuarioId,
+                                          meuNome: 'Eu',
+                                          outroId: n['acao_id'] as String,
+                                          outroNome: (n['titulo'] as String? ?? '').replaceFirst('Nova mensagem de ', ''),
+                                        ),
+                                      ),
+                                    );
                                   }
                                 },
                                 child: AnimatedContainer(

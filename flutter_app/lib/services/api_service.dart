@@ -1482,6 +1482,7 @@ class ApiService {
     required String titulo,
     required String mensagem,
     required String tipo,
+    String? acaoId,
   }) async {
     try {
       await _sb.from('notificacao').insert({
@@ -1489,6 +1490,7 @@ class ApiService {
         'titulo': titulo,
         'corpo': mensagem,
         'tipo': tipo,
+        if (acaoId != null) 'acao_id': acaoId,
       });
     } catch (_) {
       // Falha de notificação não bloqueia o fluxo principal
@@ -1811,6 +1813,19 @@ class ApiService {
         if (consultaId != null) 'id_consulta': consultaId,
         'lida': false,
       }).select().single();
+
+      // Buscar nome do remetente
+      final remetenteData = await _sb.from('usuario').select('nome').eq('id', remetenteId).maybeSingle();
+      final nomeRemetente = remetenteData?['nome'] as String? ?? 'Alguém';
+
+      await _criarNotificacao(
+        idDestinatario: destinatarioId,
+        titulo: 'Nova mensagem de $nomeRemetente',
+        mensagem: conteudo.trim().length > 50 ? '${conteudo.trim().substring(0, 50)}...' : conteudo.trim(),
+        tipo: 'chat',
+        acaoId: remetenteId,
+      );
+
       return {'success': true, 'data': data};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao enviar mensagem.'};

@@ -5,15 +5,18 @@ import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/notificacoes_panel.dart';
+import '../shared/chat_screen.dart';
 
 class ProfissionalHomeTab extends StatefulWidget {
   final String profissionalId;
   final String nome;
+  final String? profissionalAvatar;
 
   const ProfissionalHomeTab({
     super.key,
     required this.profissionalId,
     required this.nome,
+    this.profissionalAvatar,
   });
 
   @override
@@ -432,7 +435,12 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                         message: 'Seu dia está livre! Nenhuma consulta para hoje.',
                       )
                     else
-                      ..._consultasHoje.map((c) => _ConsultaTile(consulta: c)),
+                      ..._consultasHoje.map((c) => _ConsultaTile(
+                            consulta: c,
+                            profissionalId: widget.profissionalId,
+                            profissionalNome: widget.nome,
+                            profissionalAvatar: widget.profissionalAvatar,
+                          )),
                     
                     const SizedBox(height: 40),
                   ],
@@ -564,8 +572,16 @@ class _ExpandableCard extends StatelessWidget {
 
 class _ConsultaTile extends StatelessWidget {
   final dynamic consulta;
+  final String profissionalId;
+  final String profissionalNome;
+  final String? profissionalAvatar;
 
-  const _ConsultaTile({required this.consulta});
+  const _ConsultaTile({
+    required this.consulta,
+    required this.profissionalId,
+    required this.profissionalNome,
+    this.profissionalAvatar,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -641,6 +657,35 @@ class _ConsultaTile extends StatelessWidget {
                 Text(consulta['observacao'] ?? 'Consulta fisioterapêutica padrão',
                     style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                     maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    final pacienteId = paciente?['id'] ?? '';
+                    final pacienteNome = paciente?['nome'] ?? 'Paciente';
+                    if (pacienteId.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatScreen(
+                            meuId: profissionalId,
+                            meuNome: profissionalNome,
+                            meuAvatar: profissionalAvatar,
+                            outroId: pacienteId,
+                            outroNome: pacienteNome,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                  label: const Text('Chat', style: TextStyle(fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.secondary,
+                    side: const BorderSide(color: AppTheme.secondary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
               ],
             ),
           ),
