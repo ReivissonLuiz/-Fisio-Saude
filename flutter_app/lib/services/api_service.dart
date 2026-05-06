@@ -1878,7 +1878,7 @@ class ApiService {
 
       if (contatos.isNotEmpty) {
         final contactIds = contatos.map((c) => c['id']).toList();
-        final usersData = await _sb.from('usuario').select('id, nome, avatar_url').filter('id', 'in', contactIds);
+        final usersData = await _sb.from('usuario').select('id, nome, avatar_url').inFilter('id', contactIds);
         
         final usersMap = {for (var u in usersData as List) u['id']: u};
         
