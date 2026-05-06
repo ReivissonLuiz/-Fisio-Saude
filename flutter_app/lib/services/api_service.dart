@@ -1836,11 +1836,11 @@ class ApiService {
   Future<Map<String, dynamic>> getContatosChat(String usuarioId) async {
     try {
       final sent = await _sb.from('mensagem')
-          .select('id_destinatario, created_at, conteudo, usuario:id_destinatario(id, nome, avatar_url)')
+          .select('id_destinatario, created_at, conteudo, lida')
           .eq('id_remetente', usuarioId);
           
       final received = await _sb.from('mensagem')
-          .select('id_remetente, created_at, conteudo, lida, usuario:id_remetente(id, nome, avatar_url)')
+          .select('id_remetente, created_at, conteudo, lida')
           .eq('id_destinatario', usuarioId);
 
       final Map<String, dynamic> contatosMap = {};
@@ -1850,13 +1850,10 @@ class ApiService {
         if (contatoId == null) return;
         
         final dt = DateTime.parse(msg['created_at']);
-        final usuarioData = msg['usuario'] as Map<String, dynamic>?;
         
         if (!contatosMap.containsKey(contatoId)) {
           contatosMap[contatoId] = {
             'id': contatoId,
-            'nome': usuarioData?['nome'] ?? 'Usuário',
-            'avatar_url': usuarioData?['avatar_url'],
             'ultima_mensagem': msg['conteudo'],
             'data_hora': dt,
             'nao_lidas': (contatoIdKey == 'id_remetente' && msg['lida'] == false) ? 1 : 0,
@@ -1878,6 +1875,23 @@ class ApiService {
 
       final contatos = contatosMap.values.toList();
       contatos.sort((a, b) => (b['data_hora'] as DateTime).compareTo(a['data_hora'] as DateTime));
+
+      if (contatos.isNotEmpty) {
+        final contactIds = contatos.map((c) => c['id']).toList();
+        final usersData = await _sb.from('usuario').select('id, nome, avatar_url').filter('id', 'in', contactIds);
+        
+        final usersMap = {for (var u in usersData as List) u['id']: u};
+        
+        for (var c in contatos) {
+          final u = usersMap[c['id']];
+          if (u != null) {
+            c['nome'] = u['nome'] ?? 'Usuário';
+            c['avatar_url'] = u['avatar_url'];
+          } else {
+            c['nome'] = 'Usuário';
+          }
+        }
+      }
 
       return {'success': true, 'data': contatos};
     } catch (e) {
