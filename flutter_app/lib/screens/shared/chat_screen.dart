@@ -136,21 +136,12 @@ class _ChatScreenState extends State<ChatScreen> {
               radius: 18,
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.outroNome,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary),
-                ),
-                const Text(
-                  'Online',
-                  style: TextStyle(fontSize: 11, color: Colors.green),
-                ),
-              ],
+            Text(
+              widget.outroNome,
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary),
             ),
           ],
         ),
