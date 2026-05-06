@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _email = '';
   String? _supabaseUserId;
   String? _usuarioId;     // ID interno da tabela `usuario`
+  String? _avatarUrl;     // URL da foto de perfil do usuário logado
   int _idPermissao = 1;   // 1=Paciente, 2=Profissional, 3=Administrador
 
   bool _isLoadingSession = false;
@@ -61,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _email = _args['email'] as String? ?? '';
     _supabaseUserId = _args['id'] as String?;
     _usuarioId = _args['id_usuario'] as String?;
+    _avatarUrl = _args['avatar_url'] as String?;
     _idPermissao = (_args['id_permissao'] as int?) ?? 1;
     _visaoAtiva = _visaoFromPermissao(_idPermissao);
 
@@ -113,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _usuarioId = data['id'] as String?;
         _nome = data['nome'] as String? ?? user.email ?? 'Usuário';
         _email = data['email'] as String? ?? user.email ?? '';
+        _avatarUrl = data['avatar_url'] as String?;
         _idPermissao = data['id_permissao'] as int? ?? 1;
         // ignore: unused_local_variable
         final tipo = permissaoData?['nome'] as String? ??
@@ -306,8 +309,13 @@ class _HomeScreenState extends State<HomeScreen> {
       final profTabs = [
         ProfissionalHomeTab(profissionalId: _usuarioId ?? '', nome: _nome),
         AgendaTab(profissionalId: _usuarioId ?? ''),
-        MeusPacientesTab(profissionalId: _usuarioId ?? '', profissionalNome: _nome),
+        MeusPacientesTab(
+          profissionalId: _usuarioId ?? '',
+          profissionalNome: _nome,
+          profissionalAvatar: _avatarUrl,
+        ),
         MinhaDisponibilidadeTab(profissionalId: _usuarioId ?? ''),
+
         PerfilProfissionalTab(
           key: UniqueKey(),
           profissionalId: _usuarioId ?? '',
@@ -368,7 +376,11 @@ class _HomeScreenState extends State<HomeScreen> {
     else {
       final usuarioIdFinal = _usuarioId ?? '';
       final patientTabs = [
-        PacienteHomeTab(pacienteId: usuarioIdFinal, nome: _nome),
+        PacienteHomeTab(
+          pacienteId: usuarioIdFinal,
+          nome: _nome,
+          avatarUrl: _avatarUrl,
+        ),
         BuscarFisioTab(pacienteId: usuarioIdFinal),
         MinhaSaudeTab(pacienteId: usuarioIdFinal),
         MeuPerfilTab(

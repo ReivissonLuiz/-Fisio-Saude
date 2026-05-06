@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../shared/chat_screen.dart';
 
 class PacienteDetalhesScreen extends StatefulWidget {
   final Map<String, dynamic> pacienteDados; // Vem da lista (nome, email, telefone...)
@@ -129,6 +130,35 @@ class _PacienteDetalhesScreenState extends State<PacienteDetalhesScreen> {
                                     const SizedBox(width: 4),
                                     Text(telefone, style: const TextStyle(color: Colors.white70, fontSize: 13)),
                                   ],
+                                ),
+                                const SizedBox(height: 12),
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    final pacienteId = widget.pacienteDados['id'];
+                                    if (pacienteId != null) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ChatScreen(
+                                            meuId: widget.profissionalId,
+                                            meuNome: 'Profissional', // Idealmente passaria o nome do prof
+                                            outroId: pacienteId,
+                                            outroNome: nome,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                                  label: const Text('Conversar', style: TextStyle(fontSize: 12)),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    side: const BorderSide(color: Colors.white54),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    minimumSize: const Size(0, 32),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
                                 ),
                               ],
                             ),

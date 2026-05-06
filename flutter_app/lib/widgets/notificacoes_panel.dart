@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../screens/shared/chat_screen.dart';
 
 class NotificacoesPanel extends StatefulWidget {
   final String usuarioId;
@@ -46,6 +47,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       case 'agendamento': return Icons.calendar_month_rounded;
       case 'cancelamento': return Icons.event_busy_rounded;
       case 'reagendamento': return Icons.edit_calendar_rounded;
+      case 'chat': return Icons.chat_bubble_outline_rounded;
       default: return Icons.notifications_rounded;
     }
   }
@@ -55,6 +57,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       case 'agendamento': return AppTheme.accent;
       case 'cancelamento': return AppTheme.error;
       case 'reagendamento': return AppTheme.warning;
+      case 'chat': return AppTheme.secondary;
       default: return AppTheme.primary;
     }
   }
@@ -116,12 +119,39 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                               final dtStr = dt != null
                                   ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
                                   : '';
+                                  
+                              String displayCorpo = n['corpo'] as String? ?? '';
+                              String? acaoId;
+                              if (tipo == 'chat' && displayCorpo.contains('|||')) {
+                                final parts = displayCorpo.split('|||');
+                                displayCorpo = parts[0];
+                                if (parts.length > 1) {
+                                  acaoId = parts[1];
+                                }
+                              }
 
                               return GestureDetector(
                                 onTap: () async {
                                   if (!lida) {
                                     await _api.marcarNotificacaoLida(n['id'] as String);
                                     await _carregar();
+                                  }
+                                  
+                                  if (tipo == 'chat' && acaoId != null) {
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.pop(context); // Fecha o painel
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ChatScreen(
+                                          meuId: widget.usuarioId,
+                                          meuNome: 'Eu',
+                                          outroId: acaoId!,
+                                          outroNome: (n['titulo'] as String? ?? '').replaceFirst('Nova mensagem de ', ''),
+                                        ),
+                                      ),
+                                    );
                                   }
                                 },
                                 child: AnimatedContainer(
@@ -166,7 +196,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Text(n['corpo'] as String? ?? '',
+                                            Text(displayCorpo,
                                                 style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
                                             const SizedBox(height: 4),
                                             Text(dtStr, style: const TextStyle(color: AppTheme.textHint, fontSize: 10)),

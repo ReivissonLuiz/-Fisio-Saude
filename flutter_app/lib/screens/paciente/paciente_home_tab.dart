@@ -7,17 +7,21 @@ import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/notificacoes_panel.dart';
+import '../shared/chat_screen.dart';
+import '../shared/contatos_chat_screen.dart';
 import '../shared/reagendar_screen.dart';
 import 'agendar_consulta_screen.dart';
 
 class PacienteHomeTab extends StatefulWidget {
   final String pacienteId;
   final String nome;
+  final String? avatarUrl;
 
   const PacienteHomeTab({
     super.key,
     required this.pacienteId,
     required this.nome,
+    this.avatarUrl,
   });
 
   @override
@@ -117,52 +121,71 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                           ],
                         ),
                       ),
-                      // Botão de notificações com badge
-                      Stack(
+                      // Botões de Chat e Notificações
+                      Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.notifications_rounded,
-                                color: Colors.white, size: 26),
-                            tooltip: 'Notificações',
+                            icon: const Icon(Icons.chat_bubble_outline_rounded,
+                                color: Colors.white, size: 24),
+                            tooltip: 'Mensagens',
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => NotificacoesPanel(
+                                  builder: (_) => ContatosChatScreen(
                                     usuarioId: widget.pacienteId,
-                                    // Ao clicar em "Agendar Nova Consulta" numa notificação
-                                    // de cancelamento ou reagendamento, abre a tela de agendamento.
-                                    onNavigateToAgenda: () {
-                                      Navigator.pop(context); // Fecha o painel de notificações
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (_) => AgendarConsultaScreen(pacienteId: widget.pacienteId)),
-                                      ).then((_) => _carregarDados());
-                                    },
+                                    usuarioNome: widget.nome,
+                                    usuarioAvatar: widget.avatarUrl,
                                   ),
                                 ),
-                              ).then((_) => _carregarDados());
+                              );
                             },
                           ),
-                          if (_notifCount > 0)
-                            Positioned(
-                              right: 4,
-                              top: 4,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  _notifCount > 9 ? '9+' : '$_notifCount',
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                          Stack(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.notifications_rounded,
+                                    color: Colors.white, size: 26),
+                                tooltip: 'Notificações',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => NotificacoesPanel(
+                                        usuarioId: widget.pacienteId,
+                                        onNavigateToAgenda: () {
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (_) => AgendarConsultaScreen(pacienteId: widget.pacienteId)),
+                                          ).then((_) => _carregarDados());
+                                        },
+                                      ),
+                                    ),
+                                  ).then((_) => _carregarDados());
+                                },
                               ),
-                            ),
+                              if (_notifCount > 0)
+                                Positioned(
+                                  right: 4,
+                                  top: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      _notifCount > 9 ? '9+' : '$_notifCount',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
@@ -432,6 +455,8 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
     return Column(
       children: proximas.map((c) {
         final profissional = c['profissional'] as Map<String, dynamic>?;
+        final profId = c['id_profissional'] as String? ?? '';
+        final profNome = profissional?['nome'] as String? ?? 'Profissional';
         final dataHora = c['data_hora'] as String? ?? '';
         final dt = DateTime.tryParse(dataHora);
         final dtFormatada = dt != null
@@ -527,6 +552,33 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   ),
                 Row(
                   children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                        label: const Text('Chat', style: TextStyle(fontSize: 13)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.secondary,
+                          side: const BorderSide(color: AppTheme.secondary),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatScreen(
+                                meuId: widget.pacienteId,
+                                meuNome: widget.nome,
+                                meuAvatar: widget.avatarUrl,
+                                outroId: profId,
+                                outroNome: profNome,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.edit_calendar_rounded, size: 16),
