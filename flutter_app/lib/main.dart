@@ -21,6 +21,8 @@ import 'screens/register/register_success_screen.dart';
 import 'screens/register/admin_register_screen.dart';
 import 'services/log_service.dart';
 
+import 'widgets/global_scale_widget.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -85,11 +87,10 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
       navigatorObservers: [_routeObserver],
       initialRoute: '/',
       builder: (context, child) {
-        // Aplica uma redução global de 15% no tamanho das fontes para corrigir a sensação de "zoom" no desktop/web
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: const TextScaler.linear(0.85),
-          ),
+        // Reduz o tamanho de toda a interface do app em 15% 
+        // resolvendo o problema generalizado de zoom.
+        return GlobalScaleWidget(
+          scale: 0.85,
           child: child!,
         );
       },
