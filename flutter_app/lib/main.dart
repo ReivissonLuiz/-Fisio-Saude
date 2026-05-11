@@ -84,6 +84,15 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
       navigatorKey: _navigatorKey,
       navigatorObservers: [_routeObserver],
       initialRoute: '/',
+      builder: (context, child) {
+        // Aplica uma redução global de 15% no tamanho das fontes para corrigir a sensação de "zoom" no desktop/web
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(0.85),
+          ),
+          child: child!,
+        );
+      },
       routes: {
         '/': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
