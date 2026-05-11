@@ -38,7 +38,6 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
   bool _loading = false;
   bool _confirmando = false;
   String? _erro;
-  String? _linkMeet;
   String? _linkCalendar;
 
   final _sintomasController = TextEditingController();
@@ -131,7 +130,6 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
     if (!mounted) return;
     setState(() => _confirmando = false);
     if (res['success'] == true) {
-      _linkMeet = res['link_meet'] as String?;
       _linkCalendar = res['link_calendar'] as String?;
       _mostrarSucesso();
     } else {

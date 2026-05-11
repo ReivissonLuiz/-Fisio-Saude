@@ -80,30 +80,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 32),
 
                       // --- Cabeçalho --------------------------------------------------
                       Center(
                         child: Column(
                           children: [
                             Container(
-                              width: 72,
-                              height: 72,
+                              width: 56,
+                              height: 56,
                               decoration: BoxDecoration(
                                 gradient: AppTheme.primaryGradient,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
                                 Icons.health_and_safety_rounded,
                                 color: Colors.white,
-                                size: 38,
+                                size: 28,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             const Text(
                               'Bem-vindo de volta!',
                               style: TextStyle(
-                                fontSize: 24,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.textPrimary,
                               ),
@@ -112,12 +112,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             const Text(
                               'Entre com sua conta para continuar',
                               style: TextStyle(
-                                  fontSize: 14, color: AppTheme.textSecondary),
+                                  fontSize: 13, color: AppTheme.textSecondary),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 24),
 
                       // --- Campo Email --------------------------------------
                       CustomTextField(
