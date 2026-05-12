@@ -546,8 +546,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: AppTheme.divider),
-          if ((consulta['status'] as String?)?.toLowerCase() == 'agendada' ||
-              (consulta['status'] as String?)?.toLowerCase() == 'confirmada')
+          if ((consulta['status'] as String?)?.toLowerCase() == 'agendada')
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: SizedBox(
@@ -561,6 +560,27 @@ class _ConsultaAgendaTile extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: onConfirmar,
+                ),
+              ),
+            )
+          else if ((consulta['status'] as String?)?.toLowerCase() == 'confirmada')
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.green.shade300),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle_rounded, color: Colors.green.shade700, size: 18),
+                    const SizedBox(width: 8),
+                    Text('Presença Confirmada', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold)),
+                  ],
                 ),
               ),
             ),
@@ -734,25 +754,50 @@ class _DetalhesModalState extends State<_DetalhesModal> {
           ),
           const SizedBox(height: 20),
           
-          if (_isLoading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
-          else
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.consulta['observacoes'] != null && (widget.consulta['observacoes'] as String).isNotEmpty) ...[
-                      const Text('Relato do Paciente no Agendamento', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.divider)),
-                        child: Text(widget.consulta['observacoes'] as String, style: const TextStyle(color: AppTheme.textPrimary)),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dados da consulta atual
+                  const Text('Esta Consulta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.divider),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _InfoRow(icon: Icons.calendar_today_rounded, label: 'Data/Hora', value: () {
+                          final dt = DateTime.tryParse(widget.consulta['data_hora'] as String? ?? '');
+                          if (dt == null) return 'N/A';
+                          return '${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year}  ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
+                        }()),
+                        const SizedBox(height: 8),
+                        _InfoRow(icon: Icons.info_outline_rounded, label: 'Status', value: () {
+                          final s = widget.consulta['status'] as String? ?? '';
+                          final map = {'agendada': 'Agendada', 'confirmada': 'Confirmada', 'finalizada': 'Finalizada', 'cancelada': 'Cancelada', 'nao_compareceu': 'Não Compareceu'};
+                          return map[s.toLowerCase()] ?? s;
+                        }()),
+                        if (widget.consulta['observacoes'] != null && (widget.consulta['observacoes'] as String).isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          _InfoRow(icon: Icons.notes_rounded, label: 'Motivo / Relação', value: widget.consulta['observacoes'] as String),
+                        ],
+                        if (widget.consulta['relatorio'] != null && (widget.consulta['relatorio'] as String).isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          _InfoRow(icon: Icons.description_outlined, label: 'Relatório', value: widget.consulta['relatorio'] as String),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (!_isLoading) ...[
 
                     // Histórico de Consultas
                     const Text('Histórico de Consultas', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -857,12 +902,47 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                           ),
                         );
                       }),
-                  ],
-                ),
-              ),
+                  ],    // fecha if (!_isLoading) ...[
+                ],      // fecha Column.children
+              ),        // fecha Column
+            ),          // fecha SingleChildScrollView
+          ),            // fecha Expanded
+        ],              // fecha Column.children do modal
+      ),                // fecha Column
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Widget auxiliar: linha de informação com ícone e label
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppTheme.textSecondary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+              children: [
+                TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textSecondary)),
+                TextSpan(text: value),
+              ],
             ),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
