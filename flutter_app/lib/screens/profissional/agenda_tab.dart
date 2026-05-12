@@ -362,12 +362,10 @@ class _AgendaTabState extends State<AgendaTab> {
 
   void _mostrarDetalhes(dynamic c) {
     final paciente = c['paciente'];
-    if (paciente == null) return;
-
     final pacienteId = c['id_paciente'] as String? ?? '';
     
     int idade = 0;
-    if (paciente['data_nasc'] != null) {
+    if (paciente != null && paciente['data_nasc'] != null) {
       final nascimento = DateTime.tryParse(paciente['data_nasc']);
       if (nascimento != null) {
         final hoje = DateTime.now();
@@ -378,8 +376,10 @@ class _AgendaTabState extends State<AgendaTab> {
       }
     }
     
-    final genero = paciente['genero'] as String? ?? 'Não informado';
-    final nome = paciente['nome'] as String? ?? 'Paciente';
+    final genero = paciente?['genero'] as String? ?? 'Não informado';
+    final nome = (paciente?['nome'] as String?)?.isNotEmpty == true 
+        ? paciente!['nome'] as String 
+        : c['nome_paciente'] as String? ?? 'Paciente Não Identificado';
 
     showModalBottomSheet(
       context: context,
@@ -526,7 +526,12 @@ class _ConsultaAgendaTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(paciente?['nome'] ?? 'Paciente', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(
+                        (paciente?['nome'] as String?)?.isNotEmpty == true
+                            ? paciente!['nome'] as String
+                            : consulta['nome_paciente'] as String? ?? 'Paciente Não Identificado',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
