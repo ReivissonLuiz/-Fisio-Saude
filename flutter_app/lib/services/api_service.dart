@@ -638,8 +638,9 @@ class ApiService {
       final consultas = await _sb
           .from('consulta')
           .select(
-              'id_paciente, paciente:id_paciente(id, nome, email, telefone, cpf, data_nasc)')
-          .eq('id_profissional', profissionalId);
+              'id_paciente, paciente:id_paciente(id, nome, email, telefone, cpf, data_nasc, avatar_url)')
+          .eq('id_profissional', profissionalId)
+          .inFilter('status', ['agendada', 'Agendada', 'confirmada', 'Confirmada', 'realizada', 'Realizada', 'finalizada', 'Finalizada']);
 
       final Map<String, dynamic> pacientesUnicos = {};
       for (var item in (consultas as List)) {
@@ -657,22 +658,25 @@ class ApiService {
     }
   }
 
-  /// Busca o resumo do paciente para exibir na agenda (histórico com o prof e sintomas)
+  /// Busca o resumo do paciente para exibir na agenda
   Future<Map<String, dynamic>> getResumoPacienteParaProfissional({
     required String pacienteId,
     required String profissionalId,
   }) async {
     try {
-      // Busca consultas passadas realizadas com este profissional
+      // Histórico completo de consultas realizadas com este profissional
       final hist = await _sb
           .from('consulta')
-          .select('id')
+          .select('id, data_hora, status, relatorio')
           .eq('id_paciente', pacienteId)
           .eq('id_profissional', profissionalId)
-          .eq('status', 'realizada');
+          .inFilter('status', ['realizada', 'Realizada', 'finalizada', 'Finalizada'])
+          .order('data_hora', ascending: false)
+          .limit(10);
+
       final totalConsultas = (hist as List).length;
 
-      // Busca os últimos sintomas registrados pelo paciente (max 5)
+      // Últimos sintomas do paciente (max 5)
       final sint = await _sb
           .from('registro_sintomas')
           .select('*')
@@ -684,6 +688,7 @@ class ApiService {
         'success': true,
         'data': {
           'consultas_realizadas': totalConsultas,
+          'historico_consultas': hist,
           'sintomas': sint,
         }
       };
@@ -1510,9 +1515,20 @@ class ApiService {
     bool iniciadoPorProfissional = false,
   }) async {
     try {
+      // Mantém observações originais e anexa motivo do cancelamento
+      final consultaAtual = await _sb
+          .from('consulta')
+          .select('observacoes')
+          .eq('id', consultaId)
+          .maybeSingle();
+      final obsOriginal = consultaAtual?['observacoes'] as String? ?? '';
+      final obsFinal = motivo != null && motivo.isNotEmpty
+          ? (obsOriginal.isNotEmpty ? '$obsOriginal\n\nMotivo do cancelamento: $motivo' : 'Motivo do cancelamento: $motivo')
+          : obsOriginal;
+
       await _sb
           .from('consulta')
-          .update({'status': 'cancelada', 'observacoes': motivo})
+          .update({'status': 'cancelada', 'observacoes': obsFinal})
           .eq('id', consultaId);
 
       final pacData = await _sb

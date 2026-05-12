@@ -546,7 +546,8 @@ class _ConsultaAgendaTile extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: AppTheme.divider),
-          if (!isPassada && (consulta['status'] as String?)?.toLowerCase() == 'agendada' && hoje.isAfter(dataHora.subtract(const Duration(hours: 24))))
+          if ((consulta['status'] as String?)?.toLowerCase() == 'agendada' ||
+              (consulta['status'] as String?)?.toLowerCase() == 'confirmada')
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: SizedBox(
@@ -568,7 +569,9 @@ class _ConsultaAgendaTile extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (!isPassada && (consulta['status'] as String?)?.toLowerCase() != 'cancelada') ...[
+                if (!isPassada &&
+                    (consulta['status'] as String?)?.toLowerCase() != 'cancelada' &&
+                    (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
                   TextButton.icon(
                     onPressed: onCancelar,
                     icon: const Icon(Icons.event_busy_rounded, size: 16),
