@@ -1024,22 +1024,19 @@ class ApiService {
   }
 
   /// Busca profissionais disponíveis para uma especialidade, data e horário.
-  /// Lógica: qualquer profissional ativo pode ser agendado das 08h–19h,
-  /// desde que não tenha consulta agendada naquele slot.
+  /// Respeita horário_padrao e dias específicos de cada profissional.
   Future<Map<String, dynamic>> getProfissionaisDisponiveis({
     required String? especialidade,
     required DateTime data,
     required String horario,
   }) async {
     try {
-      // 1. Busca todos os profissionais ativos (filtrado por especialidade)
-      var query = _sb
+      // 1. Busca todos os profissionais ativos filtrado por especialidade
+      final todos = await _sb
           .from('usuario')
           .select('id, nome, especialidade, crefito, telefone')
           .eq('id_permissao', Permissao.profissional)
           .eq('ativo', true);
-
-      final todos = await query;
 
       List<Map<String, dynamic>> profissionais = (todos as List)
           .cast<Map<String, dynamic>>()
@@ -1054,7 +1051,8 @@ class ApiService {
 
       // 2. Verifica quais já têm consulta agendada neste slot
       final h = horario.split(':');
-      final dataInicio = DateTime(data.year, data.month, data.day, int.parse(h[0]), int.parse(h[1]));
+      final dataInicio = DateTime(data.year, data.month, data.day,
+          int.parse(h[0]), int.parse(h[1]));
       final dataFim = dataInicio.add(const Duration(hours: 1));
 
       final consultasExistentes = await _sb
@@ -1068,7 +1066,63 @@ class ApiService {
           .map((c) => c['id_profissional'] as String)
           .toSet();
 
-      final disponiveis = profissionais.where((p) => !ocupados.contains(p['id'] as String)).toList();
+      // 3. Para cada profissional sem conflito de consulta, verifica se o horário
+      //    está dentro da disponibilidade configurada (específico ou padrão).
+      final dataStr = data.toIso8601String().split('T')[0];
+      final weekday = data.weekday;
+      final diaBanco = weekday == 7 ? 0 : weekday;
+      final slotH = int.parse(h[0]);
+      final slotM = int.parse(h[1]);
+
+      final disponiveis = <Map<String, dynamic>>[];
+      for (final prof in profissionais) {
+        final profId = prof['id'] as String;
+        if (ocupados.contains(profId)) continue;
+
+        // Verifica dia específico
+        final especificos = await _sb
+            .from('disponibilidade')
+            .select('hora_inicio, hora_fim')
+            .eq('id_profissional', profId)
+            .eq('data', dataStr)
+            .eq('disponivel', true);
+
+        if ((especificos as List).isNotEmpty) {
+          final e = especificos.first;
+          final iniParts = (e['hora_inicio'] as String).split(':');
+          final fimParts = (e['hora_fim'] as String?)?.split(':');
+          final ini = int.parse(iniParts[0]) * 60 + int.parse(iniParts[1]);
+          final slotMin = slotH * 60 + slotM;
+          final fimMin = fimParts != null
+              ? int.parse(fimParts[0]) * 60 + int.parse(fimParts[1])
+              : 23 * 60 + 59;
+          if (slotMin >= ini && slotMin < fimMin) {
+            disponiveis.add(prof);
+          }
+          continue;
+        }
+
+        // Verifica horário padrão
+        final padrao = await _sb
+            .from('horario_padrao')
+            .select('hora_inicio, hora_fim')
+            .eq('id_profissional', profId)
+            .eq('dia_semana', diaBanco)
+            .eq('ativo', true)
+            .maybeSingle();
+
+        if (padrao != null) {
+          final iniParts = (padrao['hora_inicio'] as String).split(':');
+          final fimParts = (padrao['hora_fim'] as String).split(':');
+          final ini = int.parse(iniParts[0]) * 60 + int.parse(iniParts[1]);
+          final fim = int.parse(fimParts[0]) * 60 + int.parse(fimParts[1]);
+          final slotMin = slotH * 60 + slotM;
+          if (slotMin >= ini && slotMin < fim) {
+            disponiveis.add(prof);
+          }
+        }
+        // Se não tem nenhuma configuração, o profissional não é exibido
+      }
 
       return {'success': true, 'data': disponiveis};
     } on PostgrestException catch (e) {
@@ -1078,17 +1132,81 @@ class ApiService {
     }
   }
 
-  /// Retorna slots de 08:00–19:00 para um profissional em uma data,
-  /// excluindo horários já agendados e horários passados.
+  /// Retorna os horários disponíveis de forma agregada — usado no fluxo sem
+  /// profissional pré-selecionado. Lista todos os slots que pelo menos um
+  /// profissional da especialidade indicada atende na data escolhida.
+  Future<Map<String, dynamic>> getHorariosDisponiveisGeral({
+    required DateTime data,
+    String? especialidade,
+  }) async {
+    try {
+      // 1. Busca profissionais ativos da especialidade
+      final todos = await _sb
+          .from('usuario')
+          .select('id')
+          .eq('id_permissao', Permissao.profissional)
+          .eq('ativo', true);
+
+      List<String> ids = (todos as List)
+          .cast<Map<String, dynamic>>()
+          .map((p) => p['id'] as String)
+          .toList();
+
+      if (especialidade != null && especialidade.isNotEmpty) {
+        final filtrados = await _sb
+            .from('usuario')
+            .select('id')
+            .eq('id_permissao', Permissao.profissional)
+            .eq('ativo', true)
+            .ilike('especialidade', '%$especialidade%');
+        ids = (filtrados as List)
+            .cast<Map<String, dynamic>>()
+            .map((p) => p['id'] as String)
+            .toList();
+      }
+
+      if (ids.isEmpty) return {'success': true, 'data': <String>[]};
+
+      // 2. Coleta os slots disponíveis de cada profissional e faz união
+      final Set<String> slotsUnicos = {};
+      for (final profId in ids) {
+        final res = await getHorariosDisponiveis(
+          profissionalId: profId,
+          data: data,
+        );
+        if (res['success'] == true) {
+          slotsUnicos.addAll((res['data'] as List).cast<String>());
+        }
+      }
+
+      final lista = slotsUnicos.toList()..sort();
+      return {'success': true, 'data': lista};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
+  /// Retorna os slots disponíveis de um profissional para uma data específica.
+  ///
+  /// Prioridade:
+  ///   1. Dia específico (tabela `disponibilidade`) — sobrepõe qualquer padrão.
+  ///   2. Horário padrão semanal (tabela `horario_padrao`) — usa o intervalo
+  ///      configurado para o dia da semana correspondente.
+  ///   3. Fallback: 07:00–19:00 (apenas dias úteis, seg–sex).
+  ///
+  /// Em todos os casos, exclui horários já agendados e horários passados.
   Future<Map<String, dynamic>> getHorariosDisponiveis({
     required String profissionalId,
     required DateTime data,
   }) async {
     try {
-      // Consultas já agendadas neste dia para este profissional
       final inicioDia = DateTime(data.year, data.month, data.day);
       final fimDia = inicioDia.add(const Duration(days: 1));
+      final dataStr = inicioDia.toIso8601String().split('T')[0]; // 'YYYY-MM-DD'
 
+      // ── 1. Consultas já agendadas no dia ──────────────────────────────────
       final consultasDia = await _sb
           .from('consulta')
           .select('data_hora')
@@ -1102,14 +1220,82 @@ class ApiService {
         return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
       }).toSet();
 
-      // Gera slots das 08:00 às 19:00 (último início às 18:00)
-      final horariosDisponiveis = <String>[];
-      for (int h = 8; h < 19; h++) {
-        final horario = '${h.toString().padLeft(2, '0')}:00';
-        final slotDt = DateTime(data.year, data.month, data.day, h, 0);
-        if (!horariosOcupados.contains(horario) && slotDt.isAfter(DateTime.now())) {
-          horariosDisponiveis.add(horario);
+      // ── 2. Dia específico (disponibilidade) ───────────────────────────────
+      // Um dia específico sobrepõe completamente o horário padrão.
+      // Se o profissional cadastrou um slot para exatamente esta data, usamos
+      // o intervalo hora_inicio–hora_fim desse slot.
+      int horaIni = 7;
+      int minIni  = 0;
+      int horaFim = 19;
+      int minFim  = 0;
+      bool encontrouEspecifico = false;
+
+      final especificos = await _sb
+          .from('disponibilidade')
+          .select('hora_inicio, hora_fim')
+          .eq('id_profissional', profissionalId)
+          .eq('data', dataStr)
+          .eq('disponivel', true);
+
+      if ((especificos as List).isNotEmpty) {
+        encontrouEspecifico = true;
+        // Usa o primeiro registro (caso haja mais de um, pega o mais amplo)
+        final e = especificos.first;
+        final iniParts = (e['hora_inicio'] as String).split(':');
+        final fimParts = (e['hora_fim']   as String?)?.split(':');
+        horaIni = int.parse(iniParts[0]);
+        minIni  = int.parse(iniParts[1]);
+        if (fimParts != null && fimParts.length >= 2) {
+          horaFim = int.parse(fimParts[0]);
+          minFim  = int.parse(fimParts[1]);
         }
+      }
+
+      // ── 3. Horário padrão semanal ─────────────────────────────────────────
+      // weekday: 1=seg … 7=dom → banco: 1=seg … 0=dom
+      if (!encontrouEspecifico) {
+        final weekday = data.weekday; // 1=seg, 7=dom
+        final diaBanco = weekday == 7 ? 0 : weekday;
+
+        final padrao = await _sb
+            .from('horario_padrao')
+            .select('hora_inicio, hora_fim')
+            .eq('id_profissional', profissionalId)
+            .eq('dia_semana', diaBanco)
+            .eq('ativo', true)
+            .maybeSingle();
+
+        if (padrao != null) {
+          final iniParts = (padrao['hora_inicio'] as String).split(':');
+          final fimParts = (padrao['hora_fim']   as String).split(':');
+          horaIni = int.parse(iniParts[0]);
+          minIni  = int.parse(iniParts[1]);
+          horaFim = int.parse(fimParts[0]);
+          minFim  = int.parse(fimParts[1]);
+        } else {
+          // Sem nenhuma configuração: retorna lista vazia (profissional não
+          // atende neste dia — não exibimos slots fictícios).
+          return {'success': true, 'data': <String>[]};
+        }
+      }
+
+      // ── 4. Gera slots de 1h dentro do intervalo configurado ───────────────
+      final horariosDisponiveis = <String>[];
+      // Arredonda o início para cima ao próximo minuto completo relevante
+      int h = horaIni;
+      int m = minIni > 0 ? 0 : 0; // slots sempre em hora cheia (:00)
+      // Se o início não é em hora cheia, começa na próxima hora cheia
+      if (minIni > 0) h += 1;
+
+      final limiteH = minFim == 0 ? horaFim : horaFim; // último slot possível
+      while (h < limiteH || (h == limiteH && m < minFim)) {
+        final slotStr = '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+        final slotDt  = DateTime(data.year, data.month, data.day, h, m);
+        if (!horariosOcupados.contains(slotStr) && slotDt.isAfter(DateTime.now())) {
+          horariosDisponiveis.add(slotStr);
+        }
+        h += 1; // próximo slot = +1h
+        if (h > 23) break;
       }
 
       return {'success': true, 'data': horariosDisponiveis};

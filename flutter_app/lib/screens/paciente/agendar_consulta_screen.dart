@@ -97,6 +97,20 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
     });
   }
 
+  Future<void> _carregarHorariosGeral(DateTime data) async {
+    setState(() { _loading = true; _horarios = []; _horario = null; });
+    final esp = (_especialidade == null || _especialidade == 'Todas as especialidades') ? null : _especialidade;
+    final res = await _api.getHorariosDisponiveisGeral(
+      data: data,
+      especialidade: esp,
+    );
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (res['success'] == true) _horarios = (res['data'] as List).cast<String>();
+    });
+  }
+
   Future<void> _carregarProfissionaisDisponiveis() async {
     if (_data == null || _horario == null) return;
     setState(() { _loading = true; _profissionais = []; });
@@ -313,14 +327,16 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
               firstDate: DateTime.now(),
               lastDate: DateTime.now().add(const Duration(days: 90)),
               onDateChanged: (d) async {
-                setState(() { _data = d; _horario = null; });
+                setState(() { _data = d; _horario = null; _horarios = []; });
                 if (_profPreSelecionado && _profissional != null) {
+                  // Profissional pré-selecionado: carrega os horários deste profissional
                   await _carregarHorarios(d);
-                  if (!mounted) return;
-                  setState(() => _passo = 2);
                 } else {
-                  setState(() => _passo = 2);
+                  // Fluxo geral: carrega horários agregados de todos os profissionais
+                  await _carregarHorariosGeral(d);
                 }
+                if (!mounted) return;
+                setState(() => _passo = 2);
               },
             ),
           ),
@@ -331,82 +347,71 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
 
   // ── Passo 2: Horário ──────────────────────────────────────────────────────
   Widget _passoHorario() {
-    // Se profissional pré-selecionado: usa horários reais da disponibilidade
+    // Widget de grade de horários reutilizado nos dois fluxos
+    Widget buildGrade({
+      required List<String> horarios,
+      required Future<void> Function(String h) onSelect,
+    }) {
+      if (_loading) return const Center(child: CircularProgressIndicator());
+      if (horarios.isEmpty) {
+        return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.event_busy_rounded, size: 64, color: AppTheme.textHint),
+          const SizedBox(height: 16),
+          const Text('Sem horários disponíveis\nnesta data.', textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textSecondary)),
+          const SizedBox(height: 20),
+          OutlinedButton.icon(onPressed: () => setState(() => _passo = 1), icon: const Icon(Icons.arrow_back_rounded), label: const Text('Escolher outra data')),
+        ]));
+      }
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 2.5, crossAxisSpacing: 10, mainAxisSpacing: 10),
+          itemCount: horarios.length,
+          itemBuilder: (_, i) {
+            final h = horarios[i];
+            final sel = _horario == h;
+            return GestureDetector(
+              onTap: () => onSelect(h),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: sel ? AppTheme.primary : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: sel ? AppTheme.primary : AppTheme.divider),
+                ),
+                child: Center(child: Text(h, style: TextStyle(color: sel ? Colors.white : AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 15))),
+              ),
+            );
+          },
+        ),
+      );
+    }
+
     if (_profPreSelecionado) {
+      // Profissional pré-selecionado: horários reais deste profissional
       return Column(children: [
         _Header(titulo: 'Qual horário prefere?', sub: _data != null ? _formatarData(_data!) : ''),
-        Expanded(
-          child: _loading
-              ? const Center(child: CircularProgressIndicator())
-              : _horarios.isEmpty
-                  ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.event_busy_rounded, size: 64, color: AppTheme.textHint),
-                      const SizedBox(height: 16),
-                      const Text('Sem horários disponíveis\nnesta data.', textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textSecondary)),
-                      const SizedBox(height: 20),
-                      OutlinedButton.icon(onPressed: () => setState(() => _passo = 1), icon: const Icon(Icons.arrow_back_rounded), label: const Text('Escolher outra data')),
-                    ]))
-                  : Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 2.5, crossAxisSpacing: 10, mainAxisSpacing: 10),
-                        itemCount: _horarios.length,
-                        itemBuilder: (_, i) {
-                          final h = _horarios[i];
-                          final sel = _horario == h;
-                          return GestureDetector(
-                            onTap: () => setState(() { _horario = h; _passo = 4; }),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              decoration: BoxDecoration(
-                                color: sel ? AppTheme.primary : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: sel ? AppTheme.primary : AppTheme.divider),
-                              ),
-                              child: Center(child: Text(h, style: TextStyle(color: sel ? Colors.white : AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 15))),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-        ),
+        Expanded(child: buildGrade(
+          horarios: _horarios,
+          onSelect: (h) async {
+            setState(() { _horario = h; _passo = 4; });
+          },
+        )),
       ]);
     }
 
-    // Sem profissional pré-selecionado: horários padrão
-    final horariosPadrao = ['07:00','08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+    // Fluxo geral: horários agregados de todos os profissionais da especialidade
     return Column(children: [
       _Header(titulo: 'Qual horário prefere?', sub: _data != null ? _formatarData(_data!) : ''),
-      Expanded(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, childAspectRatio: 2.5, crossAxisSpacing: 10, mainAxisSpacing: 10),
-            itemCount: horariosPadrao.length,
-            itemBuilder: (_, i) {
-              final h = horariosPadrao[i];
-              final sel = _horario == h;
-              return GestureDetector(
-                onTap: () async {
-                  setState(() { _horario = h; });
-                  await _carregarProfissionaisDisponiveis();
-                  if (!mounted) return;
-                  setState(() => _passo = 3);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  decoration: BoxDecoration(
-                    color: sel ? AppTheme.primary : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: sel ? AppTheme.primary : AppTheme.divider),
-                  ),
-                  child: Center(child: Text(h, style: TextStyle(color: sel ? Colors.white : AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 15))),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
+      Expanded(child: buildGrade(
+        horarios: _horarios,
+        onSelect: (h) async {
+          setState(() { _horario = h; });
+          await _carregarProfissionaisDisponiveis();
+          if (!mounted) return;
+          setState(() => _passo = 3);
+        },
+      )),
     ]);
   }
 
