@@ -60,14 +60,15 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
         : [];
 
     // Marca automaticamente como 'nao_compareceu' consultas agendadas/confirmadas
-    // cujo horário já passou sem que o profissional tenha feito checkout.
+    // cujo horário já passou há mais de 3 horas sem checkout.
     final agora = DateTime.now();
+    final limiteExpiracao = agora.subtract(const Duration(hours: 3));
     final vencidas = consultas.where((c) {
       final status = (c['status'] as String?)?.toLowerCase();
       final dt = DateTime.tryParse(c['data_hora'] as String? ?? '');
       return (status == 'agendada' || status == 'confirmada') &&
           dt != null &&
-          dt.isBefore(agora);
+          dt.isBefore(limiteExpiracao);
     }).toList();
 
     for (final c in vencidas) {
@@ -733,7 +734,10 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
 
   Widget _historicoConsultasWidget() {
     final passadas = _consultas
-        .where((c) => (c['status'] as String?)?.toLowerCase() == 'finalizada')
+        .where((c) {
+          final status = (c['status'] as String?)?.toLowerCase();
+          return status == 'finalizada' || status == 'realizada';
+        })
         .toList();
 
     if (passadas.isEmpty) {

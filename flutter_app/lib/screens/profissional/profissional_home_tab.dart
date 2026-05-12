@@ -64,9 +64,9 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
 
             for (var c in _todasConsultas) {
               final status = (c['status'] as String?)?.toLowerCase() ?? 'agendada';
-              if (status == 'agendada') {
+              if (status == 'agendada' || status == 'confirmada') {
                 _agendadas++;
-              } else if (status == 'realizada') {
+              } else if (status == 'realizada' || status == 'finalizada') {
                 _realizadas++;
               } else if (status == 'cancelada') {
                 _canceladas++;
@@ -663,7 +663,10 @@ class _ConsultaTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(paciente?['nome'] ?? 'Paciente Não Identificado',
+                Text(
+                    (paciente?['nome'] as String?)?.isNotEmpty == true
+                        ? paciente!['nome'] as String
+                        : 'Paciente Não Identificado',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.textPrimary)),
                 const SizedBox(height: 4),
                 Row(

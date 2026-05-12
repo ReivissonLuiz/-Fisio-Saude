@@ -617,7 +617,7 @@ class ApiService {
       final data = await _sb
           .from('consulta')
           .select(
-              '*, paciente:id_paciente(nome, email, telefone, data_nasc, genero)')
+              '*, paciente:id_paciente(id, nome, email, telefone, data_nasc, genero, avatar_url)')
           .eq('id_profissional', profissionalId)
           .order('data_hora', ascending: true);
       return {'success': true, 'data': data};
