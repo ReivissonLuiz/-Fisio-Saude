@@ -55,14 +55,33 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
 
     if (!mounted) return;
 
+    List<dynamic> consultas = results[2]['success'] == true
+        ? (results[2]['data'] as List? ?? [])
+        : [];
+
+    // Marca automaticamente como 'nao_compareceu' consultas agendadas/confirmadas
+    // cujo horário já passou sem que o profissional tenha feito checkout.
+    final agora = DateTime.now();
+    final vencidas = consultas.where((c) {
+      final status = (c['status'] as String?)?.toLowerCase();
+      final dt = DateTime.tryParse(c['data_hora'] as String? ?? '');
+      return (status == 'agendada' || status == 'confirmada') &&
+          dt != null &&
+          dt.isBefore(agora);
+    }).toList();
+
+    for (final c in vencidas) {
+      await _api.marcarNaoCompareceu(consultaId: c['id'] as String);
+      // Atualiza localmente para refletir sem novo fetch
+      c['status'] = 'nao_compareceu';
+    }
+
     setState(() {
       _loading = false;
       if (results[1]['success'] == true) {
         _sintomas = results[1]['data'] as List? ?? [];
       }
-      if (results[2]['success'] == true) {
-        _consultas = results[2]['data'] as List? ?? [];
-      }
+      _consultas = consultas;
       _notifCount = nCount;
     });
   }
@@ -410,8 +429,15 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
   }
 
   Widget _proximaConsulta() {
+    final agora = DateTime.now();
     final proximas = _consultas
-        .where((c) => ['agendada', 'confirmada'].contains((c['status'] as String?)?.toLowerCase()))
+        .where((c) {
+          final status = (c['status'] as String?)?.toLowerCase();
+          final dt = DateTime.tryParse(c['data_hora'] as String? ?? '');
+          return (status == 'agendada' || status == 'confirmada') &&
+              dt != null &&
+              dt.isAfter(agora);
+        })
         .toList();
 
     if (proximas.isEmpty) {

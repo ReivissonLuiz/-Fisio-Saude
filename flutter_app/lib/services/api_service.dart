@@ -1506,6 +1506,22 @@ class ApiService {
       return {'success': false, 'message': 'Erro ao confirmar consulta.'};
     }
   }
+
+  /// Marca silenciosamente uma consulta vencida como 'nao_compareceu'.
+  /// Chamado automaticamente pelo cliente quando detecta consultas passadas
+  /// ainda com status agendada/confirmada. Sem notificações.
+  Future<void> marcarNaoCompareceu({required String consultaId}) async {
+    try {
+      await _sb
+          .from('consulta')
+          .update({'status': 'nao_compareceu'})
+          .eq('id', consultaId)
+          .inFilter('status', ['agendada', 'Agendada', 'confirmada', 'Confirmada']);
+    } catch (_) {
+      // Silencioso — falha não impede o fluxo principal
+    }
+  }
+
   /// Cancela uma consulta agendada e notifica a outra parte.
   Future<Map<String, dynamic>> cancelarConsulta({
     required String consultaId,
