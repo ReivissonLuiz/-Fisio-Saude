@@ -736,7 +736,10 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
     final passadas = _consultas
         .where((c) {
           final status = (c['status'] as String?)?.toLowerCase();
-          return status == 'finalizada' || status == 'realizada';
+          return status == 'finalizada' || 
+                 status == 'realizada' || 
+                 status == 'nao_compareceu' || 
+                 status == 'cancelada';
         })
         .toList();
 
@@ -774,10 +777,20 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.accent.withValues(alpha: 0.1),
+                      color: ((c['status'] as String?)?.toLowerCase() == 'nao_compareceu' || (c['status'] as String?)?.toLowerCase() == 'cancelada')
+                          ? AppTheme.error.withValues(alpha: 0.1)
+                          : AppTheme.accent.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.check_circle_rounded, color: AppTheme.accent, size: 24),
+                    child: Icon(
+                      ((c['status'] as String?)?.toLowerCase() == 'nao_compareceu' || (c['status'] as String?)?.toLowerCase() == 'cancelada')
+                          ? Icons.cancel_rounded
+                          : Icons.check_circle_rounded, 
+                      color: ((c['status'] as String?)?.toLowerCase() == 'nao_compareceu' || (c['status'] as String?)?.toLowerCase() == 'cancelada')
+                          ? AppTheme.error
+                          : AppTheme.accent, 
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -786,6 +799,14 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                       children: [
                         Text(profissional?['nome'] ?? 'Profissional', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                         Text(dtFormatada, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                        if ((c['status'] as String?)?.toLowerCase() == 'nao_compareceu' || (c['status'] as String?)?.toLowerCase() == 'cancelada')
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              (c['status'] as String?)?.toLowerCase() == 'cancelada' ? 'Cancelada' : 'Não Compareceu',
+                              style: const TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                       ],
                     ),
                   ),
