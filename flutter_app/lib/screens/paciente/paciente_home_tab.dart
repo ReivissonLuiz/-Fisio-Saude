@@ -435,9 +435,9 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
         .where((c) {
           final status = (c['status'] as String?)?.toLowerCase();
           final dt = DateTime.tryParse(c['data_hora'] as String? ?? '');
-          return (status == 'agendada' || status == 'confirmada') &&
-              dt != null &&
-              dt.isAfter(agora);
+          // Mostra se o status for agendado/confirmado, independente se o horário já passou
+          // (contanto que ainda não tenha sido processada como 'nao_compareceu' pelo script de limpeza)
+          return (status == 'agendada' || status == 'confirmada') && dt != null;
         })
         .toList();
 
