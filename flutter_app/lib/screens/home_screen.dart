@@ -396,6 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
       endDrawer: NotificacoesPanel(
         usuarioId: usuarioIdFinal,
         onNavigateToAgenda: () => setState(() => _tabIndex = 0),
+        onNavigateToRecomendacoes: () => setState(() => _tabIndex = 2),
       ),
       body: SafeArea(
         child: Column(

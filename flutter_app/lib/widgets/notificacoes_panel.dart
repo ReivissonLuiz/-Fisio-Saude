@@ -10,7 +10,13 @@ import '../screens/shared/chat_screen.dart';
 class NotificacoesPanel extends StatefulWidget {
   final String usuarioId;
   final VoidCallback? onNavigateToAgenda;
-  const NotificacoesPanel({super.key, required this.usuarioId, this.onNavigateToAgenda});
+  final VoidCallback? onNavigateToRecomendacoes;
+  const NotificacoesPanel({
+    super.key,
+    required this.usuarioId,
+    this.onNavigateToAgenda,
+    this.onNavigateToRecomendacoes,
+  });
 
   @override
   State<NotificacoesPanel> createState() => _NotificacoesPanelState();
@@ -48,6 +54,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       case 'cancelamento': return Icons.event_busy_rounded;
       case 'reagendamento': return Icons.edit_calendar_rounded;
       case 'chat': return Icons.chat_bubble_outline_rounded;
+      case 'recomendacao': return Icons.fitness_center_rounded;
       default: return Icons.notifications_rounded;
     }
   }
@@ -58,6 +65,7 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       case 'cancelamento': return AppTheme.error;
       case 'reagendamento': return AppTheme.warning;
       case 'chat': return AppTheme.secondary;
+      case 'recomendacao': return const Color(0xFFE91E63);
       default: return AppTheme.primary;
     }
   }
@@ -151,6 +159,12 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                         ),
                                       ),
                                     );
+                                  }
+
+                                  if (tipo == 'recomendacao' && widget.onNavigateToRecomendacoes != null) {
+                                    if (!context.mounted) return;
+                                    Navigator.pop(context); // Fecha o painel
+                                    widget.onNavigateToRecomendacoes!();
                                   }
                                 },
                                 child: AnimatedContainer(
