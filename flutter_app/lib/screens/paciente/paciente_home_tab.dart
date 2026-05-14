@@ -3,6 +3,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../services/notification_service.dart';
@@ -574,6 +575,24 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: () => _confirmar(c),
+                      ),
+                    ),
+                  ),
+                if (c['link_meet'] != null && (c['link_meet'] as String).isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.video_camera_front_rounded),
+                        label: const Text('Entrar na Consulta (Google Meet)'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.secondary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        onPressed: () => launchUrl(Uri.parse(c['link_meet']), mode: LaunchMode.externalApplication),
                       ),
                     ),
                   ),

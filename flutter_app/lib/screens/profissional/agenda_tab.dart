@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 import '../shared/reagendar_screen.dart';
@@ -633,6 +634,14 @@ class _ConsultaAgendaTile extends StatelessWidget {
                   onPressed: onDetalhes,
                   child: const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
+                if (consulta['link_meet'] != null && (consulta['link_meet'] as String).isNotEmpty && (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.video_camera_front_rounded, color: AppTheme.secondary),
+                    tooltip: 'Entrar no Meet',
+                    onPressed: () => launchUrl(Uri.parse(consulta['link_meet']), mode: LaunchMode.externalApplication),
+                  ),
+                ],
                 if ((consulta['status'] as String?)?.toLowerCase() != 'cancelada' && (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
                   const SizedBox(width: 8),
                   ElevatedButton(
