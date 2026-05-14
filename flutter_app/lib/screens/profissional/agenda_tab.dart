@@ -640,7 +640,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Linha 1: Cancelar / Reagendar (só para futuras)
+                // Linha 1: Cancelar / Reagendar (só para consultas futuras)
                 if (!isPassada &&
                     (consulta['status'] as String?)?.toLowerCase() != 'cancelada' &&
                     (consulta['status'] as String?)?.toLowerCase() != 'finalizada')
@@ -663,7 +663,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                // Linha 2: Detalhes + Meet + Checkout
+                // Linha 2: Detalhes + Meet (alinhados à esquerda)
                 Row(
                   children: [
                     TextButton(
@@ -688,26 +688,30 @@ class _ConsultaAgendaTile extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const Spacer(),
-                    if ((consulta['status'] as String?)?.toLowerCase() != 'cancelada' &&
-                        (consulta['status'] as String?)?.toLowerCase() != 'finalizada')
-                      ElevatedButton.icon(
-                        onPressed: onCheckout,
-                        icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
-                        label: const Text('Checkout', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        ),
-                      ),
                   ],
                 ),
+                // Linha 3: Checkout (linha própria, largura total — sempre visível)
+                if ((consulta['status'] as String?)?.toLowerCase() != 'cancelada' &&
+                    (consulta['status'] as String?)?.toLowerCase() != 'finalizada')
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: onCheckout,
+                      icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
+                      label: const Text('Checkout', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
+
 
         ],
       ),
