@@ -1424,11 +1424,11 @@ class ApiService {
     required String relatorio,
   }) async {
     try {
-      await _sb.from('consulta').update({
+      final updated = await _sb.from('consulta').update({
         'status': 'finalizada',
         'relatorio': relatorio,
-      }).eq('id', consultaId);
-      return {'success': true};
+      }).eq('id', consultaId).select().single();
+      return {'success': true, 'data': updated};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {

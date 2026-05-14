@@ -185,8 +185,10 @@ class _AgendaTabState extends State<AgendaTab> {
           const SnackBar(content: Text('Consulta finalizada! Carregando recomendações de exercícios...')),
         );
         _loadAgenda();
-        // Abre o modal de recomendação ML após checkout bem-sucedido
-        await _abrirModalRecomendacao(c);
+        // Usa o objeto atualizado retornado pela API (contém o relatorio recém salvo)
+        // para garantir que o ML receba o texto clínico correto.
+        final consultaAtualizada = (res['data'] as Map<String, dynamic>?) ?? c;
+        await _abrirModalRecomendacao(consultaAtualizada);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(res['message'] as String? ?? 'Erro ao finalizar consulta.')),
@@ -208,6 +210,9 @@ class _AgendaTabState extends State<AgendaTab> {
         ? (sintomasRes['data'] as List).take(5).toList()
         : [];
 
+    // Relatório da consulta recem finalizada (inputado pelo profissional no checkout)
+    final relatorio = consulta['relatorio'] as String? ?? '';
+
     if (!mounted) return;
 
     // Chama a API de ML em background
@@ -215,12 +220,25 @@ class _AgendaTabState extends State<AgendaTab> {
     bool mlDisponivel = true;
 
     try {
-      final payload = {
-        'sintomas': sintomas.map((s) => {
+      // Monta a lista de sintomas: histórico do paciente + relatório clínico
+      final List<Map<String, dynamic>> sintomasPayload = [
+        ...sintomas.map((s) => {
           'descricao': s['descricao'] ?? '',
           'categoria': s['categoria'] ?? 'Outra Região',
           'intensidade': s['intensidade'] ?? 5,
-        }).toList(),
+        }),
+        // Inclui o relatório do profissional como sintoma extra,
+        // dando ao ML contexto clínico além do auto-relato do paciente.
+        if (relatorio.isNotEmpty)
+          {
+            'descricao': relatorio,
+            'categoria': 'Outra Região',
+            'intensidade': 5, // intensidade neutra — peso moderado no perfil
+          },
+      ];
+
+      final payload = {
+        'sintomas': sintomasPayload,
         'top_n': 5,
         'paciente_id': pacienteId,
         'profissional_id': widget.profissionalId,
