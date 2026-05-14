@@ -636,56 +636,79 @@ class _ConsultaAgendaTile extends StatelessWidget {
               ),
             ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Linha 1: Cancelar / Reagendar (só para futuras)
                 if (!isPassada &&
                     (consulta['status'] as String?)?.toLowerCase() != 'cancelada' &&
-                    (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
-                  TextButton.icon(
-                    onPressed: onCancelar,
-                    icon: const Icon(Icons.event_busy_rounded, size: 16),
-                    label: const Text('Cancelar'),
-                    style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+                    (consulta['status'] as String?)?.toLowerCase() != 'finalizada')
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: onCancelar,
+                          icon: const Icon(Icons.event_busy_rounded, size: 16),
+                          label: const Text('Cancelar'),
+                          style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+                        ),
+                      ),
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: onReagendar,
+                          icon: const Icon(Icons.edit_calendar_rounded, size: 16),
+                          label: const Text('Reagendar'),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  TextButton.icon(
-                    onPressed: onReagendar,
-                    icon: const Icon(Icons.edit_calendar_rounded, size: 16),
-                    label: const Text('Reagendar'),
-                  ),
-                  const Spacer(),
-                ],
-                TextButton(
-                  onPressed: onDetalhes,
-                  child: const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                if (consulta['link_meet'] != null && (consulta['link_meet'] as String).isNotEmpty && (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.video_camera_front_rounded, color: AppTheme.secondary),
-                    tooltip: 'Entrar no Meet',
-                    onPressed: () => launchUrl(Uri.parse(consulta['link_meet']), mode: LaunchMode.externalApplication),
-                  ),
-                ],
-                if ((consulta['status'] as String?)?.toLowerCase() != 'cancelada' && (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: onCheckout,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                // Linha 2: Detalhes + Meet + Checkout
+                Row(
+                  children: [
+                    TextButton(
+                      onPressed: onDetalhes,
+                      child: const Text('Detalhes', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
-                    child: const Text('Checkout', style: TextStyle(fontSize: 12)),
-                  ),
-                ],
+                    if (consulta['link_meet'] != null &&
+                        (consulta['link_meet'] as String).isNotEmpty &&
+                        (consulta['status'] as String?)?.toLowerCase() != 'finalizada') ...[
+                      const SizedBox(width: 4),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.video_camera_front_rounded, size: 16),
+                        label: const Text('Meet', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.secondary,
+                          side: const BorderSide(color: AppTheme.secondary),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        ),
+                        onPressed: () => launchUrl(
+                          Uri.parse(consulta['link_meet']),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    if ((consulta['status'] as String?)?.toLowerCase() != 'cancelada' &&
+                        (consulta['status'] as String?)?.toLowerCase() != 'finalizada')
+                      ElevatedButton.icon(
+                        onPressed: onCheckout,
+                        icon: const Icon(Icons.assignment_turned_in_rounded, size: 16),
+                        label: const Text('Checkout', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
+
         ],
       ),
     );
