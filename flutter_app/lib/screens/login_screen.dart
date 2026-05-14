@@ -128,15 +128,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         prefixIcon: const Icon(Icons.email_outlined,
                             color: AppTheme.textSecondary),
                         validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Informe seu e-mail.';
-                          }
-                          if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-                              .hasMatch(v)) {
-                            return 'E-mail inválido.';
-                          }
-                          return null;
-                        },
+  final email = v?.trim() ?? '';
+
+  if (email.isEmpty) {
+    return 'Informe seu e-mail.';
+  }
+
+  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+      .hasMatch(email)) {
+    return 'E-mail inválido.';
+  }
+
+  return null;
+},
                         onChanged: (_) => setState(() => _errorMessage = null),
                       ),
                       const SizedBox(height: 16),
