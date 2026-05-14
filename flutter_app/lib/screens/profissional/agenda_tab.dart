@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:http/http.dart' as http;
@@ -198,6 +199,17 @@ class _AgendaTabState extends State<AgendaTab> {
     }
   }
 
+  /// Carrega o catálogo de exercícios embutido no app como fallback.
+  Future<List<Map<String, dynamic>>> _carregarCatalogoLocal() async {
+    try {
+      final jsonStr = await rootBundle.loadString('assets/catalogo_exercicios.json');
+      final lista = jsonDecode(jsonStr) as List;
+      return lista.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   /// Busca sintomas do paciente e chama a API ML para recomendações.
   Future<void> _abrirModalRecomendacao(dynamic consulta) async {
     if (!mounted) return;
@@ -228,13 +240,11 @@ class _AgendaTabState extends State<AgendaTab> {
           'categoria': s['categoria'] ?? 'Outra Região',
           'intensidade': s['intensidade'] ?? 5,
         }),
-        // Inclui o relatório do profissional como sintoma extra,
-        // dando ao ML contexto clínico além do auto-relato do paciente.
         if (relatorio.isNotEmpty)
           {
             'descricao': relatorio,
             'categoria': 'Outra Região',
-            'intensidade': 5, // intensidade neutra — peso moderado no perfil
+            'intensidade': 5,
           },
       ];
 
@@ -259,6 +269,23 @@ class _AgendaTabState extends State<AgendaTab> {
       }
     } catch (_) {
       mlDisponivel = false;
+    }
+
+    // Fallback: quando ML offline, tenta GET /catalogo; se falhar, carrega asset local
+    if (!mlDisponivel) {
+      try {
+        final catResponse = await http
+            .get(Uri.parse('$_mlApiUrl/catalogo'))
+            .timeout(const Duration(seconds: 5));
+        if (catResponse.statusCode == 200) {
+          final data = jsonDecode(catResponse.body);
+          recomendacoesML = List<Map<String, dynamic>>.from(data['exercicios'] ?? []);
+        } else {
+          recomendacoesML = await _carregarCatalogoLocal();
+        }
+      } catch (_) {
+        recomendacoesML = await _carregarCatalogoLocal();
+      }
     }
 
     if (!mounted) return;
@@ -1009,21 +1036,41 @@ class _RecomendacaoMLModal extends StatefulWidget {
 class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
   final Set<String> _selecionados = {};
   final _msgCtrl = TextEditingController();
+  final _buscaCtrl = TextEditingController();
   bool _enviando = false;
+  String _termoBusca = '';
 
   @override
   void initState() {
     super.initState();
-    // Pré-seleciona o exercício com maior score de similaridade
-    if (widget.recomendacoes.isNotEmpty) {
+    // Pré-seleciona o exercício com maior score de similaridade (apenas quando ML ativo)
+    if (widget.mlDisponivel && widget.recomendacoes.isNotEmpty) {
       _selecionados.add(widget.recomendacoes.first['id'] as String);
     }
+    _buscaCtrl.addListener(() {
+      setState(() => _termoBusca = _buscaCtrl.text.toLowerCase());
+    });
   }
 
   @override
   void dispose() {
     _msgCtrl.dispose();
+    _buscaCtrl.dispose();
     super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _exerciciosFiltrados {
+    if (_termoBusca.isEmpty) return widget.recomendacoes;
+    return widget.recomendacoes.where((ex) {
+      final nome = (ex['nome_pt'] as String? ?? '').toLowerCase();
+      final regiao = (ex['regiao_display'] as String? ?? '').toLowerCase();
+      final desc = (ex['descricao'] as String? ?? '').toLowerCase();
+      final kws = (ex['palavras_chave'] as String? ?? '').toLowerCase();
+      return nome.contains(_termoBusca) ||
+          regiao.contains(_termoBusca) ||
+          desc.contains(_termoBusca) ||
+          kws.contains(_termoBusca);
+    }).toList();
   }
 
   Color _corNivel(String nivel) {
@@ -1187,20 +1234,49 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
               ),
             ),
 
+          // Campo de busca (apenas no modo catálogo completo)
+          if (!widget.mlDisponivel)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              child: TextField(
+                controller: _buscaCtrl,
+                decoration: InputDecoration(
+                  hintText: 'Pesquisar por nome, região ou sintoma...',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _termoBusca.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () => _buscaCtrl.clear(),
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.divider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.divider),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  isDense: true,
+                ),
+              ),
+            ),
+
           // Lista de exercícios
           Expanded(
-            child: widget.recomendacoes.isEmpty
-                ? const Center(
+            child: _exerciciosFiltrados.isEmpty
+                ? Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.fitness_center_rounded, size: 56, color: AppTheme.textHint),
-                        SizedBox(height: 16),
-                        Text('Nenhum exercício disponível.', style: TextStyle(color: AppTheme.textSecondary)),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 16),
                         Text(
-                          'Configure a API ML para habilitar as recomendações.',
-                          style: TextStyle(color: AppTheme.textHint, fontSize: 12),
+                          _termoBusca.isNotEmpty
+                              ? 'Nenhum exercício encontrado para "$_termoBusca"'
+                              : 'Nenhum exercício disponível.',
+                          style: const TextStyle(color: AppTheme.textSecondary),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -1214,7 +1290,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.textSecondary),
                       ),
                       const SizedBox(height: 10),
-                      ...widget.recomendacoes.asMap().entries.map((entry) {
+                      ..._exerciciosFiltrados.asMap().entries.map((entry) {
                         final idx = entry.key;
                         final ex = entry.value;
                         final id = ex['id'] as String;

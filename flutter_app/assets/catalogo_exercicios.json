@@ -1,0 +1,363 @@
+[
+  {
+    "id": "ankle_plantar_flexion_bilateral",
+    "pasta_kaggle": "Ankle_Plantar_Flexion_Bilateral",
+    "nome_pt": "Flexão Plantar de Tornozelo (Bilateral)",
+    "nome_en": "Ankle Plantar Flexion",
+    "lateralidade": "bilateral",
+    "regiao_corporal": "tornozelo pe",
+    "regiao_display": "Tornozelo / Pé",
+    "descricao": "Exercício de fortalecimento e mobilidade do tornozelo realizando flexão plantar com ambos os pés simultaneamente. Indicado para reabilitação pós-entorse, fortalecimento da panturrilha e melhora do equilíbrio.",
+    "palavras_chave": "tornozelo flexao plantar panturrilha reabilitacao equilibrio bilateral entorse pe mobilidade",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1vBGgMmc87jUd5I_0VOEeCWGH-Y-NgGQZ",
+    "indicacoes": [
+      "dor no tornozelo",
+      "entorse",
+      "fraqueza na panturrilha",
+      "reabilitacao pos cirurgia tornozelo",
+      "instabilidade de tornozelo"
+    ]
+  },
+  {
+    "id": "arm_circumduction_left",
+    "pasta_kaggle": "Arm_Circumduction_Left",
+    "nome_pt": "Circundução do Braço (Esquerdo)",
+    "nome_en": "Arm Circumduction Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "braco ombro cotovelo",
+    "regiao_display": "Braço / Ombro Esquerdo",
+    "descricao": "Movimentos circulares amplos com o braço esquerdo para mobilidade do ombro e melhora da amplitude de movimento. Excelente para capsulite adesiva e rigidez do ombro.",
+    "palavras_chave": "braco esquerdo circunducao ombro amplitude movimento mobilidade rigidez capsulite rotacao",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1bZd73tzilxBPwlgYgFCcyXKfipUBg9Cp",
+    "indicacoes": [
+      "dor no ombro esquerdo",
+      "rigidez",
+      "capsulite",
+      "limitacao de movimento",
+      "reabilitacao ombro"
+    ]
+  },
+  {
+    "id": "arm_circumduction_right",
+    "pasta_kaggle": "Arm_Circumduction_Right",
+    "nome_pt": "Circundução do Braço (Direito)",
+    "nome_en": "Arm Circumduction Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "braco ombro cotovelo",
+    "regiao_display": "Braço / Ombro Direito",
+    "descricao": "Movimentos circulares amplos com o braço direito para mobilidade do ombro e melhora da amplitude de movimento. Excelente para capsulite adesiva e rigidez do ombro.",
+    "palavras_chave": "braco direito circunducao ombro amplitude movimento mobilidade rigidez capsulite rotacao",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1LJUbvZLtsQzesz4Pf3AgXbYMJ1PcgooZ",
+    "indicacoes": [
+      "dor no ombro direito",
+      "rigidez",
+      "capsulite",
+      "limitacao de movimento",
+      "reabilitacao ombro"
+    ]
+  },
+  {
+    "id": "ball_press_left",
+    "pasta_kaggle": "Ball_Press_Left",
+    "nome_pt": "Pressão com Bola (Mão Esquerda)",
+    "nome_en": "Ball Press Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "punho mao dedos",
+    "regiao_display": "Punho / Mão Esquerda",
+    "descricao": "Exercício de fortalecimento da musculatura intrínseca da mão esquerda e punho através da compressão de bola. Indicado para reabilitação pós-fratura, síndrome do túnel do carpo e artrite.",
+    "palavras_chave": "bola pressao mao esquerda punho dedos forca preensao tunel carpo artrite fratura reabilitacao",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1fxb54anul8IXCicRTqyruIMSDM_LdlyI",
+    "indicacoes": [
+      "dor na mao esquerda",
+      "fraqueza na mao",
+      "tunel do carpo",
+      "artrite",
+      "fratura no punho",
+      "dedos rigidos"
+    ]
+  },
+  {
+    "id": "ball_press_right",
+    "pasta_kaggle": "Ball_Press_Right",
+    "nome_pt": "Pressão com Bola (Mão Direita)",
+    "nome_en": "Ball Press Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "punho mao dedos",
+    "regiao_display": "Punho / Mão Direita",
+    "descricao": "Exercício de fortalecimento da musculatura intrínseca da mão direita e punho através da compressão de bola. Indicado para reabilitação pós-fratura, síndrome do túnel do carpo e artrite.",
+    "palavras_chave": "bola pressao mao direita punho dedos forca preensao tunel carpo artrite fratura reabilitacao",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1xyHMZRKmhXXYEpdw-riWZHPqeOnCcQHt",
+    "indicacoes": [
+      "dor na mao direita",
+      "fraqueza na mao",
+      "tunel do carpo",
+      "artrite",
+      "fratura no punho",
+      "dedos rigidos"
+    ]
+  },
+  {
+    "id": "cross_body_shoulder_stretch_left",
+    "pasta_kaggle": "Cross_Body_Shoulder_Stretch_Left",
+    "nome_pt": "Alongamento Cruzado de Ombro (Esquerdo)",
+    "nome_en": "Cross-Body Shoulder Stretch Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "ombro braco cervical",
+    "regiao_display": "Ombro Esquerdo",
+    "descricao": "Alongamento do ombro esquerdo puxando o braço horizontalmente através do corpo. Ideal para aliviar tensão muscular, tendinite e melhorar a flexibilidade do manguito rotador.",
+    "palavras_chave": "alongamento ombro esquerdo cruzado flexibilidade tensao tendinite manguito rotador postura",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1d1hoQHw08J0r0jfFxdvrGQr2joOsIrTv",
+    "indicacoes": [
+      "dor no ombro esquerdo",
+      "tendinite",
+      "tensao muscular",
+      "limitacao ao levantar braco",
+      "manguito rotador"
+    ]
+  },
+  {
+    "id": "cross_body_shoulder_stretch_right",
+    "pasta_kaggle": "Cross_Body_Shoulder_Stretch_Right",
+    "nome_pt": "Alongamento Cruzado de Ombro (Direito)",
+    "nome_en": "Cross-Body Shoulder Stretch Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "ombro braco cervical",
+    "regiao_display": "Ombro Direito",
+    "descricao": "Alongamento do ombro direito puxando o braço horizontalmente através do corpo. Ideal para aliviar tensão muscular, tendinite e melhorar a flexibilidade do manguito rotador.",
+    "palavras_chave": "alongamento ombro direito cruzado flexibilidade tensao tendinite manguito rotador postura",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1tmsaKEeg2hhUCq5roxWiWSXikiqG2h55",
+    "indicacoes": [
+      "dor no ombro direito",
+      "tendinite",
+      "tensao muscular",
+      "limitacao ao levantar braco",
+      "manguito rotador"
+    ]
+  },
+  {
+    "id": "isometric_rotation_left",
+    "pasta_kaggle": "Isometric_Rotation_Left",
+    "nome_pt": "Rotação Isométrica (Lado Esquerdo)",
+    "nome_en": "Isometric Rotation Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "cervical pescoco coluna",
+    "regiao_display": "Cervical (Pescoço)",
+    "descricao": "Exercício isométrico de fortalecimento dos músculos rotadores do pescoço do lado esquerdo, sem movimento articular. Fundamental para cervicalgia, torcicolo e reabilitação cervical.",
+    "palavras_chave": "isometrico rotacao cervical pescoco esquerdo torcicolo cervicalgia fortalecimento sem movimento",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1QUEz4eHMTkR-PFV5B14hFlFkn33dOD4w",
+    "indicacoes": [
+      "dor no pescoco",
+      "cervicalgia",
+      "torcicolo",
+      "rigidez cervical",
+      "tensao no pescoco",
+      "dor ao girar a cabeca"
+    ]
+  },
+  {
+    "id": "isometric_rotation_right",
+    "pasta_kaggle": "Isometric_Rotation_Right",
+    "nome_pt": "Rotação Isométrica (Lado Direito)",
+    "nome_en": "Isometric Rotation Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "cervical pescoco coluna",
+    "regiao_display": "Cervical (Pescoço)",
+    "descricao": "Exercício isométrico de fortalecimento dos músculos rotadores do pescoço do lado direito, sem movimento articular. Fundamental para cervicalgia, torcicolo e reabilitação cervical.",
+    "palavras_chave": "isometrico rotacao cervical pescoco direito torcicolo cervicalgia fortalecimento sem movimento",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1Ksi5SxchswrRMv3ZXrnwLUym0eLwp9mo",
+    "indicacoes": [
+      "dor no pescoco",
+      "cervicalgia",
+      "torcicolo",
+      "rigidez cervical",
+      "tensao no pescoco",
+      "dor ao girar a cabeca"
+    ]
+  },
+  {
+    "id": "isometric_side_bending_left",
+    "pasta_kaggle": "Isometric_Side_Bending_Left",
+    "nome_pt": "Inclinação Lateral Isométrica (Esquerda)",
+    "nome_en": "Isometric Side Bending Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "cervical pescoco coluna lombar lateral",
+    "regiao_display": "Cervical / Coluna Lateral",
+    "descricao": "Exercício isométrico de inclinação lateral da cabeça e coluna para o lado esquerdo, fortalecendo os músculos laterais do pescoço e da coluna. Auxilia no tratamento de hérnia e lordose.",
+    "palavras_chave": "isometrico inclinacao lateral esquerda pescoco coluna hernia lordose postura fortalecimento",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1tk6J1ouVRh9ux276H7Yay55pdI0YjHtY",
+    "indicacoes": [
+      "dor lateral no pescoco",
+      "hernia cervical",
+      "lordose",
+      "coluna desviada",
+      "dor ao inclinar cabeca"
+    ]
+  },
+  {
+    "id": "isometric_side_bending_right",
+    "pasta_kaggle": "Isometric_Side_Bending_Right",
+    "nome_pt": "Inclinação Lateral Isométrica (Direita)",
+    "nome_en": "Isometric Side Bending Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "cervical pescoco coluna lombar lateral",
+    "regiao_display": "Cervical / Coluna Lateral",
+    "descricao": "Exercício isométrico de inclinação lateral da cabeça e coluna para o lado direito, fortalecendo os músculos laterais do pescoço e da coluna. Auxilia no tratamento de hérnia e lordose.",
+    "palavras_chave": "isometrico inclinacao lateral direita pescoco coluna hernia lordose postura fortalecimento",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1v0bXiCFskBVcv-EaGqidK0h4vhdaKxq0",
+    "indicacoes": [
+      "dor lateral no pescoco",
+      "hernia cervical",
+      "lordose",
+      "coluna desviada",
+      "dor ao inclinar cabeca"
+    ]
+  },
+  {
+    "id": "shoulder_abduction_left",
+    "pasta_kaggle": "Shoulder_Abduction_Left",
+    "nome_pt": "Abdução de Ombro (Esquerdo)",
+    "nome_en": "Shoulder Abduction Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "ombro braco manguito",
+    "regiao_display": "Ombro Esquerdo",
+    "descricao": "Elevação lateral do braço esquerdo até a altura do ombro (abdução). Fortalece o manguito rotador e o deltóide. Fundamental na reabilitação pós-cirurgia de ombro e lesão do manguito.",
+    "palavras_chave": "abducao ombro esquerdo elevacao lateral manguito rotador deltoide reabilitacao cirurgia lesao",
+    "nivel_dificuldade": "intermediario",
+    "duracao_min": 8,
+    "url_video": "https://drive.google.com/drive/folders/110f0UtHDY8qdXhj1icA9bJ4JO2AE76IM",
+    "indicacoes": [
+      "dor ao levantar o braco esquerdo",
+      "lesao do manguito",
+      "pos cirurgia de ombro",
+      "fraqueza no ombro",
+      "tendinite de ombro"
+    ]
+  },
+  {
+    "id": "shoulder_abduction_right",
+    "pasta_kaggle": "Shoulder_Abduction_Right",
+    "nome_pt": "Abdução de Ombro (Direito)",
+    "nome_en": "Shoulder Abduction Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "ombro braco manguito",
+    "regiao_display": "Ombro Direito",
+    "descricao": "Elevação lateral do braço direito até a altura do ombro (abdução). Fortalece o manguito rotador e o deltóide. Fundamental na reabilitação pós-cirurgia de ombro e lesão do manguito.",
+    "palavras_chave": "abducao ombro direito elevacao lateral manguito rotador deltoide reabilitacao cirurgia lesao",
+    "nivel_dificuldade": "intermediario",
+    "duracao_min": 8,
+    "url_video": "https://drive.google.com/drive/folders/1TdL-hCYC_pj6AijbM6oKvSWzjQbUQuJJ",
+    "indicacoes": [
+      "dor ao levantar o braco direito",
+      "lesao do manguito",
+      "pos cirurgia de ombro",
+      "fraqueza no ombro",
+      "tendinite de ombro"
+    ]
+  },
+  {
+    "id": "shoulder_flexion_left",
+    "pasta_kaggle": "Shoulder_Flexion_Left",
+    "nome_pt": "Flexão de Ombro (Esquerdo)",
+    "nome_en": "Shoulder Flexion Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "ombro braco anterior",
+    "regiao_display": "Ombro Esquerdo",
+    "descricao": "Elevação do braço esquerdo para frente (flexão de ombro). Fortalece a musculatura anterior do ombro e melhora amplitude de movimento. Indicado para reabilitação de tendinite e capsulite.",
+    "palavras_chave": "flexao ombro esquerdo elevacao frente anterior fortalecimento amplitude tendinite capsulite mobilidade",
+    "nivel_dificuldade": "intermediario",
+    "duracao_min": 8,
+    "url_video": "https://drive.google.com/drive/folders/1FQLT2psMES82uMngIDTwxWE9bUBDax6R",
+    "indicacoes": [
+      "dor ao levantar o braco esquerdo para frente",
+      "tendinite",
+      "capsulite adesiva",
+      "limitacao de movimento ombro"
+    ]
+  },
+  {
+    "id": "shoulder_flexion_right",
+    "pasta_kaggle": "Shoulder_Flexion_Right",
+    "nome_pt": "Flexão de Ombro (Direito)",
+    "nome_en": "Shoulder Flexion Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "ombro braco anterior",
+    "regiao_display": "Ombro Direito",
+    "descricao": "Elevação do braço direito para frente (flexão de ombro). Fortalece a musculatura anterior do ombro e melhora amplitude de movimento. Indicado para reabilitação de tendinite e capsulite.",
+    "palavras_chave": "flexao ombro direito elevacao frente anterior fortalecimento amplitude tendinite capsulite mobilidade",
+    "nivel_dificuldade": "intermediario",
+    "duracao_min": 8,
+    "url_video": "https://drive.google.com/drive/folders/1XxDgOutOEFKpJzbKLXEy4J4GU3ptuIU-",
+    "indicacoes": [
+      "dor ao levantar o braco direito para frente",
+      "tendinite",
+      "capsulite adesiva",
+      "limitacao de movimento ombro"
+    ]
+  },
+  {
+    "id": "wrist_extension_stretch_left",
+    "pasta_kaggle": "Wrist_Extension_Stretch_Left",
+    "nome_pt": "Alongamento de Extensão do Punho (Esquerdo)",
+    "nome_en": "Wrist Extension Stretch Left",
+    "lateralidade": "esquerdo",
+    "regiao_corporal": "punho mao antebraco",
+    "regiao_display": "Punho / Mão Esquerda",
+    "descricao": "Alongamento da musculatura extensora do punho e antebraço esquerdo. Essencial para alívio da epicondilite lateral (cotovelo de tenista), síndrome do túnel do carpo e tendinite de punho.",
+    "palavras_chave": "alongamento extensao punho esquerdo antebraco epicondilite tunel carpo tendinite cotovelo tenista dor",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/13Sag2Dk2FpTqQPu1mUbqXUQKZ4npNcJn",
+    "indicacoes": [
+      "dor no punho esquerdo",
+      "epicondilite",
+      "cotovelo de tenista",
+      "tunel do carpo",
+      "tendinite de punho",
+      "dor ao estender a mao"
+    ]
+  },
+  {
+    "id": "wrist_extension_stretch_right",
+    "pasta_kaggle": "Wrist_Extension_Stretch_Right",
+    "nome_pt": "Alongamento de Extensão do Punho (Direito)",
+    "nome_en": "Wrist Extension Stretch Right",
+    "lateralidade": "direito",
+    "regiao_corporal": "punho mao antebraco",
+    "regiao_display": "Punho / Mão Direita",
+    "descricao": "Alongamento da musculatura extensora do punho e antebraço direito. Essencial para alívio da epicondilite lateral (cotovelo de tenista), síndrome do túnel do carpo e tendinite de punho.",
+    "palavras_chave": "alongamento extensao punho direito antebraco epicondilite tunel carpo tendinite cotovelo tenista dor",
+    "nivel_dificuldade": "iniciante",
+    "duracao_min": 5,
+    "url_video": "https://drive.google.com/drive/folders/1lj-q1Bel5rkc_95PuqlHdH6JDA4s5lFF",
+    "indicacoes": [
+      "dor no punho direito",
+      "epicondilite",
+      "cotovelo de tenista",
+      "tunel do carpo",
+      "tendinite de punho",
+      "dor ao estender a mao"
+    ]
+  }
+]
