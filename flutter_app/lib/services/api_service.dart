@@ -174,7 +174,7 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela usuario com permissao = Paciente
-      await _sb.from('usuario').insert({
+      final inserted = await _sb.from('usuario').insert({
         'supabase_user_id': user.id,
         'id_permissao': Permissao.paciente,
         'nome': (data['nome'] as String).trim(),
@@ -192,12 +192,14 @@ class ApiService {
         'cidade': data['cidade'],
         'uf': data['uf'],
         'ativo': true,
-      });
+      }).select('id').single();
+
+      final novoId = inserted['id'] as String;
 
       await AuditService.instance.logCreateConta(
         tipo: 'paciente',
-        nome: (data['nome'] as String).trim(),
         email: email,
+        idUsuarioAlvo: novoId,
       );
       return {
         'success': true,
@@ -245,7 +247,7 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela usuario com permissao = Profissional
-      await _sb.from('usuario').insert({
+      final inserted = await _sb.from('usuario').insert({
         'supabase_user_id': user.id,
         'id_permissao': Permissao.profissional,
         'nome': (data['nome'] as String).trim(),
@@ -267,7 +269,15 @@ class ApiService {
         'crefito': (data['crefito'] as String?)?.trim(),
         'especialidade': (data['especializacao'] as String?)?.trim(),
         'ativo': true,
-      });
+      }).select('id').single();
+
+      final novoId = inserted['id'] as String;
+
+      await AuditService.instance.logCreateConta(
+        tipo: 'profissional',
+        email: email,
+        idUsuarioAlvo: novoId,
+      );
 
       return {
         'success': true,
@@ -313,7 +323,7 @@ class ApiService {
       }
 
       // 2. Gravar dados na tabela usuario com permissao = Administrador
-      await _sb.from('usuario').insert({
+      final inserted = await _sb.from('usuario').insert({
         'supabase_user_id': user.id,
         'id_permissao': Permissao.administrador,
         'nome': (data['nome'] as String).trim(),
@@ -334,12 +344,14 @@ class ApiService {
         'uf': data['uf'],
         'cargo': data['cargo'] ?? 'Diretor',
         'ativo': true,
-      });
+      }).select('id').single();
+
+      final novoId = inserted['id'] as String;
 
       await AuditService.instance.logCreateConta(
         tipo: 'admin',
-        nome: (data['nome'] as String).trim(),
         email: email,
+        idUsuarioAlvo: novoId,
       );
       return {
         'success': true,
@@ -526,6 +538,8 @@ class ApiService {
   Future<Map<String, dynamic>> updateUsuario(
       String usuarioId, Map<String, dynamic> dados) async {
     try {
+      final anterior = await _sb.from('usuario').select().eq('id', usuarioId).maybeSingle();
+
       final data = await _sb
           .from('usuario')
           .update(dados)
@@ -535,7 +549,18 @@ class ApiService {
       // Log de auditoria dos campos alterados
       final camposAlterados = dados.keys.where((k) => k != 'updated_at').toList();
       if (camposAlterados.isNotEmpty) {
-        await AuditService.instance.logUpdatePerfil(camposAlterados: camposAlterados);
+        final estadoAnterior = <String, dynamic>{};
+        final estadoPosterior = <String, dynamic>{};
+        for (final k in camposAlterados) {
+          if (anterior != null) estadoAnterior[k] = anterior[k];
+          estadoPosterior[k] = data[k];
+        }
+        await AuditService.instance.logUpdatePerfil(
+          idUsuarioAlvo: usuarioId,
+          camposAlterados: camposAlterados,
+          valoresAnteriores: estadoAnterior,
+          valoresPosteriores: estadoPosterior,
+        );
       }
       return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
@@ -823,7 +848,6 @@ class ApiService {
           .single();
       await AuditService.instance.logDesativarConta(
         idAlvo: id,
-        nomeAlvo: nomeAlvo ?? id,
       );
       return {'success': true};
     } on PostgrestException catch (e) {
@@ -852,7 +876,6 @@ class ApiService {
           .single();
       await AuditService.instance.logAtivarConta(
         idAlvo: id,
-        nomeAlvo: nomeAlvo ?? id,
       );
       return {'success': true};
     } on PostgrestException catch (e) {
@@ -897,15 +920,21 @@ class ApiService {
   Future<Map<String, dynamic>> permanentDeleteUsuario(
       String usuarioId) async {
     try {
-      // 1. Busca o supabase_user_id ANTES de deletar
+      // 1. Busca o supabase_user_id e o email ANTES de deletar
       final usuarioData = await _sb
           .from('usuario')
-          .select('supabase_user_id')
+          .select('supabase_user_id, email')
           .eq('id', usuarioId)
           .maybeSingle();
 
-      final supabaseUserId =
-          usuarioData?['supabase_user_id'] as String?;
+      final supabaseUserId = usuarioData?['supabase_user_id'] as String?;
+      final email = usuarioData?['email'] as String? ?? 'desconhecido';
+
+      // Registrar o log de exclusão permanente antes de apagar
+      await AuditService.instance.logExcluirConta(
+        idAlvo: usuarioId,
+        emailAlvo: email,
+      );
 
       // 2. Remove o registro do usuário (cascata remove consultas e sintomas)
       await _sb.from('usuario').delete().eq('id', usuarioId);
@@ -1440,8 +1469,8 @@ class ApiService {
 
       await AuditService.instance.logAgendamento(
         consultaId: consulta['id'] as String? ?? '',
-        pacienteNome: nomePaciente,
-        profissionalNome: nomeProfissional,
+        pacienteId: pacienteId,
+        profissionalId: profissionalId,
         dataHora: dataFormatada,
         iniciadoPor: 'paciente',
       );
@@ -1472,7 +1501,6 @@ class ApiService {
       }).eq('id', consultaId).select().single();
       await AuditService.instance.logCheckout(
         consultaId: consultaId,
-        pacienteNome: pacienteNome ?? 'Paciente',
       );
       return {'success': true, 'data': updated};
     } on PostgrestException catch (e) {

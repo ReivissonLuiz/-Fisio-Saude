@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/audit_service.dart';
 import '../shared/chat_screen.dart';
 
 class PacienteDetalhesScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _PacienteDetalhesScreenState extends State<PacienteDetalhesScreen> {
   final _api = ApiService();
   bool _isLoading = true;
   List<dynamic> _sintomas = [];
+  bool _loggedAccess = false;
 
   @override
   void initState() {
@@ -35,6 +37,11 @@ class _PacienteDetalhesScreenState extends State<PacienteDetalhesScreen> {
   Future<void> _loadHistorico() async {
     setState(() => _isLoading = true);
     final pacienteId = widget.pacienteDados['id'];
+    
+    if (pacienteId != null && !_loggedAccess) {
+      _loggedAccess = true;
+      await AuditService.instance.logVisualizarProntuario(pacienteId: pacienteId);
+    }
     
     // Busca os sintomas reportados pelo paciente
     final res = await _api.getSintomas(pacienteId);

@@ -3,6 +3,7 @@
 /// Exibe todos os eventos do log_auditoria com filtros e exportação CSV.
 library;
 
+import 'dart:convert';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -22,7 +23,6 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
   bool _isLoading = false;
   bool _isExporting = false;
   List<dynamic> _logs = [];
-  int _total = 0;
 
   // Filtros
   String? _filtroTipo;
@@ -35,31 +35,24 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
   static const int _porPagina = 50;
   int _pagina = 0;
 
-  // Tipos disponíveis para filtro
+  // Tipos disponíveis para filtro (atualizado com os namespaces LGPD)
   static const _tiposEvento = <String, String>{
     '': 'Todos os eventos',
-    'login_sucesso': '✅ Login bem-sucedido',
-    'login_falha': '❌ Falha de login',
-    'logout': '🚪 Logout',
-    'navegacao_aba': '🧭 Navegação (aba)',
-    'navegacao_tela': '📱 Navegação (tela)',
-    'create_conta_paciente': '👤 Criação de conta (paciente)',
-    'create_conta_profissional': '🩺 Criação de conta (profissional)',
-    'create_conta_admin': '🛡️ Criação de conta (admin)',
-    'desativar_conta': '🔒 Desativação de conta',
-    'ativar_conta': '🔓 Reativação de conta',
-    'excluir_conta': '🗑️ Exclusão de conta',
-    'alteracao_permissao': '🔄 Alteração de permissão',
-    'update_perfil': '✏️ Atualização de perfil',
-    'update_senha': '🔑 Alteração de senha',
-    'agendamento': '📅 Agendamento de consulta',
-    'cancelamento': '🚫 Cancelamento de consulta',
-    'reagendamento': '🔁 Reagendamento de consulta',
-    'confirmacao_consulta': '✔️ Confirmação de presença',
-    'checkout': '🏁 Checkout (finalização)',
-    'avaliacao_consulta': '⭐ Avaliação de consulta',
-    'registro_sintoma': '🩹 Registro de sintoma',
-    'recomendacao_enviada': '💪 Recomendação enviada',
+    'auth.login_sucesso': '✅ Login bem-sucedido',
+    'auth.login_falha': '❌ Falha de login',
+    'auth.logout': '🚪 Logout',
+    'auth.alterar_senha': '🔑 Alteração de senha',
+    'conta.criar': '👤 Criação de conta',
+    'conta.ativar': '🔓 Reativação de conta',
+    'conta.desativar': '🔒 Desativação de conta',
+    'conta.excluir': '🗑️ Exclusão de conta',
+    'conta.alterar_permissao': '🔄 Alteração de permissão',
+    'conta.atualizar_perfil': '✏️ Atualização de perfil',
+    'clinico.agendar': '📅 Agendamento de consulta',
+    'clinico.cancelar': '🚫 Cancelamento de consulta',
+    'clinico.reagendar': '🔁 Reagendamento de consulta',
+    'clinico.checkout': '🏁 Checkout (finalização)',
+    'clinico.visualizar_prontuario': '👁️ Acesso a Prontuário',
   };
 
   @override
@@ -81,9 +74,7 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
     final resultado = await _audit.getLogs(
       tipoEvento: _filtroTipo?.isEmpty == true ? null : _filtroTipo,
       dataInicio: _filtroInicio,
-      dataFim: _filtroFim != null
-          ? _filtroFim!.add(const Duration(days: 1))
-          : null,
+      dataFim: _filtroFim?.add(const Duration(days: 1)),
       limite: _porPagina,
       offset: _pagina * _porPagina,
     );
@@ -94,7 +85,6 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
         if (resultado['success'] == true) {
           final data = resultado['data'] as List;
           _logs = data;
-          _total = data.length;
         } else {
           _logs = [];
         }
@@ -110,9 +100,7 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
       final resultado = await _audit.getLogs(
         tipoEvento: _filtroTipo?.isEmpty == true ? null : _filtroTipo,
         dataInicio: _filtroInicio,
-        dataFim: _filtroFim != null
-            ? _filtroFim!.add(const Duration(days: 1))
-            : null,
+        dataFim: _filtroFim?.add(const Duration(days: 1)),
         limite: 10000,
         offset: 0,
       );
@@ -136,7 +124,7 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
         final bytes = csv.codeUnits;
         final blob = html.Blob([bytes], 'text/csv;charset=utf-8');
         final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
+        html.AnchorElement(href: url)
           ..setAttribute('download', nomeArquivo)
           ..click();
         html.Url.revokeObjectUrl(url);
@@ -200,22 +188,22 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
   }
 
   Color _corEvento(String tipo) {
-    if (tipo.contains('login_sucesso') || tipo.contains('ativar') || tipo.contains('checkout')) {
+    if (tipo.contains('login_sucesso') || tipo.endsWith('.ativar') || tipo.endsWith('.checkout')) {
       return Colors.green;
     }
-    if (tipo.contains('falha') || tipo.contains('cancelamento') || tipo.contains('excluir')) {
+    if (tipo.contains('login_falha') || tipo.endsWith('.cancelar') || tipo.endsWith('.excluir')) {
       return Colors.red;
     }
-    if (tipo.contains('desativar') || tipo.contains('senha')) {
+    if (tipo.endsWith('.desativar') || tipo.contains('senha') || tipo.contains('permissao')) {
       return Colors.orange;
     }
-    if (tipo.contains('agendamento') || tipo.contains('reagendamento') || tipo.contains('confirmacao')) {
+    if (tipo.endsWith('.agendar') || tipo.endsWith('.reagendar')) {
       return Colors.blue;
     }
-    if (tipo.contains('navegacao')) {
-      return Colors.grey;
+    if (tipo.contains('prontuario')) {
+      return Colors.cyan;
     }
-    if (tipo.contains('create_conta')) {
+    if (tipo.contains('criar') || tipo.contains('perfil') || tipo.contains('atualizar_perfil')) {
       return Colors.teal;
     }
     return Colors.purple;
@@ -225,23 +213,29 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
     if (tipo.contains('login_sucesso')) return Icons.login_rounded;
     if (tipo.contains('login_falha')) return Icons.no_accounts_rounded;
     if (tipo.contains('logout')) return Icons.logout_rounded;
-    if (tipo.contains('navegacao')) return Icons.swap_horiz_rounded;
-    if (tipo.contains('create_conta')) return Icons.person_add_rounded;
-    if (tipo.contains('desativar')) return Icons.lock_rounded;
-    if (tipo.contains('ativar')) return Icons.lock_open_rounded;
-    if (tipo.contains('excluir')) return Icons.delete_forever_rounded;
-    if (tipo.contains('alteracao_permissao')) return Icons.manage_accounts_rounded;
-    if (tipo.contains('update_perfil')) return Icons.edit_rounded;
-    if (tipo.contains('update_senha') || tipo.contains('senha')) return Icons.key_rounded;
-    if (tipo.contains('agendamento')) return Icons.event_available_rounded;
-    if (tipo.contains('cancelamento')) return Icons.event_busy_rounded;
-    if (tipo.contains('reagendamento')) return Icons.event_repeat_rounded;
-    if (tipo.contains('confirmacao')) return Icons.check_circle_rounded;
-    if (tipo.contains('checkout')) return Icons.flag_rounded;
-    if (tipo.contains('avaliacao')) return Icons.star_rounded;
-    if (tipo.contains('sintoma')) return Icons.healing_rounded;
-    if (tipo.contains('recomendacao')) return Icons.fitness_center_rounded;
+    if (tipo.contains('criar')) return Icons.person_add_rounded;
+    if (tipo.endsWith('.desativar')) return Icons.lock_rounded;
+    if (tipo.endsWith('.ativar')) return Icons.lock_open_rounded;
+    if (tipo.endsWith('.excluir')) return Icons.delete_forever_rounded;
+    if (tipo.contains('permissao')) return Icons.manage_accounts_rounded;
+    if (tipo.contains('perfil') || tipo.contains('atualizar_perfil')) return Icons.edit_rounded;
+    if (tipo.contains('senha')) return Icons.key_rounded;
+    if (tipo.endsWith('.agendar')) return Icons.event_available_rounded;
+    if (tipo.endsWith('.cancelar')) return Icons.event_busy_rounded;
+    if (tipo.endsWith('.reagendar')) return Icons.event_repeat_rounded;
+    if (tipo.endsWith('.checkout')) return Icons.flag_rounded;
+    if (tipo.contains('prontuario')) return Icons.assignment_ind_rounded;
     return Icons.info_rounded;
+  }
+
+  String _formatarJson(dynamic json) {
+    if (json == null) return '-';
+    try {
+      const encoder = JsonEncoder.withIndent('  ');
+      return encoder.convert(json);
+    } catch (_) {
+      return json.toString();
+    }
   }
 
   String _formatarData(String? iso) {
@@ -572,19 +566,35 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
                           const Divider(
                               height: 1, color: AppTheme.divider),
                           const SizedBox(height: 10),
-                          _DetalheRow(
-                              label: 'Usuário', value: nomeUsuario),
+                          _DetalheRow(label: 'Usuário', value: nomeUsuario),
                           if (emailUsuario.isNotEmpty)
-                            _DetalheRow(
-                                label: 'E-mail', value: emailUsuario),
-                          _DetalheRow(
-                              label: 'Data/Hora',
-                              value: _formatarData(createdAt)),
+                            _DetalheRow(label: 'E-mail', value: emailUsuario),
+                          _DetalheRow(label: 'Data/Hora', value: _formatarData(createdAt)),
                           _DetalheRow(label: 'Tipo', value: tipo),
-                          if (extras != null)
+                          _DetalheRow(label: 'Severidade', value: log['severidade'] ?? 'INFO'),
+                          if (log['ip_address'] != null)
+                            _DetalheRow(label: 'IP', value: log['ip_address'] as String),
+                          if (log['user_agent'] != null)
+                            _DetalheRow(label: 'Dispositivo/Browser', value: log['user_agent'] as String),
+                          if (log['session_id'] != null)
+                            _DetalheRow(label: 'ID da Sessão', value: log['session_id'] as String),
+                          if (log['entidade_afetada'] != null)
                             _DetalheRow(
-                                label: 'Dados extras',
-                                value: extras.toString()),
+                              label: 'Entidade Afetada', 
+                              value: '${log['entidade_afetada']} (ID: ${log['id_entidade_afetada'] ?? '-'})'
+                            ),
+                          if (extras != null && extras.toString() != '{}')
+                            _DetalheRow(label: 'Dados extras', value: _formatarJson(extras)),
+                          if (log['estado_anterior'] != null && log['estado_anterior'].toString() != '{}')
+                            _DetalheRow(label: 'Estado Anterior', value: _formatarJson(log['estado_anterior'])),
+                          if (log['estado_posterior'] != null && log['estado_posterior'].toString() != '{}')
+                            _DetalheRow(label: 'Estado Posterior', value: _formatarJson(log['estado_posterior'])),
+                          if (log['hash_assinatura'] != null)
+                            _DetalheRow(
+                              label: 'Assinatura (Imutável)', 
+                              value: log['hash_assinatura'] as String,
+                              isCode: true,
+                            ),
                         ],
                       ),
                     );
@@ -671,8 +681,9 @@ class _FiltroDataChip extends StatelessWidget {
 class _DetalheRow extends StatelessWidget {
   final String label;
   final String value;
+  final bool isCode;
 
-  const _DetalheRow({required this.label, required this.value});
+  const _DetalheRow({required this.label, required this.value, this.isCode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -682,7 +693,7 @@ class _DetalheRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 90,
+            width: 130,
             child: Text(
               '$label:',
               style: const TextStyle(
@@ -694,8 +705,11 @@ class _DetalheRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                  fontSize: 11, color: AppTheme.textPrimary),
+              style: TextStyle(
+                  fontSize: 11, 
+                  color: isCode ? Colors.grey[700] : AppTheme.textPrimary,
+                  fontFamily: isCode ? 'Courier' : null,
+                  fontWeight: isCode ? FontWeight.bold : null),
             ),
           ),
         ],
