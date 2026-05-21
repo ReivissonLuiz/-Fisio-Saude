@@ -6,6 +6,7 @@ library;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/audit_service.dart';
 import '../widgets/notificacoes_panel.dart';
 import 'paciente/paciente_home_tab.dart';
 import 'paciente/buscar_fisio_tab.dart';
@@ -18,6 +19,7 @@ import 'profissional/minha_disponibilidade_tab.dart';
 import 'profissional/meus_pacientes_tab.dart';
 import 'admin/admin_dashboard_tab.dart';
 import 'admin/admin_management_tab.dart';
+import 'admin/admin_audit_tab.dart';
 import 'admin/admin_perfil_tab.dart';
 
 /// Modos de visão disponíveis para o usuário (para o switcher superior).
@@ -131,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _logout() async {
+    await AuditService.instance.logLogout();
     await _api.logout();
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
@@ -253,6 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final adminTabs = [
         AdminDashboardTab(key: UniqueKey(), adminId: _usuarioId ?? ''),
         AdminManagementTab(key: UniqueKey()),
+        const AdminAuditTab(),
         AdminPerfilTab(
           key: UniqueKey(),
           nome: _nome,
@@ -276,7 +280,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tabIndex,
-          onDestinationSelected: (i) => setState(() => _tabIndex = i),
+          onDestinationSelected: (i) {
+            final abas = ['Dashboard', 'Gestão', 'Auditoria', 'Perfil'];
+            AuditService.instance.logNavegacaoAba(
+              nomeAba: i < abas.length ? abas[i] : 'aba_$i',
+              perfil: 'administrador',
+            );
+            setState(() => _tabIndex = i);
+          },
           backgroundColor: Colors.white,
           indicatorColor: Colors.purple.withValues(alpha: 0.12),
           surfaceTintColor: Colors.transparent,
@@ -293,6 +304,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 selectedIcon: Icon(Icons.settings_suggest_rounded,
                     color: Colors.orange),
                 label: 'Gestão'),
+            NavigationDestination(
+                icon: Icon(Icons.security_outlined),
+                selectedIcon: Icon(Icons.security_rounded,
+                    color: Color(0xFF7B1FA2)),
+                label: 'Auditoria'),
             NavigationDestination(
                 icon: Icon(Icons.person_outline),
                 selectedIcon:
@@ -339,7 +355,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tabIndex,
-          onDestinationSelected: (i) => setState(() => _tabIndex = i),
+          onDestinationSelected: (i) {
+            final abas = ['Início', 'Agenda', 'Pacientes', 'Horários', 'Perfil'];
+            AuditService.instance.logNavegacaoAba(
+              nomeAba: i < abas.length ? abas[i] : 'aba_$i',
+              perfil: 'profissional',
+            );
+            setState(() => _tabIndex = i);
+          },
           backgroundColor: Colors.white,
           indicatorColor: AppTheme.secondary.withValues(alpha: 0.12),
           surfaceTintColor: Colors.transparent,
@@ -408,7 +431,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
-        onDestinationSelected: (i) => setState(() => _tabIndex = i),
+        onDestinationSelected: (i) {
+          final abas = ['Início', 'Buscar Fisio', 'Saúde', 'Meu Perfil'];
+          AuditService.instance.logNavegacaoAba(
+            nomeAba: i < abas.length ? abas[i] : 'aba_$i',
+            perfil: 'paciente',
+          );
+          setState(() => _tabIndex = i);
+        },
         backgroundColor: Colors.white,
         indicatorColor: AppTheme.primary.withValues(alpha: 0.12),
         surfaceTintColor: Colors.transparent,

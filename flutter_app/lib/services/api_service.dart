@@ -10,6 +10,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'log_service.dart';
+import 'audit_service.dart';
 
 /// Acesso global ao cliente Supabase (após Supabase.initialize)
 SupabaseClient get _sb => Supabase.instance.client;
@@ -74,6 +75,7 @@ class ApiService {
 
       if (user == null) {
         await _registrarLog(email: email, status: 'falha');
+        await AuditService.instance.logLogin(email: email, sucesso: false, mensagemErro: 'Credenciais inválidas');
         return {'success': false, 'message': 'Credenciais inválidas.'};
       }
 
@@ -86,6 +88,7 @@ class ApiService {
 
       if (usuarioData == null) {
         await _registrarLog(email: email, status: 'falha');
+        await AuditService.instance.logLogin(email: email, sucesso: false, mensagemErro: 'Usuário não encontrado');
         return {
           'success': false,
           'message': 'Usuário não encontrado no sistema. Contate o suporte.'
@@ -94,6 +97,7 @@ class ApiService {
 
       if (usuarioData['ativo'] == false) {
         await _registrarLog(email: email, status: 'falha');
+        await AuditService.instance.logLogin(email: email, sucesso: false, mensagemErro: 'Conta desativada');
         return {
           'success': false,
           'message': 'Conta desativada. Contate o administrador.'
@@ -115,6 +119,11 @@ class ApiService {
         email: email,
         status: 'sucesso',
       );
+      await AuditService.instance.logLogin(
+        email: email,
+        sucesso: true,
+        idUsuarioAlvo: usuarioId,
+      );
 
       return {
         'success': true,
@@ -131,6 +140,7 @@ class ApiService {
       };
     } on AuthException catch (e) {
       await _registrarLog(email: email, status: 'falha', mensagemErro: _traduzirErroAuth(e.message));
+      await AuditService.instance.logLogin(email: email, sucesso: false, mensagemErro: _traduzirErroAuth(e.message));
       return {'success': false, 'message': _traduzirErroAuth(e.message)};
     } catch (e) {
       return {
@@ -184,6 +194,11 @@ class ApiService {
         'ativo': true,
       });
 
+      await AuditService.instance.logCreateConta(
+        tipo: 'paciente',
+        nome: (data['nome'] as String).trim(),
+        email: email,
+      );
       return {
         'success': true,
         'message': 'Paciente cadastrado com sucesso!',
@@ -321,6 +336,11 @@ class ApiService {
         'ativo': true,
       });
 
+      await AuditService.instance.logCreateConta(
+        tipo: 'admin',
+        nome: (data['nome'] as String).trim(),
+        email: email,
+      );
       return {
         'success': true,
         'message': 'Administrador cadastrado com sucesso!',
@@ -512,6 +532,11 @@ class ApiService {
           .eq('id', usuarioId)
           .select()
           .single();
+      // Log de auditoria dos campos alterados
+      final camposAlterados = dados.keys.where((k) => k != 'updated_at').toList();
+      if (camposAlterados.isNotEmpty) {
+        await AuditService.instance.logUpdatePerfil(camposAlterados: camposAlterados);
+      }
       return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -788,7 +813,7 @@ class ApiService {
 
   /// Desativa um usuário (soft-delete): marca ativo = false.
   Future<Map<String, dynamic>> deactivateRecord(
-      String table, String id) async {
+      String table, String id, {String? nomeAlvo}) async {
     try {
       await _sb
           .from(table)
@@ -796,6 +821,10 @@ class ApiService {
           .eq('id', id)
           .select()
           .single();
+      await AuditService.instance.logDesativarConta(
+        idAlvo: id,
+        nomeAlvo: nomeAlvo ?? id,
+      );
       return {'success': true};
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
@@ -813,7 +842,7 @@ class ApiService {
 
   /// Reativa um usuário: marca ativo = true.
   Future<Map<String, dynamic>> reactivateRecord(
-      String table, String id) async {
+      String table, String id, {String? nomeAlvo}) async {
     try {
       await _sb
           .from(table)
@@ -821,6 +850,10 @@ class ApiService {
           .eq('id', id)
           .select()
           .single();
+      await AuditService.instance.logAtivarConta(
+        idAlvo: id,
+        nomeAlvo: nomeAlvo ?? id,
+      );
       return {'success': true};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -1405,6 +1438,14 @@ class ApiService {
         tipo: 'agendamento',
       );
 
+      await AuditService.instance.logAgendamento(
+        consultaId: consulta['id'] as String? ?? '',
+        pacienteNome: nomePaciente,
+        profissionalNome: nomeProfissional,
+        dataHora: dataFormatada,
+        iniciadoPor: 'paciente',
+      );
+
       return {
         'success': true,
         'data': consulta,
@@ -1422,12 +1463,17 @@ class ApiService {
   Future<Map<String, dynamic>> finalizarConsulta({
     required String consultaId,
     required String relatorio,
+    String? pacienteNome,
   }) async {
     try {
       final updated = await _sb.from('consulta').update({
         'status': 'finalizada',
         'relatorio': relatorio,
       }).eq('id', consultaId).select().single();
+      await AuditService.instance.logCheckout(
+        consultaId: consultaId,
+        pacienteNome: pacienteNome ?? 'Paciente',
+      );
       return {'success': true, 'data': updated};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -1589,6 +1635,12 @@ class ApiService {
         );
       }
 
+      await AuditService.instance.logCancelamento(
+        consultaId: consultaId,
+        motivo: motivo,
+        iniciadoPor: iniciadoPorProfissional ? 'profissional' : 'paciente',
+      );
+
       return {'success': true};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -1683,6 +1735,12 @@ class ApiService {
           tipo: 'reagendamento',
         );
       }
+
+      await AuditService.instance.logReagendamento(
+        consultaId: consultaId,
+        novaDataHora: dataFormatada,
+        iniciadoPor: iniciadoPorProfissional ? 'profissional' : 'paciente',
+      );
 
       return {'success': true};
     } on PostgrestException catch (e) {
