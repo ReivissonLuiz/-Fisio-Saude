@@ -78,8 +78,9 @@ class AuditService {
         'descricao': descricao,
         if (dadosExtras != null) 'dados_extras': dadosExtras,
       });
-    } catch (_) {
+    } catch (e) {
       // Falha no log nunca bloqueia o fluxo principal
+      print('Erro ao registrar log de auditoria: $e');
     }
   }
 
