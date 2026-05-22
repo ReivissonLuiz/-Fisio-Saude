@@ -1792,7 +1792,7 @@ class ApiService {
       await _sb.from('notificacao').insert({
         'id_destinatario': idDestinatario,
         'titulo': titulo,
-        'corpo': mensagem,
+        'mensagem': mensagem,
         'tipo': tipo,
         if (acaoId != null) 'acao_id': acaoId,
       });

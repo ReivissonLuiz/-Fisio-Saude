@@ -133,4 +133,19 @@ class Validators {
     if (unmaskedText.length != 8) return 'CEP inválido.';
     return null;
   }
+     /// Valida e-mail removendo espaços extras no início e fim.
+  static String? email(String? value) {
+    final email = value?.trim() ?? '';
+
+    if (email.isEmpty) {
+      return 'Informe seu e-mail.';
+    }
+
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+        .hasMatch(email)) {
+      return 'E-mail inválido.';
+    }
+
+    return null;
+  }
 }
