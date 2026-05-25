@@ -76,6 +76,12 @@ class _MeusPacientesTabState extends State<MeusPacientesTab> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: AppTheme.primary),
+            onPressed: _loadPacientes,
+          ),
+        ],
       ),
       body: Column(
         children: [

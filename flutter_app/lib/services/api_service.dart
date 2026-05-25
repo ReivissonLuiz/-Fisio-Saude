@@ -720,7 +720,7 @@ class ApiService {
           .select('id, data_hora, status, relatorio')
           .eq('id_paciente', pacienteId)
           .eq('id_profissional', profissionalId)
-          .inFilter('status', ['realizada', 'Realizada', 'finalizada', 'Finalizada'])
+          .inFilter('status', ['realizada', 'Realizada', 'finalizada', 'Finalizada', 'cancelada', 'nao_compareceu'])
           .order('data_hora', ascending: false)
           .limit(10);
 

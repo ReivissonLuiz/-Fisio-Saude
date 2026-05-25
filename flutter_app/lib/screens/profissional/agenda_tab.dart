@@ -930,9 +930,31 @@ class _DetalhesModalState extends State<_DetalhesModal> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.history_rounded, size: 18, color: AppTheme.primary),
+                                    Icon(
+                                      ((c['status'] as String?)?.toLowerCase() == 'cancelada' || (c['status'] as String?)?.toLowerCase() == 'nao_compareceu')
+                                          ? Icons.cancel_rounded
+                                          : Icons.history_rounded, 
+                                      size: 18, 
+                                      color: ((c['status'] as String?)?.toLowerCase() == 'cancelada' || (c['status'] as String?)?.toLowerCase() == 'nao_compareceu')
+                                          ? AppTheme.error
+                                          : AppTheme.primary,
+                                    ),
                                     const SizedBox(width: 8),
-                                    Text('Consulta Finalizada - $dtFmt', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text(
+                                      () {
+                                        final s = (c['status'] as String?)?.toLowerCase();
+                                        if (s == 'cancelada') return 'Consulta Cancelada - $dtFmt';
+                                        if (s == 'nao_compareceu') return 'Não Compareceu - $dtFmt';
+                                        return 'Consulta Finalizada - $dtFmt';
+                                      }(), 
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold, 
+                                        fontSize: 14,
+                                        color: ((c['status'] as String?)?.toLowerCase() == 'cancelada' || (c['status'] as String?)?.toLowerCase() == 'nao_compareceu')
+                                            ? AppTheme.error
+                                            : AppTheme.textPrimary,
+                                      )
+                                    ),
                                   ],
                                 ),
                                 if (relatorio != null && relatorio.isNotEmpty) ...[
