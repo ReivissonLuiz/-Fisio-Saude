@@ -151,6 +151,7 @@ class _PacienteDetalhesScreenState extends State<PacienteDetalhesScreen> {
                                             meuNome: 'Profissional', // Idealmente passaria o nome do prof
                                             outroId: pacienteId,
                                             outroNome: nome,
+                                            outroAvatar: widget.pacienteDados['avatar_url'] as String?,
                                           ),
                                         ),
                                       );

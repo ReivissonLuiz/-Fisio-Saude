@@ -686,6 +686,7 @@ class _ConsultaTile extends StatelessWidget {
                   onPressed: () {
                     final pacienteId = consulta['id_paciente'] ?? '';
                     final pacienteNome = paciente?['nome'] ?? 'Paciente';
+                    final pacienteAvatar = paciente?['avatar_url'] as String?;
                     if (pacienteId.isNotEmpty) {
                       Navigator.push(
                         context,
@@ -696,6 +697,7 @@ class _ConsultaTile extends StatelessWidget {
                             meuAvatar: profissionalAvatar,
                             outroId: pacienteId,
                             outroNome: pacienteNome,
+                            outroAvatar: pacienteAvatar,
                           ),
                         ),
                       );

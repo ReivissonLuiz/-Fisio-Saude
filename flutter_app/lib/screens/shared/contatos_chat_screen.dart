@@ -123,6 +123,7 @@ class _ContatosChatScreenState extends State<ContatosChatScreen> {
                                 meuAvatar: widget.usuarioAvatar,
                                 outroId: c['id'],
                                 outroNome: nome,
+                                outroAvatar: avatarUrl,
                               ),
                             ),
                           );

@@ -618,6 +618,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                                 meuAvatar: widget.avatarUrl,
                                 outroId: profId,
                                 outroNome: profNome,
+                                outroAvatar: profissional?['avatar_url'] as String?,
                               ),
                             ),
                           );
