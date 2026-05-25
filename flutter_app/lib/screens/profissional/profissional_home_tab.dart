@@ -335,6 +335,8 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                                           Navigator.push(context, MaterialPageRoute(
                                             builder: (_) => NotificacoesPanel(
                                               usuarioId: widget.profissionalId,
+                                              usuarioNome: widget.nome,
+                                              usuarioAvatar: widget.profissionalAvatar,
                                               onNavigateToAgenda: () => Navigator.pop(context),
                                             ),
                                           )).then((_) => _loadDashboardData());

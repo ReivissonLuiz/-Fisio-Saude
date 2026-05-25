@@ -418,6 +418,8 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.background,
       endDrawer: NotificacoesPanel(
         usuarioId: usuarioIdFinal,
+        usuarioNome: _nome,
+        usuarioAvatar: _avatarUrl,
         onNavigateToAgenda: () => setState(() => _tabIndex = 0),
         onNavigateToRecomendacoes: () => setState(() => _tabIndex = 2),
       ),

@@ -174,6 +174,8 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                                     MaterialPageRoute(
                                       builder: (_) => NotificacoesPanel(
                                         usuarioId: widget.pacienteId,
+                                        usuarioNome: widget.nome,
+                                        usuarioAvatar: widget.avatarUrl,
                                         onNavigateToAgenda: () {
                                           Navigator.pop(context);
                                           Navigator.push(

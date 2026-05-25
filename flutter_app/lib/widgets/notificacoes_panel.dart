@@ -9,11 +9,15 @@ import '../screens/shared/chat_screen.dart';
 
 class NotificacoesPanel extends StatefulWidget {
   final String usuarioId;
+  final String usuarioNome;
+  final String? usuarioAvatar;
   final VoidCallback? onNavigateToAgenda;
   final VoidCallback? onNavigateToRecomendacoes;
   const NotificacoesPanel({
     super.key,
     required this.usuarioId,
+    this.usuarioNome = 'Eu',
+    this.usuarioAvatar,
     this.onNavigateToAgenda,
     this.onNavigateToRecomendacoes,
   });
@@ -140,31 +144,38 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
 
                               return GestureDetector(
                                 onTap: () async {
+                                  // Captura o navigator ANTES de qualquer operação
+                                  // assíncrona para evitar uso de context desmontado
+                                  final navigator = Navigator.of(context);
+                                  final onRecomendacoes = widget.onNavigateToRecomendacoes;
+                                  final chatId = acaoId;
+                                  final outroNome = (n['titulo'] as String? ?? '')
+                                      .replaceFirst('Nova mensagem de ', '');
+
                                   if (!lida) {
                                     await _api.marcarNotificacaoLida(n['id'] as String);
                                     await _carregar();
                                   }
-                                  
-                                  if (tipo == 'chat' && acaoId != null) {
-                                    if (!context.mounted) return;
-                                    Navigator.pop(context); // Fecha o painel
-                                    Navigator.push(
-                                      context,
+
+                                  if (tipo == 'chat' && chatId != null) {
+                                    navigator.pop(); // Fecha o painel
+                                    navigator.push(
                                       MaterialPageRoute(
                                         builder: (_) => ChatScreen(
                                           meuId: widget.usuarioId,
-                                          meuNome: 'Eu',
-                                          outroId: acaoId!,
-                                          outroNome: (n['titulo'] as String? ?? '').replaceFirst('Nova mensagem de ', ''),
+                                          meuNome: widget.usuarioNome,
+                                          meuAvatar: widget.usuarioAvatar,
+                                          outroId: chatId,
+                                          outroNome: outroNome,
                                         ),
                                       ),
                                     );
+                                    return;
                                   }
 
-                                  if (tipo == 'recomendacao' && widget.onNavigateToRecomendacoes != null) {
-                                    if (!context.mounted) return;
-                                    Navigator.pop(context); // Fecha o painel
-                                    widget.onNavigateToRecomendacoes!();
+                                  if (tipo == 'recomendacao' && onRecomendacoes != null) {
+                                    navigator.pop(); // Fecha o painel
+                                    onRecomendacoes();
                                   }
                                 },
                                 child: AnimatedContainer(
