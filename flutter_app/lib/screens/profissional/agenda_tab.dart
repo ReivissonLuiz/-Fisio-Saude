@@ -676,7 +676,7 @@ class _ConsultaAgendaTile extends StatelessWidget {
                       const SizedBox(width: 4),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.video_camera_front_rounded, size: 16),
-                        label: const Text('Meet', style: TextStyle(fontSize: 12)),
+                        label: const Text('Videochamada', style: TextStyle(fontSize: 12)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.secondary,
                           side: const BorderSide(color: AppTheme.secondary),

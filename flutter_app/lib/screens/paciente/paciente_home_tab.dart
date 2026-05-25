@@ -587,7 +587,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.video_camera_front_rounded),
-                        label: const Text('Entrar na Consulta (Google Meet)'),
+                        label: const Text('Entrar na Videochamada'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.secondary,
                           foregroundColor: Colors.white,
