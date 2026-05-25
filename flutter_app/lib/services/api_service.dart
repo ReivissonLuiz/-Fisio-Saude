@@ -6,7 +6,7 @@
 /// A tabela `login` é usada como log de acessos.
 library;
 
-import 'dart:math';
+
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'log_service.dart';
@@ -1404,9 +1404,11 @@ class ApiService {
         };
       }
 
-      // Gerar link do Google Meet e URL do Google Calendar
-      final meetId = _gerarMeetId();
-      final meetUrl = 'https://meet.google.com/$meetId';
+      // Gerar link do Google Meet via Calendar (cria sala válida automaticamente)
+      // Links gerados manualmente em meet.google.com/xxx não são válidos.
+      // A forma correta sem a Meet API é usar meet.google.com/new (sala instantânea)
+      // ou o Google Calendar que provisiona a sala ao criar o evento.
+      final meetUrl = 'https://meet.google.com/new';
 
       // Busca e-mails e nomes para Calendar e notificação
       final profData = await _sb
@@ -1969,16 +1971,9 @@ class ApiService {
 
   // --- Google Meet / Calendar ----------------------------------------------
 
-  /// Gera um ID aleatório no formato xxx-yyyy-zzz para o Google Meet.
-  String _gerarMeetId() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz';
-    final rng = Random();
-    String seg(int len) =>
-        List.generate(len, (_) => chars[rng.nextInt(chars.length)]).join();
-    return '${seg(3)}-${seg(4)}-${seg(3)}';
-  }
-
-  /// Gera URL do Google Calendar com todos os dados da consulta e link Meet.
+  /// Gera URL do Google Calendar com todos os dados da consulta.
+  /// O parâmetro `crsu=1` instrui o Calendar a criar automaticamente
+  /// uma videochamada Google Meet válida para o evento.
   String _gerarCalendarUrl({
     required String nomeProfissional,
     required String emailPaciente,
@@ -1990,11 +1985,12 @@ class ApiService {
     final fim = _formatarDataHoraCalendar(dataHora.add(const Duration(hours: 1)));
     final titulo = Uri.encodeComponent('Consulta com $nomeProfissional - +Físio +Saúde');
     final detalhes = Uri.encodeComponent(
-        'Consulta de fisioterapia agendada pelo app +Físio +Saúde.\n\nLink da sala: $meetUrl');
+        'Consulta de fisioterapia agendada pelo app +Físio +Saúde.');
     final convidados = Uri.encodeComponent('$emailPaciente,$emailProfissional');
+    // crsu=1 faz o Google Calendar criar automaticamente uma sala Meet válida
     return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
         '&text=$titulo&dates=$inicio/$fim&details=$detalhes'
-        '&add=$convidados&sf=true&output=xml';
+        '&add=$convidados&crsu=1&sf=true&output=xml';
   }
 
   String _formatarDataHoraCalendar(DateTime dt) {
