@@ -1518,10 +1518,14 @@ class ApiService {
     required int nota,
   }) async {
     try {
-      await _sb.from('consulta').update({
+      final res = await _sb.from('consulta').update({
         'avaliacao': nota,
-      }).eq('id', consultaId);
-      return {'success': true};
+      }).eq('id', consultaId).select().maybeSingle();
+      
+      if (res == null) {
+        return {'success': false, 'message': 'Erro ao registrar avaliação (possível bloqueio de segurança ou consulta não encontrada).'};
+      }
+      return {'success': true, 'data': res};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
     } catch (e) {
