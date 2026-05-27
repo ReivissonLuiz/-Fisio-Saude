@@ -111,10 +111,15 @@ class _PacienteDetalhesScreenState extends State<PacienteDetalhesScreen> {
                           CircleAvatar(
                             radius: 32,
                             backgroundColor: Colors.white.withValues(alpha: 0.2),
-                            child: Text(
-                              nome.isNotEmpty ? nome[0].toUpperCase() : 'P',
-                              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                            ),
+                            backgroundImage: widget.pacienteDados['avatar_url'] != null && widget.pacienteDados['avatar_url'].toString().isNotEmpty
+                                ? NetworkImage(widget.pacienteDados['avatar_url'])
+                                : null,
+                            child: widget.pacienteDados['avatar_url'] != null && widget.pacienteDados['avatar_url'].toString().isNotEmpty
+                                ? null
+                                : Text(
+                                    nome.isNotEmpty ? nome[0].toUpperCase() : 'P',
+                                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                  ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
