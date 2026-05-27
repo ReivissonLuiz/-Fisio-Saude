@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/recomendador_service.dart';
 import '../shared/reagendar_screen.dart';
 
 class AgendaTab extends StatefulWidget {
@@ -133,9 +131,6 @@ class _AgendaTabState extends State<AgendaTab> {
     );
   }
 
-  // URL base da API de ML (Rodando localmente)
-  static const String _mlApiUrl = 'http://localhost:8000';
-
   Future<void> _checkout(dynamic c) async {
     final status = (c['status'] as String?)?.toLowerCase();
     if (status == 'cancelada') {
@@ -199,18 +194,7 @@ class _AgendaTabState extends State<AgendaTab> {
     }
   }
 
-  /// Carrega o catálogo de exercícios embutido no app como fallback.
-  Future<List<Map<String, dynamic>>> _carregarCatalogoLocal() async {
-    try {
-      final jsonStr = await rootBundle.loadString('assets/catalogo_exercicios.json');
-      final lista = jsonDecode(jsonStr) as List;
-      return lista.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-    } catch (_) {
-      return [];
-    }
-  }
-
-  /// Busca sintomas do paciente e chama a API ML para recomendações.
+  /// Busca sintomas do paciente e executa a recomendação ML localmente.
   Future<void> _abrirModalRecomendacao(dynamic consulta) async {
     if (!mounted) return;
 
@@ -219,74 +203,51 @@ class _AgendaTabState extends State<AgendaTab> {
 
     // Busca sintomas recentes do paciente para alimentar o ML
     final sintomasRes = await _api.getSintomas(pacienteId);
-    final sintomas = sintomasRes['success'] == true
+    final sintomasRaw = sintomasRes['success'] == true
         ? (sintomasRes['data'] as List).take(5).toList()
-        : [];
+        : <dynamic>[];
 
-    // Relatório da consulta recem finalizada (inputado pelo profissional no checkout)
+    // Relatório da consulta recém finalizada
     final relatorio = consulta['relatorio'] as String? ?? '';
 
     if (!mounted) return;
 
-    // Chama a API de ML em background
-    List<Map<String, dynamic>> recomendacoesML = [];
-    bool mlDisponivel = true;
+    // Garante que o modelo está inicializado (instanciação lazy)
+    final recomendador = RecomendadorService();
+    await recomendador.inicializar();
 
-    try {
-      // Monta a lista de sintomas: histórico do paciente + relatório clínico
-      final List<Map<String, dynamic>> sintomasPayload = [
-        ...sintomas.map((s) => {
-          'descricao': s['descricao'] ?? '',
-          'categoria': s['categoria'] ?? 'Outra Região',
-          'intensidade': s['intensidade'] ?? 5,
-        }),
-        if (relatorio.isNotEmpty)
-          {
-            'descricao': relatorio,
-            'categoria': 'Outra Região',
-            'intensidade': 5,
-          },
-      ];
+    // Monta payload: histórico de sintomas + relatório clínico
+    final sintomasPayload = <Map<String, dynamic>>[
+      ...sintomasRaw.map((s) => {
+        'descricao': s['descricao'] as String? ?? '',
+        'categoria': s['categoria'] as String? ?? 'Outra Região',
+        'intensidade': (s['intensidade'] as num?)?.toInt() ?? 5,
+      }),
+      if (relatorio.isNotEmpty)
+        {
+          'descricao': relatorio,
+          'categoria': 'Outra Região',
+          'intensidade': 5,
+        },
+    ];
 
-      final payload = {
-        'sintomas': sintomasPayload,
-        'top_n': 5,
-        'paciente_id': pacienteId,
-        'profissional_id': widget.profissionalId,
-      };
-
-      final response = await http.post(
-        Uri.parse('$_mlApiUrl/recomendar'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        recomendacoesML = List<Map<String, dynamic>>.from(data['exercicios'] ?? []);
-      } else {
-        mlDisponivel = false;
-      }
-    } catch (_) {
-      mlDisponivel = false;
+    // Detecta região predominante (maior intensidade)
+    String? regiaoPredominante;
+    if (sintomasPayload.isNotEmpty) {
+      final maisIntenso = sintomasPayload.reduce(
+        (a, b) => (a['intensidade'] as int) >= (b['intensidade'] as int) ? a : b,
+      );
+      regiaoPredominante = maisIntenso['categoria'] as String?;
     }
 
-    // Fallback: quando ML offline, tenta GET /catalogo; se falhar, carrega asset local
-    if (!mlDisponivel) {
-      try {
-        final catResponse = await http
-            .get(Uri.parse('$_mlApiUrl/catalogo'))
-            .timeout(const Duration(seconds: 5));
-        if (catResponse.statusCode == 200) {
-          final data = jsonDecode(catResponse.body);
-          recomendacoesML = List<Map<String, dynamic>>.from(data['exercicios'] ?? []);
-        } else {
-          recomendacoesML = await _carregarCatalogoLocal();
-        }
-      } catch (_) {
-        recomendacoesML = await _carregarCatalogoLocal();
-      }
-    }
+    // Executa a recomendação 100% localmente (sem rede)
+    final recomendacoesML = recomendador.recomendar(
+      sintomas: sintomasPayload.isNotEmpty
+          ? sintomasPayload
+          : [{'descricao': '', 'categoria': 'Outra Região', 'intensidade': 5}],
+      topN: 5,
+      filtrarRegiao: regiaoPredominante,
+    );
 
     if (!mounted) return;
 
@@ -300,7 +261,7 @@ class _AgendaTabState extends State<AgendaTab> {
         pacienteId: pacienteId,
         profissionalId: widget.profissionalId,
         recomendacoes: recomendacoesML,
-        mlDisponivel: mlDisponivel,
+        mlDisponivel: true,
         api: _api,
       ),
     );
@@ -1233,9 +1194,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                         style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        widget.mlDisponivel
-                            ? 'Selecionados com base nos sintomas de ${pacienteNome.split(' ').first}'
-                            : 'Catálogo completo de exercícios',
+                        'Selecionados com base nos sintomas de ${pacienteNome.split(' ').first}',
                         style: const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
@@ -1249,68 +1208,24 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
             ),
           ),
 
-          // Badge do algoritmo
-          if (widget.mlDisponivel)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.green.shade50,
-              child: Row(
-                children: [
-                  Icon(Icons.psychology_rounded, size: 16, color: Colors.green.shade700),
-                  const SizedBox(width: 8),
-                  Text(
-                    'TF-IDF + Cosine Similarity · Ordenados por score de relevância',
+          // Badge do algoritmo — ML sempre ativo (processamento local)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: Colors.green.shade50,
+            child: Row(
+              children: [
+                Icon(Icons.psychology_rounded, size: 16, color: Colors.green.shade700),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'TF-IDF + Cosine Similarity · Processado localmente · Sem rede',
                     style: TextStyle(fontSize: 11, color: Colors.green.shade700, fontWeight: FontWeight.w500),
                   ),
-                ],
-              ),
-            )
-          else
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.orange.shade50,
-              child: Row(
-                children: [
-                  Icon(Icons.wifi_off_rounded, size: 16, color: Colors.orange.shade700),
-                  const SizedBox(width: 8),
-                  Text(
-                    'API ML indisponível — exibindo catálogo completo',
-                    style: TextStyle(fontSize: 11, color: Colors.orange.shade700),
-                  ),
-                ],
-              ),
-            ),
-
-          // Campo de busca (apenas no modo catálogo completo)
-          if (!widget.mlDisponivel)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-              child: TextField(
-                controller: _buscaCtrl,
-                decoration: InputDecoration(
-                  hintText: 'Pesquisar por nome, região ou sintoma...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                  suffixIcon: _termoBusca.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
-                          onPressed: () => _buscaCtrl.clear(),
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.divider),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.divider),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  isDense: true,
                 ),
-              ),
+              ],
             ),
+          ),
 
           // Lista de exercícios
           Expanded(
@@ -1319,7 +1234,7 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.fitness_center_rounded, size: 56, color: AppTheme.textHint),
+                        const Icon(Icons.fitness_center_rounded, size: 56, color: AppTheme.textHint),
                         const SizedBox(height: 16),
                         Text(
                           _termoBusca.isNotEmpty

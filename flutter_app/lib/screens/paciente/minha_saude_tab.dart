@@ -886,15 +886,49 @@ class _RecomendacaoCardState extends State<_RecomendacaoCard> {
                         ],
                       ),
                     ),
-                    // Botão de abrir vídeo
-                    if (url.isNotEmpty && url != 'https://drive.google.com/')
-                      IconButton(
-                        onPressed: () => _abrirVideo(url),
-                        icon: const Icon(Icons.open_in_new_rounded),
-                        color: AppTheme.primary,
-                        iconSize: 20,
-                        tooltip: 'Abrir vídeo',
-                      ),
+                    // Botões de vídeo (até 3)
+                    Builder(builder: (_) {
+                      final urls = (video['url_videos'] as List?)
+                              ?.map((e) => e.toString())
+                              .where((u) => u.isNotEmpty)
+                              .toList() ??
+                          (url.isNotEmpty ? [url] : <String>[]);
+                      if (urls.isEmpty) return const SizedBox.shrink();
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: urls.asMap().entries.map((e) {
+                          final idx = e.key;
+                          final videoUrl = e.value;
+                          return Tooltip(
+                            message: 'Vídeo ${idx + 1}',
+                            child: InkWell(
+                              onTap: () => _abrirVideo(videoUrl),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                margin: const EdgeInsets.only(left: 4),
+                                decoration: BoxDecoration(
+                                  color: corNivel.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: corNivel.withValues(alpha: 0.4)),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${idx + 1}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: corNivel,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }),
                   ],
                 ),
               );
