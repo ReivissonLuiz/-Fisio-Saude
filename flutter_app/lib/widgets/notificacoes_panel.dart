@@ -5,21 +5,28 @@ library;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
-import '../screens/shared/chat_screen.dart';
+import '../services/notification_navigator.dart';
 
 class NotificacoesPanel extends StatefulWidget {
   final String usuarioId;
   final String usuarioNome;
   final String? usuarioAvatar;
-  final VoidCallback? onNavigateToAgenda;
-  final VoidCallback? onNavigateToRecomendacoes;
+  final bool isProfissional;
+  final VoidCallback? onNavigateToSaudeTab;
+  /// Profissional: troca para aba Agenda e abre a consulta.
+  final void Function(String consultaId)? onOpenConsultaProfissional;
+  /// Paciente: abre tela de agendar nova consulta (cancelamento sem acao_id).
+  final VoidCallback? onAgendarNovaConsulta;
+
   const NotificacoesPanel({
     super.key,
     required this.usuarioId,
     this.usuarioNome = 'Eu',
     this.usuarioAvatar,
-    this.onNavigateToAgenda,
-    this.onNavigateToRecomendacoes,
+    this.isProfissional = false,
+    this.onNavigateToSaudeTab,
+    this.onOpenConsultaProfissional,
+    this.onAgendarNovaConsulta,
   });
 
   @override
@@ -52,25 +59,58 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
     await _carregar();
   }
 
+  Future<void> _aoTocar(Map<String, dynamic> n) async {
+    final lida = n['lida'] as bool? ?? false;
+    if (!lida) {
+      await _api.marcarNotificacaoLida(n['id'] as String);
+      await _carregar();
+    }
+    if (!mounted) return;
+
+    await NotificationNavigator.handleTap(
+      context: context,
+      notificacao: n,
+      usuarioId: widget.usuarioId,
+      usuarioNome: widget.usuarioNome,
+      usuarioAvatar: widget.usuarioAvatar,
+      isProfissional: widget.isProfissional,
+      onNavigateToSaudeTab: widget.onNavigateToSaudeTab,
+      onOpenConsultaProfissional: widget.onOpenConsultaProfissional,
+      onAgendarNovaConsulta: widget.onAgendarNovaConsulta,
+    );
+  }
+
   IconData _iconePorTipo(String tipo) {
     switch (tipo) {
-      case 'agendamento': return Icons.calendar_month_rounded;
-      case 'cancelamento': return Icons.event_busy_rounded;
-      case 'reagendamento': return Icons.edit_calendar_rounded;
-      case 'chat': return Icons.chat_bubble_outline_rounded;
-      case 'recomendacao': return Icons.fitness_center_rounded;
-      default: return Icons.notifications_rounded;
+      case 'agendamento':
+        return Icons.calendar_month_rounded;
+      case 'cancelamento':
+        return Icons.event_busy_rounded;
+      case 'reagendamento':
+        return Icons.edit_calendar_rounded;
+      case 'chat':
+        return Icons.chat_bubble_outline_rounded;
+      case 'recomendacao':
+        return Icons.fitness_center_rounded;
+      default:
+        return Icons.notifications_rounded;
     }
   }
 
   Color _corPorTipo(String tipo) {
     switch (tipo) {
-      case 'agendamento': return AppTheme.accent;
-      case 'cancelamento': return AppTheme.error;
-      case 'reagendamento': return AppTheme.warning;
-      case 'chat': return AppTheme.secondary;
-      case 'recomendacao': return const Color(0xFFE91E63);
-      default: return AppTheme.primary;
+      case 'agendamento':
+        return AppTheme.accent;
+      case 'cancelamento':
+        return AppTheme.error;
+      case 'reagendamento':
+        return AppTheme.warning;
+      case 'chat':
+        return AppTheme.secondary;
+      case 'recomendacao':
+        return const Color(0xFFE91E63);
+      default:
+        return AppTheme.primary;
     }
   }
 
@@ -81,7 +121,6 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
       child: SafeArea(
         child: Column(
           children: [
-            // Header
             Container(
               decoration: const BoxDecoration(gradient: AppTheme.primaryGradient),
               padding: const EdgeInsets.fromLTRB(20, 20, 12, 20),
@@ -89,12 +128,23 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                 children: [
                   const Icon(Icons.notifications_rounded, color: Colors.white, size: 24),
                   const SizedBox(width: 10),
-                  const Expanded(child: Text('Notificações',
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
+                  const Expanded(
+                    child: Text(
+                      'Notificações',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   if (_notificacoes.any((n) => n['lida'] == false))
                     TextButton(
                       onPressed: _marcarTodasLidas,
-                      child: const Text('Marcar todas', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      child: const Text(
+                        'Marcar todas',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
                     ),
                   IconButton(
                     icon: const Icon(Icons.close, color: Colors.white),
@@ -103,18 +153,21 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                 ],
               ),
             ),
-
-            // Lista
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _notificacoes.isEmpty
                       ? const Center(
-                          child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            Icon(Icons.notifications_none_rounded, size: 64, color: AppTheme.textHint),
-                            SizedBox(height: 12),
-                            Text('Nenhuma notificação', style: TextStyle(color: AppTheme.textSecondary)),
-                          ]),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.notifications_none_rounded,
+                                  size: 64, color: AppTheme.textHint),
+                              SizedBox(height: 12),
+                              Text('Nenhuma notificação',
+                                  style: TextStyle(color: AppTheme.textSecondary)),
+                            ],
+                          ),
                         )
                       : RefreshIndicator(
                           onRefresh: _carregar,
@@ -131,53 +184,13 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                               final dtStr = dt != null
                                   ? '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
                                   : '';
-                                  
-                              String displayCorpo = n['corpo'] as String? ?? '';
-                              String? acaoId;
-                              if (tipo == 'chat' && displayCorpo.contains('|||')) {
-                                final parts = displayCorpo.split('|||');
-                                displayCorpo = parts[0];
-                                if (parts.length > 1) {
-                                  acaoId = parts[1];
-                                }
-                              }
+                              final displayCorpo = NotificationNavigator.corpoExibicao(n);
+                              final temDestino = NotificationNavigator.resolverAcaoId(n) != null ||
+                                  tipo == 'recomendacao' ||
+                                  tipo == 'chat';
 
                               return GestureDetector(
-                                onTap: () async {
-                                  // Captura o navigator ANTES de qualquer operação
-                                  // assíncrona para evitar uso de context desmontado
-                                  final navigator = Navigator.of(context);
-                                  final onRecomendacoes = widget.onNavigateToRecomendacoes;
-                                  final chatId = acaoId;
-                                  final outroNome = (n['titulo'] as String? ?? '')
-                                      .replaceFirst('Nova mensagem de ', '');
-
-                                  if (!lida) {
-                                    await _api.marcarNotificacaoLida(n['id'] as String);
-                                    await _carregar();
-                                  }
-
-                                  if (tipo == 'chat' && chatId != null) {
-                                    navigator.pop(); // Fecha o painel
-                                    navigator.push(
-                                      MaterialPageRoute(
-                                        builder: (_) => ChatScreen(
-                                          meuId: widget.usuarioId,
-                                          meuNome: widget.usuarioNome,
-                                          meuAvatar: widget.usuarioAvatar,
-                                          outroId: chatId,
-                                          outroNome: outroNome,
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-
-                                  if (tipo == 'recomendacao' && onRecomendacoes != null) {
-                                    navigator.pop(); // Fecha o painel
-                                    onRecomendacoes();
-                                  }
-                                },
+                                onTap: () => _aoTocar(n),
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   padding: const EdgeInsets.all(14),
@@ -207,36 +220,75 @@ class _NotificacoesPanelState extends State<NotificacoesPanel> {
                                             Row(
                                               children: [
                                                 Expanded(
-                                                  child: Text(n['titulo'] as String? ?? '',
-                                                      style: TextStyle(
-                                                          fontWeight: lida ? FontWeight.w500 : FontWeight.bold,
-                                                          fontSize: 13)),
+                                                  child: Text(
+                                                    n['titulo'] as String? ?? '',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          lida ? FontWeight.w500 : FontWeight.bold,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
                                                 ),
                                                 if (!lida)
                                                   Container(
-                                                    width: 8, height: 8,
-                                                    decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
+                                                    width: 8,
+                                                    height: 8,
+                                                    decoration: BoxDecoration(
+                                                      color: cor,
+                                                      shape: BoxShape.circle,
+                                                    ),
                                                   ),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
-                                            Text(displayCorpo,
-                                                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12, height: 1.4)),
+                                            Text(
+                                              displayCorpo,
+                                              style: const TextStyle(
+                                                color: AppTheme.textSecondary,
+                                                fontSize: 12,
+                                                height: 1.4,
+                                              ),
+                                            ),
                                             const SizedBox(height: 4),
-                                            Text(dtStr, style: const TextStyle(color: AppTheme.textHint, fontSize: 10)),
-                                            if ((tipo == 'reagendamento' || tipo == 'cancelamento') && widget.onNavigateToAgenda != null) ...[
+                                            Text(
+                                              dtStr,
+                                              style: const TextStyle(
+                                                color: AppTheme.textHint,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                            if (temDestino)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 6),
+                                                child: Text(
+                                                  'Toque para abrir',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    color: cor,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            if (tipo == 'cancelamento' &&
+                                                !widget.isProfissional &&
+                                                widget.onAgendarNovaConsulta != null) ...[
                                               const SizedBox(height: 8),
                                               OutlinedButton.icon(
                                                 onPressed: () {
-                                                  // O pop do contexto já é feito ou lidado pela callback,
-                                                  // mas na callback adicionamos um navigator push.
-                                                  widget.onNavigateToAgenda!();
+                                                  Navigator.of(context).pop();
+                                                  widget.onAgendarNovaConsulta!();
                                                 },
-                                                icon: Icon(Icons.calendar_month_rounded, size: 12, color: cor),
-                                                label: Text('Agendar Nova Consulta', style: TextStyle(fontSize: 11, color: cor)),
+                                                icon: Icon(Icons.add_rounded, size: 12, color: cor),
+                                                label: Text(
+                                                  'Agendar nova consulta',
+                                                  style: TextStyle(fontSize: 11, color: cor),
+                                                ),
                                                 style: OutlinedButton.styleFrom(
                                                   side: BorderSide(color: cor.withValues(alpha: 0.5)),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 0,
+                                                  ),
                                                   minimumSize: const Size(0, 26),
                                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                                 ),
@@ -274,14 +326,22 @@ class NotificacaoBadge extends StatelessWidget {
       children: [
         child,
         Positioned(
-          right: -4, top: -4,
+          right: -4,
+          top: -4,
           child: Container(
             padding: const EdgeInsets.all(3),
             constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-            decoration: BoxDecoration(color: AppTheme.error, borderRadius: BorderRadius.circular(9)),
+            decoration: BoxDecoration(
+              color: AppTheme.error,
+              borderRadius: BorderRadius.circular(9),
+            ),
             child: Text(
               count > 9 ? '9+' : '$count',
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
           ),

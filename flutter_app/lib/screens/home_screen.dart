@@ -9,6 +9,7 @@ import '../services/api_service.dart';
 import '../services/audit_service.dart';
 import '../widgets/notificacoes_panel.dart';
 import 'paciente/paciente_home_tab.dart';
+import 'paciente/agendar_consulta_screen.dart';
 import 'paciente/buscar_fisio_tab.dart';
 import 'paciente/minha_saude_tab.dart';
 import 'paciente/meu_perfil_tab.dart';
@@ -49,6 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Visão ativa no switcher (começa igual à permissão real do usuário)
   _VisaoAtiva _visaoAtiva = _VisaoAtiva.paciente;
+
+  /// Consulta a abrir na aba Agenda (profissional), vinda de notificação.
+  String? _pendingConsultaId;
+
+  /// Subaba de Minha Saúde: 1 = Exercícios (notificação de recomendação).
+  int? _pendingSaudeSubTab;
 
   @override
   void didChangeDependencies() {
@@ -323,9 +330,28 @@ class _HomeScreenState extends State<HomeScreen> {
     // Visão do Profissional
     // ---------------------------------------------------------------
     else if (_visaoAtiva == _VisaoAtiva.profissional) {
+      final profId = _usuarioId ?? '';
       final profTabs = [
-        ProfissionalHomeTab(profissionalId: _usuarioId ?? '', nome: _nome),
-        AgendaTab(profissionalId: _usuarioId ?? ''),
+        ProfissionalHomeTab(
+          profissionalId: profId,
+          nome: _nome,
+          profissionalAvatar: _avatarUrl,
+          onOpenConsultaFromNotificacao: (consultaId) {
+            setState(() {
+              _pendingConsultaId = consultaId;
+              _tabIndex = 1;
+            });
+          },
+        ),
+        AgendaTab(
+          profissionalId: profId,
+          initialConsultaId: _pendingConsultaId,
+          onInitialConsultaHandled: () {
+            if (_pendingConsultaId != null) {
+              setState(() => _pendingConsultaId = null);
+            }
+          },
+        ),
         MeusPacientesTab(
           profissionalId: _usuarioId ?? '',
           profissionalNome: _nome,
@@ -399,14 +425,30 @@ class _HomeScreenState extends State<HomeScreen> {
     // ---------------------------------------------------------------
     else {
       final usuarioIdFinal = _usuarioId ?? '';
+      void irParaExerciciosRecomendados() {
+        setState(() {
+          _tabIndex = 2;
+          _pendingSaudeSubTab = 1;
+        });
+      }
+
       final patientTabs = [
         PacienteHomeTab(
           pacienteId: usuarioIdFinal,
           nome: _nome,
           avatarUrl: _avatarUrl,
+          onOpenExerciciosRecomendados: irParaExerciciosRecomendados,
         ),
         BuscarFisioTab(pacienteId: usuarioIdFinal),
-        MinhaSaudeTab(pacienteId: usuarioIdFinal),
+        MinhaSaudeTab(
+          pacienteId: usuarioIdFinal,
+          initialSubTabIndex: _pendingSaudeSubTab,
+          onInitialSubTabHandled: () {
+            if (_pendingSaudeSubTab != null) {
+              setState(() => _pendingSaudeSubTab = null);
+            }
+          },
+        ),
         MeuPerfilTab(
             pacienteId: usuarioIdFinal,
             nome: _nome,
@@ -420,8 +462,14 @@ class _HomeScreenState extends State<HomeScreen> {
         usuarioId: usuarioIdFinal,
         usuarioNome: _nome,
         usuarioAvatar: _avatarUrl,
-        onNavigateToAgenda: () => setState(() => _tabIndex = 0),
-        onNavigateToRecomendacoes: () => setState(() => _tabIndex = 2),
+        onNavigateToSaudeTab: irParaExerciciosRecomendados,
+        onAgendarNovaConsulta: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => AgendarConsultaScreen(pacienteId: usuarioIdFinal),
+            ),
+          );
+        },
       ),
       body: SafeArea(
         child: Column(

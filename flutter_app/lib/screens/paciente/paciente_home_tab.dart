@@ -17,12 +17,14 @@ class PacienteHomeTab extends StatefulWidget {
   final String pacienteId;
   final String nome;
   final String? avatarUrl;
+  final VoidCallback? onOpenExerciciosRecomendados;
 
   const PacienteHomeTab({
     super.key,
     required this.pacienteId,
     required this.nome,
     this.avatarUrl,
+    this.onOpenExerciciosRecomendados,
   });
 
   @override
@@ -176,11 +178,17 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                                         usuarioId: widget.pacienteId,
                                         usuarioNome: widget.nome,
                                         usuarioAvatar: widget.avatarUrl,
-                                        onNavigateToAgenda: () {
+                                        onNavigateToSaudeTab:
+                                            widget.onOpenExerciciosRecomendados,
+                                        onAgendarNovaConsulta: () {
                                           Navigator.pop(context);
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (_) => AgendarConsultaScreen(pacienteId: widget.pacienteId)),
+                                            MaterialPageRoute(
+                                              builder: (_) => AgendarConsultaScreen(
+                                                pacienteId: widget.pacienteId,
+                                              ),
+                                            ),
                                           ).then((_) => _carregarDados());
                                         },
                                       ),

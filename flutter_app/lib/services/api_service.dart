@@ -657,6 +657,31 @@ class ApiService {
     }
   }
 
+  /// Busca uma consulta por ID (paciente e profissional embutidos).
+  Future<Map<String, dynamic>> getConsultaPorId(String consultaId) async {
+    if (consultaId.isEmpty) {
+      return {'success': false, 'message': 'ID inválido.'};
+    }
+    try {
+      final data = await _sb
+          .from('consulta')
+          .select(
+            '*, paciente:id_paciente(id, nome, email, telefone, data_nasc, genero, avatar_url), '
+            'profissional:id_profissional(nome, especialidade, avatar_url)',
+          )
+          .eq('id', consultaId)
+          .maybeSingle();
+      if (data == null) {
+        return {'success': false, 'message': 'Consulta não encontrada.'};
+      }
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
   /// Busca as consultas do profissional com dados do paciente.
   Future<Map<String, dynamic>> getConsultasProfissional(
       String profissionalId) async {
@@ -1453,12 +1478,15 @@ class ApiService {
       final dataFormatada =
           '${dataHora.day.toString().padLeft(2, '0')}/${dataHora.month.toString().padLeft(2, '0')}/${dataHora.year} às $horario';
 
+      final consultaId = consulta['id'] as String? ?? '';
+
       // Notifica paciente
       await _criarNotificacao(
         idDestinatario: pacienteId,
         titulo: 'Consulta Agendada!',
         mensagem: 'Sua consulta com $nomeProfissional foi confirmada para $dataFormatada.',
         tipo: 'agendamento',
+        acaoId: consultaId.isNotEmpty ? consultaId : null,
       );
 
       // Notifica profissional
@@ -1467,6 +1495,7 @@ class ApiService {
         titulo: 'Nova Consulta Agendada',
         mensagem: '$nomePaciente agendou uma consulta para $dataFormatada.',
         tipo: 'agendamento',
+        acaoId: consultaId.isNotEmpty ? consultaId : null,
       );
 
       await AuditService.instance.logAgendamento(
@@ -1557,12 +1586,14 @@ class ApiService {
           titulo: 'Consulta Confirmada',
           mensagem: 'O profissional $nomeProfissional confirmou a sua consulta.',
           tipo: 'agendamento',
+          acaoId: consultaId,
         );
         await _criarNotificacao(
           idDestinatario: profissionalId,
           titulo: 'Confirmação Realizada',
           mensagem: 'Você confirmou a consulta de $nomePaciente.',
           tipo: 'agendamento',
+          acaoId: consultaId,
         );
       } else {
         await _criarNotificacao(
@@ -1570,12 +1601,14 @@ class ApiService {
           titulo: 'Consulta Confirmada',
           mensagem: 'O paciente $nomePaciente confirmou a presença na consulta.',
           tipo: 'agendamento',
+          acaoId: consultaId,
         );
         await _criarNotificacao(
           idDestinatario: pacienteId,
           titulo: 'Confirmação Realizada',
           mensagem: 'Você confirmou sua presença na consulta com $nomeProfissional.',
           tipo: 'agendamento',
+          acaoId: consultaId,
         );
       }
 
@@ -1647,12 +1680,14 @@ class ApiService {
           titulo: 'Consulta Cancelada',
           mensagem: 'O profissional $nomeProfissional cancelou a sua consulta.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
           tipo: 'cancelamento',
+          acaoId: consultaId,
         );
         await _criarNotificacao(
           idDestinatario: profissionalId,
           titulo: 'Cancelamento Confirmado',
           mensagem: 'Você cancelou a consulta de $nomePaciente.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
           tipo: 'cancelamento',
+          acaoId: consultaId,
         );
       } else {
         await _criarNotificacao(
@@ -1660,12 +1695,14 @@ class ApiService {
           titulo: 'Consulta Cancelada',
           mensagem: '$nomePaciente cancelou a consulta agendada.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
           tipo: 'cancelamento',
+          acaoId: consultaId,
         );
         await _criarNotificacao(
           idDestinatario: pacienteId,
           titulo: 'Cancelamento Confirmado',
           mensagem: 'Você cancelou sua consulta com $nomeProfissional.${motivo != null && motivo.isNotEmpty ? ' Motivo: $motivo' : ''}',
           tipo: 'cancelamento',
+          acaoId: consultaId,
         );
       }
 
@@ -1745,6 +1782,7 @@ class ApiService {
           titulo: 'Consulta Reagendada',
           mensagem: 'O profissional $nomeProfissional reagendou sua consulta para $dataFormatada.',
           tipo: 'reagendamento',
+          acaoId: consultaId,
         );
         // Confirma para o profissional
         await _criarNotificacao(
@@ -1752,6 +1790,7 @@ class ApiService {
           titulo: 'Reagendamento Confirmado',
           mensagem: 'Você reagendou a consulta de $nomePaciente para $dataFormatada.',
           tipo: 'reagendamento',
+          acaoId: consultaId,
         );
       } else {
         // Notifica profissional
@@ -1760,6 +1799,7 @@ class ApiService {
           titulo: 'Consulta Reagendada',
           mensagem: '$nomePaciente reagendou a consulta para $dataFormatada.',
           tipo: 'reagendamento',
+          acaoId: consultaId,
         );
         // Confirma para o paciente
         await _criarNotificacao(
@@ -1767,6 +1807,7 @@ class ApiService {
           titulo: 'Reagendamento Confirmado',
           mensagem: 'Sua consulta foi reagendada para $dataFormatada.',
           tipo: 'reagendamento',
+          acaoId: consultaId,
         );
       }
 
@@ -1889,6 +1930,8 @@ class ApiService {
           .maybeSingle();
       final nomeProfissional = profData?['nome'] as String? ?? 'Seu fisioterapeuta';
 
+      final recId = rec['id'] as String?;
+
       // Notifica o paciente
       await _criarNotificacao(
         idDestinatario: pacienteId,
@@ -1896,6 +1939,7 @@ class ApiService {
         mensagem:
             '$nomeProfissional enviou ${videos.length} exercício(s) personalizado(s) para você. Acesse "Minha Saúde" para ver.',
         tipo: 'recomendacao',
+        acaoId: recId ?? consultaId,
       );
 
       return {'success': true, 'data': rec};
@@ -2136,8 +2180,9 @@ class ApiService {
       await _criarNotificacao(
         idDestinatario: destinatarioId,
         titulo: 'Nova mensagem de $nomeRemetente',
-        mensagem: '$corpoMensagem|||$remetenteId',
+        mensagem: corpoMensagem,
         tipo: 'chat',
+        acaoId: remetenteId,
       );
 
       return {'success': true, 'data': data};

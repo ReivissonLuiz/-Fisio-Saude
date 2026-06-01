@@ -12,12 +12,14 @@ class ProfissionalHomeTab extends StatefulWidget {
   final String profissionalId;
   final String nome;
   final String? profissionalAvatar;
+  final void Function(String consultaId)? onOpenConsultaFromNotificacao;
 
   const ProfissionalHomeTab({
     super.key,
     required this.profissionalId,
     required this.nome,
     this.profissionalAvatar,
+    this.onOpenConsultaFromNotificacao,
   });
 
   @override
@@ -337,7 +339,9 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                                               usuarioId: widget.profissionalId,
                                               usuarioNome: widget.nome,
                                               usuarioAvatar: widget.profissionalAvatar,
-                                              onNavigateToAgenda: () => Navigator.pop(context),
+                                              isProfissional: true,
+                                              onOpenConsultaProfissional:
+                                                  widget.onOpenConsultaFromNotificacao,
                                             ),
                                           )).then((_) => _loadDashboardData());
                                         },

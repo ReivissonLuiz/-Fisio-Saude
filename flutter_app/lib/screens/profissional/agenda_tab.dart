@@ -9,8 +9,16 @@ import '../shared/reagendar_screen.dart';
 
 class AgendaTab extends StatefulWidget {
   final String profissionalId;
+  /// Abre detalhes desta consulta após carregar a agenda (ex.: vindo de notificação).
+  final String? initialConsultaId;
+  final VoidCallback? onInitialConsultaHandled;
 
-  const AgendaTab({super.key, required this.profissionalId});
+  const AgendaTab({
+    super.key,
+    required this.profissionalId,
+    this.initialConsultaId,
+    this.onInitialConsultaHandled,
+  });
 
   @override
   State<AgendaTab> createState() => _AgendaTabState();
@@ -30,6 +38,16 @@ class _AgendaTabState extends State<AgendaTab> {
     });
   }
 
+  @override
+  void didUpdateWidget(AgendaTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialConsultaId != null &&
+        widget.initialConsultaId != oldWidget.initialConsultaId &&
+        !_isLoading) {
+      _abrirConsultaInicialSeNecessario();
+    }
+  }
+
   Future<void> _loadAgenda() async {
     setState(() => _isLoading = true);
     try {
@@ -39,9 +57,43 @@ class _AgendaTabState extends State<AgendaTab> {
           _consultas = res['success'] ? (res['data'] as List) : [];
           _isLoading = false;
         });
+        await _abrirConsultaInicialSeNecessario();
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _abrirConsultaInicialSeNecessario() async {
+    final id = widget.initialConsultaId;
+    if (id == null || id.isEmpty || !mounted) return;
+
+    dynamic consulta;
+    for (final c in _consultas) {
+      if ((c as Map)['id'] == id) {
+        consulta = c;
+        break;
+      }
+    }
+
+    if (consulta == null) {
+      final res = await _api.getConsultaPorId(id);
+      if (res['success'] == true && res['data'] != null) {
+        consulta = res['data'];
+      }
+    }
+
+    if (!mounted) return;
+    widget.onInitialConsultaHandled?.call();
+
+    if (consulta != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _mostrarDetalhes(consulta);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Consulta não encontrada na agenda.')),
+      );
     }
   }
 

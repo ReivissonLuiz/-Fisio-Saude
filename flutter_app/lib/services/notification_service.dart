@@ -17,6 +17,7 @@ class NotificationService {
     required String titulo,
     required String mensagem,
     String tipo = 'agendamento',
+    String? acaoId,
   }) async {
     try {
       final data = await _sb.from('notificacao').insert({
@@ -25,6 +26,7 @@ class NotificationService {
         'mensagem': mensagem,
         'tipo': tipo,
         'lida': false,
+        if (acaoId != null) 'acao_id': acaoId,
       }).select().single();
       return {'success': true, 'data': data};
     } catch (e) {

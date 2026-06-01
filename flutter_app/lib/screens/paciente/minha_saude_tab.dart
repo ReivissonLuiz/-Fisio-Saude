@@ -9,7 +9,16 @@ import '../../services/api_service.dart';
 
 class MinhaSaudeTab extends StatefulWidget {
   final String pacienteId;
-  const MinhaSaudeTab({super.key, required this.pacienteId});
+  /// 0 = Sintomas, 1 = Exercícios (ex.: vindo de notificação de recomendação).
+  final int? initialSubTabIndex;
+  final VoidCallback? onInitialSubTabHandled;
+
+  const MinhaSaudeTab({
+    super.key,
+    required this.pacienteId,
+    this.initialSubTabIndex,
+    this.onInitialSubTabHandled,
+  });
 
   @override
   State<MinhaSaudeTab> createState() => _MinhaSaudeTabState();
@@ -27,9 +36,29 @@ class _MinhaSaudeTabState extends State<MinhaSaudeTab>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    final sub = widget.initialSubTabIndex;
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: (sub != null && sub >= 0 && sub < 2) ? sub : 0,
+    );
     _carregarSintomas();
     _carregarRecomendacoes();
+    if (sub != null && sub > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onInitialSubTabHandled?.call();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(MinhaSaudeTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final sub = widget.initialSubTabIndex;
+    if (sub != null && sub != _tabController.index && sub >= 0 && sub < 2) {
+      _tabController.animateTo(sub);
+      widget.onInitialSubTabHandled?.call();
+    }
   }
 
   @override
