@@ -39,6 +39,10 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
   int _agendadas = 0;
   int _realizadas = 0;
   int _canceladas = 0;
+  
+  double _mediaAvaliacao = 0.0;
+  double _taxaCancelamento = 0.0;
+  List<MapEntry<String, int>> _principaisQueixas = [];
 
   @override
   void initState() {
@@ -51,6 +55,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
     try {
       final resConsultas = await _api.getConsultasProfissional(widget.profissionalId);
       final resPacientes = await _api.getPacientesDoProfissional(widget.profissionalId);
+      final resSintomas = await _api.getTodosSintomasProfissional();
       final nCount = await _notif.contarNaoLidas(widget.profissionalId);
 
       if (mounted) {
@@ -64,14 +69,22 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
             _canceladas = 0;
             _consultasHoje = [];
 
+            int somaAvaliacao = 0;
+            int countAvaliacao = 0;
+
             for (var c in _todasConsultas) {
               final status = (c['status'] as String?)?.toLowerCase() ?? 'agendada';
               if (status == 'agendada' || status == 'confirmada') {
                 _agendadas++;
               } else if (status == 'realizada' || status == 'finalizada') {
                 _realizadas++;
-              } else if (status == 'cancelada') {
+              } else if (status == 'cancelada' || status == 'nao_compareceu') {
                 _canceladas++;
+              }
+
+              if (c['avaliacao'] != null) {
+                somaAvaliacao += (c['avaliacao'] as num).toInt();
+                countAvaliacao++;
               }
 
               if (c['data_hora'] != null) {
@@ -81,6 +94,9 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                 }
               }
             }
+            
+            _mediaAvaliacao = countAvaliacao > 0 ? somaAvaliacao / countAvaliacao : 0.0;
+            _taxaCancelamento = _todasConsultas.isNotEmpty ? (_canceladas / _todasConsultas.length) * 100 : 0.0;
             
             // Ordenar consultas de hoje pelo horário
             _consultasHoje.sort((a, b) {
@@ -92,6 +108,20 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
           
           if (resPacientes['success']) {
             _totalPacientes = (resPacientes['data'] as List).length;
+          }
+          
+          if (resSintomas['success']) {
+            final sintomas = resSintomas['data'] as List;
+            final Map<String, int> contagem = {};
+            for (var s in sintomas) {
+              final cat = s['categoria'] as String? ?? 'Outros';
+              contagem[cat] = (contagem[cat] ?? 0) + 1;
+            }
+            _principaisQueixas = contagem.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value));
+            if (_principaisQueixas.length > 5) {
+              _principaisQueixas = _principaisQueixas.sublist(0, 5);
+            }
           }
           
           _notifCount = nCount;
@@ -456,6 +486,31 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _SummaryCard(
+                            title: 'Avaliação Média',
+                            value: _isLoading ? '-' : _mediaAvaliacao.toStringAsFixed(1),
+                            details: 'Nota média dada pelos seus pacientes.',
+                            icon: Icons.star_rounded,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _SummaryCard(
+                            title: 'Cancelamentos',
+                            value: _isLoading ? '-' : '${_taxaCancelamento.toStringAsFixed(0)}%',
+                            details: 'Taxa de faltas e cancelamentos no histórico.',
+                            icon: Icons.trending_down_rounded,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                    ),
                     
                     const SizedBox(height: 24),
                     
@@ -485,6 +540,53 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                         subtitle: 'Todas as consultas registradas',
                         icon: Icons.pie_chart_rounded,
                         child: _buildPieChart(),
+                      ),
+                      const SizedBox(height: 16),
+                      _ExpandableCard(
+                        title: 'Principais Queixas',
+                        subtitle: 'Sintomas mais relatados (Geral)',
+                        icon: Icons.medical_information_rounded,
+                        child: _principaisQueixas.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.all(20),
+                                child: Center(
+                                  child: Text('Nenhum sintoma registrado pelos pacientes.', style: TextStyle(color: AppTheme.textHint)),
+                                ),
+                              )
+                            : Column(
+                                children: _principaisQueixas.map((q) {
+                                  final total = _principaisQueixas.fold<int>(0, (sum, e) => sum + e.value);
+                                  final percent = total > 0 ? (q.value / total) * 100 : 0;
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(q.key, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                                        ),
+                                        Expanded(
+                                          flex: 5,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(4),
+                                            child: LinearProgressIndicator(
+                                              value: percent / 100,
+                                              backgroundColor: AppTheme.divider,
+                                              color: AppTheme.secondary,
+                                              minHeight: 8,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        SizedBox(
+                                          width: 36,
+                                          child: Text('${percent.toStringAsFixed(0)}%', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textSecondary), textAlign: TextAlign.right),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                       ),
                     ],
 

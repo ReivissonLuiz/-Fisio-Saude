@@ -609,6 +609,23 @@ class ApiService {
     }
   }
 
+  // --- Profissional: BI e Estatísticas --------------------------------------
+
+  /// Busca os sintomas de todos os pacientes vinculados ao profissional.
+  /// (O RLS já garante que ele só verá os sintomas dos próprios pacientes).
+  Future<Map<String, dynamic>> getTodosSintomasProfissional() async {
+    try {
+      final data = await _sb
+          .from('registro_sintomas')
+          .select('categoria, intensidade');
+      return {'success': true, 'data': data};
+    } on PostgrestException catch (e) {
+      return {'success': false, 'message': e.message};
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
+    }
+  }
+
   // --- Profissionais: Busca -------------------------------------------------
 
   /// Lista todos os profissionais ativos para busca pelo paciente.
