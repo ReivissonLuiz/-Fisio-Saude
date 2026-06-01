@@ -119,6 +119,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
 
     return Column(
       children: [
+        const SizedBox(height: 16),
         SizedBox(
           height: 210,
           child: PieChart(
