@@ -452,64 +452,68 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Resumo Topo
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Consultas Hoje',
-                            value: _isLoading ? '-' : _consultasHoje.length.toString(),
-                            details: 'Sessões agendadas para o dia atual.',
-                            icon: Icons.calendar_month_rounded,
-                            color: Colors.orange,
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Consultas Hoje',
+                              value: _isLoading ? '-' : _consultasHoje.length.toString(),
+                              details: 'Sessões agendadas para o dia atual.',
+                              icon: Icons.calendar_month_rounded,
+                              color: Colors.orange,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Total Pacientes',
-                            value: _isLoading ? '-' : _totalPacientes.toString(),
-                            details: 'Pacientes atualmente vinculados a você.',
-                            icon: Icons.people_alt_rounded,
-                            color: Colors.blue,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Total Pacientes',
+                              value: _isLoading ? '-' : _totalPacientes.toString(),
+                              details: 'Pacientes atualmente vinculados a você.',
+                              icon: Icons.people_alt_rounded,
+                              color: Colors.blue,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Realizadas',
-                            value: _isLoading ? '-' : _realizadas.toString(),
-                            details: 'Histórico total de atendimentos concluídos.',
-                            icon: Icons.check_circle_rounded,
-                            color: Colors.green,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Realizadas',
+                              value: _isLoading ? '-' : _realizadas.toString(),
+                              details: 'Histórico total de atendimentos concluídos.',
+                              icon: Icons.check_circle_rounded,
+                              color: Colors.green,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Avaliação Média',
-                            value: _isLoading ? '-' : _mediaAvaliacao.toStringAsFixed(1),
-                            details: 'Nota média dada pelos seus pacientes.',
-                            icon: Icons.star_rounded,
-                            color: Colors.amber,
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Avaliação Média',
+                              value: _isLoading ? '-' : _mediaAvaliacao.toStringAsFixed(1),
+                              details: 'Nota média dada pelos seus pacientes.',
+                              icon: Icons.star_rounded,
+                              color: Colors.amber,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _SummaryCard(
-                            title: 'Cancelamentos',
-                            value: _isLoading ? '-' : '${_taxaCancelamento.toStringAsFixed(0)}%',
-                            details: 'Taxa de faltas e cancelamentos no histórico.',
-                            icon: Icons.block_flipped,
-                            color: Colors.redAccent,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _SummaryCard(
+                              title: 'Cancelamentos',
+                              value: _isLoading ? '-' : '${_taxaCancelamento.toStringAsFixed(0)}%',
+                              details: 'Taxa de faltas e cancelamentos no histórico.',
+                              icon: Icons.block_flipped,
+                              color: Colors.redAccent,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     
                     const SizedBox(height: 24),
