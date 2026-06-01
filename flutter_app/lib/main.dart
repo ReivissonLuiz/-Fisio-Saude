@@ -5,6 +5,7 @@ library;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
@@ -80,6 +81,13 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
       title: '+Fisio +Saúde',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      locale: const Locale('pt', 'BR'),
+      supportedLocales: const [Locale('pt', 'BR')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       navigatorKey: _navigatorKey,
       initialRoute: '/',
       routes: {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../widgets/calendar_date_picker_card.dart';
 
 class AgendarConsultaScreen extends StatefulWidget {
   final String pacienteId;
@@ -320,25 +321,20 @@ class _AgendarConsultaScreenState extends State<AgendarConsultaScreen> {
       Expanded(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppTheme.divider)),
-            child: CalendarDatePicker(
-              initialDate: _data ?? DateTime.now().add(const Duration(days: 1)),
-              firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 90)),
-              onDateChanged: (d) async {
-                setState(() { _data = d; _horario = null; _horarios = []; });
-                if (_profPreSelecionado && _profissional != null) {
-                  // Profissional pré-selecionado: carrega os horários deste profissional
-                  await _carregarHorarios(d);
-                } else {
-                  // Fluxo geral: carrega horários agregados de todos os profissionais
-                  await _carregarHorariosGeral(d);
-                }
-                if (!mounted) return;
-                setState(() => _passo = 2);
-              },
-            ),
+          child: CalendarDatePickerCard(
+            initialDate: _data ?? DateTime.now().add(const Duration(days: 1)),
+            firstDate: DateTime.now(),
+            lastDate: DateTime.now().add(const Duration(days: 90)),
+            onDateChanged: (d) async {
+              setState(() { _data = d; _horario = null; _horarios = []; });
+              if (_profPreSelecionado && _profissional != null) {
+                await _carregarHorarios(d);
+              } else {
+                await _carregarHorariosGeral(d);
+              }
+              if (!mounted) return;
+              setState(() => _passo = 2);
+            },
           ),
         ),
       ),

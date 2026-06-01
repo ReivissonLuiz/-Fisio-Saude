@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/calendar_date_picker_card.dart';
 import '../../services/api_service.dart';
 
 class ReagendarScreen extends StatefulWidget {
@@ -112,24 +113,18 @@ class _ReagendarScreenState extends State<ReagendarScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
             const SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.divider),
-              ),
-              child: CalendarDatePicker(
-                initialDate: _data ?? DateTime.now().add(const Duration(days: 1)),
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 90)),
-                onDateChanged: (d) {
-                  setState(() {
-                    _data = d;
-                    _horario = null;
-                  });
-                  _carregarHorarios(d);
-                },
-              ),
+            CalendarDatePickerCard(
+              borderRadius: 16,
+              initialDate: _data ?? DateTime.now().add(const Duration(days: 1)),
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 90)),
+              onDateChanged: (d) {
+                setState(() {
+                  _data = d;
+                  _horario = null;
+                });
+                _carregarHorarios(d);
+              },
             ),
             if (_data != null) ...[
               const SizedBox(height: 24),

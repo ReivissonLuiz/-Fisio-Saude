@@ -126,6 +126,7 @@ class _MinhaDisponibilidadeTabState extends State<MinhaDisponibilidadeTab> {
       initialDate: DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 180)),
+      locale: const Locale('pt', 'BR'),
     );
     if (d == null || !mounted) return;
 

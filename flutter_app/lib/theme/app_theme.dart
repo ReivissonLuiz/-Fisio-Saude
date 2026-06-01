@@ -128,6 +128,29 @@ class AppTheme {
           side: const BorderSide(color: divider),
         ),
       ),
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: surface,
+        headerBackgroundColor: primary,
+        headerForegroundColor: Colors.white,
+        dayStyle: GoogleFonts.poppins(fontSize: 14, color: textPrimary),
+        weekdayStyle: GoogleFonts.poppins(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: textSecondary,
+        ),
+        yearStyle: GoogleFonts.poppins(fontSize: 14, color: textPrimary),
+        dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return Colors.white;
+          if (states.contains(WidgetState.disabled)) return textHint;
+          return textPrimary;
+        }),
+        dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return primary;
+          return null;
+        }),
+        todayForegroundColor: WidgetStateProperty.all(primary),
+        todayBackgroundColor: WidgetStateProperty.all(Colors.transparent),
+      ),
     );
   }
 }
