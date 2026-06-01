@@ -212,10 +212,12 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
       }
     }
 
-    int maxY = 5;
+    int maxCount = 5;
     for (var v in monthlyCounts.values) {
-      if (v > maxY) maxY = v + 2;
+      if (v > maxCount) maxCount = v;
     }
+    // Adiciona 30% de margem no topo para o tooltip (balãozinho) não ser cortado
+    final maxY = maxCount + (maxCount * 0.3).ceil() + 2;
 
     List<BarChartGroupData> barGroups = [];
     int xIndex = 0;
