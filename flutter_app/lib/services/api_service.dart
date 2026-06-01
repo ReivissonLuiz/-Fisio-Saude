@@ -161,8 +161,8 @@ class ApiService {
       final email = (data['email'] as String).trim().toLowerCase();
       final senha = data['senha'] as String;
 
-      // 0. Limpa qualquer sessão anterior (token expirado ou usuário deletado)
-      await _sb.auth.signOut();
+      // 0. Limpa qualquer sessão anterior — ignora erros (JWT pode ser inválido)
+      try { await _sb.auth.signOut(); } catch (_) {}
 
       // 1. Criar conta no Supabase Auth
       final response = await _sb.auth.signUp(
@@ -235,8 +235,8 @@ class ApiService {
       final email = (data['email'] as String).trim().toLowerCase();
       final senha = data['senha'] as String;
 
-      // 0. Limpa qualquer sessão anterior (token expirado ou usuário deletado)
-      await _sb.auth.signOut();
+      // 0. Limpa qualquer sessão anterior — ignora erros (JWT pode ser inválido)
+      try { await _sb.auth.signOut(); } catch (_) {}
 
       // 1. Criar conta no Auth
       final response = await _sb.auth.signUp(
@@ -311,8 +311,8 @@ class ApiService {
       final email = (data['email'] as String).trim().toLowerCase();
       final senha = data['senha'] as String;
 
-      // 0. Limpa qualquer sessão anterior (token expirado ou usuário deletado)
-      await _sb.auth.signOut();
+      // 0. Limpa qualquer sessão anterior — ignora erros (JWT pode ser inválido)
+      try { await _sb.auth.signOut(); } catch (_) {}
 
       // 1. Criar conta no Auth
       final response = await _sb.auth.signUp(
