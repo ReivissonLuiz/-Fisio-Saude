@@ -484,7 +484,8 @@ class ApiService {
           .from('usuario')
           .select('*, permissao(id, nome, nivel)')
           .eq('supabase_user_id', supabaseUserId)
-          .single();
+          .maybeSingle();
+      if (data == null) return {'success': false, 'message': 'Usuário não encontrado.'};
       return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -501,7 +502,8 @@ class ApiService {
           .from('usuario')
           .select('*, permissao(id, nome, nivel)')
           .eq('id', usuarioId)
-          .single();
+          .maybeSingle();
+      if (data == null) return {'success': false, 'message': 'Usuário não encontrado.'};
       return {'success': true, 'data': data};
     } on PostgrestException catch (e) {
       return {'success': false, 'message': e.message};
@@ -1440,17 +1442,17 @@ class ApiService {
           .from('usuario')
           .select('nome, email')
           .eq('id', profissionalId)
-          .single();
+          .maybeSingle();
       final pacData = await _sb
           .from('usuario')
           .select('nome, email')
           .eq('id', pacienteId)
-          .single();
+          .maybeSingle();
 
-      final nomeProfissional = profData['nome'] as String? ?? 'Profissional';
-      final nomePaciente = pacData['nome'] as String? ?? 'Paciente';
-      final emailProfissional = profData['email'] as String? ?? '';
-      final emailPaciente = pacData['email'] as String? ?? '';
+      final nomeProfissional = profData?['nome'] as String? ?? 'Profissional';
+      final nomePaciente = pacData?['nome'] as String? ?? 'Paciente';
+      final emailProfissional = profData?['email'] as String? ?? '';
+      final emailPaciente = pacData?['email'] as String? ?? '';
 
       final calendarUrl = _gerarCalendarUrl(
         nomeProfissional: nomeProfissional,
