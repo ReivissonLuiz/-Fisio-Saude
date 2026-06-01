@@ -317,13 +317,15 @@ class _SintomaViewCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (regiao != null && regiao.isNotEmpty)
-                        Text(regiao, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14))
-                      else
-                        const Text('Sintoma', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      
+                      Expanded(
+                        child: Text(
+                          (regiao != null && regiao.isNotEmpty) ? regiao : 'Sintoma',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       Text(dtFmt, style: const TextStyle(fontSize: 11, color: AppTheme.textHint)),
                     ],
                   ),
