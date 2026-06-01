@@ -162,7 +162,6 @@ class ApiService {
       final senha = data['senha'] as String;
 
       // 0. Limpa qualquer sessão anterior (token expirado ou usuário deletado)
-      //    Sem isso, o INSERT após signUp envia o JWT antigo inválido → 401.
       await _sb.auth.signOut();
 
       // 1. Criar conta no Supabase Auth
@@ -178,28 +177,26 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela usuario com permissao = Paciente
-      final inserted = await _sb.from('usuario').insert({
-        'supabase_user_id': user.id,
-        'id_permissao': Permissao.paciente,
-        'nome': (data['nome'] as String).trim(),
-        'email': email,
-        'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'data_nasc': _formatarData(data['dataNascimento'] as String?),
-        'telefone':
-            (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'genero': data['genero'],
-        'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'logradouro': data['logradouro'],
-        'numero': data['numero'],
-        'complemento': data['complemento'],
-        'bairro': data['bairro'],
-        'cidade': data['cidade'],
-        'uf': data['uf'],
-        'ativo': true,
-      }).select('id').single();
+      // 2. Gravar via função SECURITY DEFINER (bypassa RLS — seguro no cadastro)
+      final resultado = await _sb.rpc('registrar_usuario', params: {
+        'p_supabase_user_id': user.id,
+        'p_id_permissao': Permissao.paciente,
+        'p_nome': (data['nome'] as String).trim(),
+        'p_email': email,
+        'p_cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_data_nasc': _formatarData(data['dataNascimento'] as String?),
+        'p_telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_genero': data['genero'],
+        'p_cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_logradouro': data['logradouro'],
+        'p_numero': data['numero'],
+        'p_complemento': data['complemento'],
+        'p_bairro': data['bairro'],
+        'p_cidade': data['cidade'],
+        'p_uf': data['uf'],
+      });
 
-      final novoId = inserted['id'] as String;
+      final novoId = resultado as String;
 
       await AuditService.instance.logCreateConta(
         tipo: 'paciente',
@@ -254,32 +251,28 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela usuario com permissao = Profissional
-      final inserted = await _sb.from('usuario').insert({
-        'supabase_user_id': user.id,
-        'id_permissao': Permissao.profissional,
-        'nome': (data['nome'] as String).trim(),
-        'email': email,
-        'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'data_nasc': _formatarData(data['dataNascimento'] as String?),
-        'telefone':
-            (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'genero': (data['genero'] as String?)?.isNotEmpty == true
-            ? data['genero']
-            : 'Não informado',
-        'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'logradouro': data['logradouro'],
-        'numero': data['numero'],
-        'complemento': data['complemento'],
-        'bairro': data['bairro'],
-        'cidade': data['cidade'],
-        'uf': data['uf'],
-        'crefito': (data['crefito'] as String?)?.trim(),
-        'especialidade': (data['especializacao'] as String?)?.trim(),
-        'ativo': true,
-      }).select('id').single();
+      // 2. Gravar via função SECURITY DEFINER (bypassa RLS — seguro no cadastro)
+      final resultado = await _sb.rpc('registrar_usuario', params: {
+        'p_supabase_user_id': user.id,
+        'p_id_permissao': Permissao.profissional,
+        'p_nome': (data['nome'] as String).trim(),
+        'p_email': email,
+        'p_cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_data_nasc': _formatarData(data['dataNascimento'] as String?),
+        'p_telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_genero': (data['genero'] as String?)?.isNotEmpty == true ? data['genero'] : 'Não informado',
+        'p_cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_logradouro': data['logradouro'],
+        'p_numero': data['numero'],
+        'p_complemento': data['complemento'],
+        'p_bairro': data['bairro'],
+        'p_cidade': data['cidade'],
+        'p_uf': data['uf'],
+        'p_crefito': (data['crefito'] as String?)?.trim(),
+        'p_especialidade': (data['especializacao'] as String?)?.trim(),
+      });
 
-      final novoId = inserted['id'] as String;
+      final novoId = resultado as String;
 
       await AuditService.instance.logCreateConta(
         tipo: 'profissional',
@@ -333,31 +326,27 @@ class ApiService {
         return {'success': false, 'message': 'Não foi possível criar a conta.'};
       }
 
-      // 2. Gravar dados na tabela usuario com permissao = Administrador
-      final inserted = await _sb.from('usuario').insert({
-        'supabase_user_id': user.id,
-        'id_permissao': Permissao.administrador,
-        'nome': (data['nome'] as String).trim(),
-        'email': email,
-        'cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'data_nasc': _formatarData(data['dataNascimento'] as String?),
-        'telefone':
-            (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'genero': (data['genero'] as String?)?.isNotEmpty == true
-            ? data['genero']
-            : 'Não informado',
-        'cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
-        'logradouro': data['logradouro'],
-        'numero': data['numero'],
-        'complemento': data['complemento'],
-        'bairro': data['bairro'],
-        'cidade': data['cidade'],
-        'uf': data['uf'],
-        'cargo': data['cargo'] ?? 'Diretor',
-        'ativo': true,
-      }).select('id').single();
+      // 2. Gravar via função SECURITY DEFINER (bypassa RLS — seguro no cadastro)
+      final resultado = await _sb.rpc('registrar_usuario', params: {
+        'p_supabase_user_id': user.id,
+        'p_id_permissao': Permissao.administrador,
+        'p_nome': (data['nome'] as String).trim(),
+        'p_email': email,
+        'p_cpf': (data['cpf'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_data_nasc': _formatarData(data['dataNascimento'] as String?),
+        'p_telefone': (data['telefone'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_genero': (data['genero'] as String?)?.isNotEmpty == true ? data['genero'] : 'Não informado',
+        'p_cep': (data['cep'] as String?)?.replaceAll(RegExp(r'\D'), ''),
+        'p_logradouro': data['logradouro'],
+        'p_numero': data['numero'],
+        'p_complemento': data['complemento'],
+        'p_bairro': data['bairro'],
+        'p_cidade': data['cidade'],
+        'p_uf': data['uf'],
+        'p_cargo': data['cargo'] ?? 'Diretor',
+      });
 
-      final novoId = inserted['id'] as String;
+      final novoId = resultado as String;
 
       await AuditService.instance.logCreateConta(
         tipo: 'admin',
