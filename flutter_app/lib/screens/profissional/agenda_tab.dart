@@ -1154,7 +1154,10 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
-    final pacienteNome = (widget.consulta['paciente']?['nome'] as String?) ?? 'o paciente';
+    final pacienteNomeCompleto = (widget.consulta['paciente']?['nome'] as String?);
+    final pacienteNome = (pacienteNomeCompleto != null && pacienteNomeCompleto.trim().isNotEmpty)
+        ? pacienteNomeCompleto.trim().split(' ').first
+        : 'o paciente';
 
     return Container(
       height: mq.size.height * 0.92,
@@ -1203,25 +1206,6 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
                 IconButton(
                   icon: const Icon(Icons.close_rounded, color: Colors.white),
                   onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
-
-          // Badge do algoritmo — ML sempre ativo (processamento local)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.green.shade50,
-            child: Row(
-              children: [
-                Icon(Icons.psychology_rounded, size: 16, color: Colors.green.shade700),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'TF-IDF + Cosine Similarity · Processado localmente · Sem rede',
-                    style: TextStyle(fontSize: 11, color: Colors.green.shade700, fontWeight: FontWeight.w500),
-                  ),
                 ),
               ],
             ),
