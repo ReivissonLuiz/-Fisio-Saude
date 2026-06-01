@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'log_service.dart';
 import 'audit_service.dart';
+import 'crypto_service.dart';
 
 /// Acesso global ao cliente Supabase (após Supabase.initialize)
 SupabaseClient get _sb => Supabase.instance.client;
@@ -2163,20 +2164,28 @@ class ApiService {
     String? consultaId,
   }) async {
     try {
+      final textoOriginal = conteudo.trim();
+      // ── Cifra o conteúdo antes de salvar (LGPD) ──────────────────────────
+      final conteudoCifrado = CryptoService.instance.encrypt(textoOriginal);
+
       final data = await _sb.from('mensagem').insert({
         'id_remetente': remetenteId,
         'id_destinatario': destinatarioId,
-        'conteudo': conteudo.trim(),
+        'conteudo': conteudoCifrado,
         if (consultaId != null) 'id_consulta': consultaId,
         'lida': false,
       }).select().single();
+
+      // Devolve o mapa com o conteúdo já decifrado para atualizar a UI local
+      final dataDecifrado = Map<String, dynamic>.from(data as Map);
+      dataDecifrado['conteudo'] = textoOriginal;
 
       // Buscar nome do remetente
       final remetenteData = await _sb.from('usuario').select('nome').eq('id', remetenteId).maybeSingle();
       final nomeRemetente = remetenteData?['nome'] as String? ?? 'Alguém';
 
-      final corpoMensagem = conteudo.trim().length > 50 ? '${conteudo.trim().substring(0, 50)}...' : conteudo.trim();
-      
+      // Notificação usa o texto em claro (não cifrado)
+      final corpoMensagem = textoOriginal.length > 50 ? '${textoOriginal.substring(0, 50)}...' : textoOriginal;
       await _criarNotificacao(
         idDestinatario: destinatarioId,
         titulo: 'Nova mensagem de $nomeRemetente',
@@ -2185,7 +2194,7 @@ class ApiService {
         acaoId: remetenteId,
       );
 
-      return {'success': true, 'data': data};
+      return {'success': true, 'data': dataDecifrado};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao enviar mensagem.'};
     }
@@ -2202,24 +2211,27 @@ class ApiService {
           .eq('id_destinatario', usuarioId);
 
       final Map<String, dynamic> contatosMap = {};
+      final crypto = CryptoService.instance;
 
       void processMessage(dynamic msg, String contatoIdKey) {
         final contatoId = msg[contatoIdKey] as String?;
         if (contatoId == null) return;
         
         final dt = DateTime.parse(msg['created_at']);
+        // Decifra o preview (retrocompatível com mensagens antigas)
+        final preview = crypto.tryDecrypt(msg['conteudo'] as String? ?? '');
         
         if (!contatosMap.containsKey(contatoId)) {
           contatosMap[contatoId] = {
             'id': contatoId,
-            'ultima_mensagem': msg['conteudo'],
+            'ultima_mensagem': preview,
             'data_hora': dt,
             'nao_lidas': (contatoIdKey == 'id_remetente' && msg['lida'] == false) ? 1 : 0,
           };
         } else {
           final existing = contatosMap[contatoId];
           if (dt.isAfter(existing['data_hora'])) {
-            existing['ultima_mensagem'] = msg['conteudo'];
+            existing['ultima_mensagem'] = preview;
             existing['data_hora'] = dt;
           }
           if (contatoIdKey == 'id_remetente' && msg['lida'] == false) {
@@ -2272,7 +2284,14 @@ class ApiService {
           .or('and(id_remetente.eq.$usuarioAId,id_destinatario.eq.$usuarioBId),and(id_remetente.eq.$usuarioBId,id_destinatario.eq.$usuarioAId)')
           .order('created_at', ascending: true)
           .limit(200);
-      return {'success': true, 'data': data};
+      // Decifra o conteúdo de cada mensagem (retrocompatível com texto puro)
+      final crypto = CryptoService.instance;
+      final decifradas = (data as List).map((msg) {
+        final m = Map<String, dynamic>.from(msg as Map);
+        m['conteudo'] = crypto.tryDecrypt(m['conteudo'] as String? ?? '');
+        return m;
+      }).toList();
+      return {'success': true, 'data': decifradas};
     } catch (e) {
       return {'success': false, 'message': 'Erro ao carregar mensagens.'};
     }
@@ -2297,11 +2316,20 @@ class ApiService {
   }
 
   Stream<List<Map<String, dynamic>>> streamMensagens({required String usuarioAId, required String usuarioBId}) {
+    final crypto = CryptoService.instance;
     return _sb.from('mensagem').stream(primaryKey: ['id']).order('created_at', ascending: true).map(
-      (rows) => rows.where((r) =>
-        (r['id_remetente'] == usuarioAId && r['id_destinatario'] == usuarioBId) ||
-        (r['id_remetente'] == usuarioBId && r['id_destinatario'] == usuarioAId)
-      ).toList()
+      (rows) => rows
+          .where((r) =>
+            (r['id_remetente'] == usuarioAId && r['id_destinatario'] == usuarioBId) ||
+            (r['id_remetente'] == usuarioBId && r['id_destinatario'] == usuarioAId)
+          )
+          .map((r) {
+            // Decifra o conteúdo em tempo real (retrocompatível com texto puro)
+            final m = Map<String, dynamic>.from(r);
+            m['conteudo'] = crypto.tryDecrypt(m['conteudo'] as String? ?? '');
+            return m;
+          })
+          .toList()
     );
   }
 }
