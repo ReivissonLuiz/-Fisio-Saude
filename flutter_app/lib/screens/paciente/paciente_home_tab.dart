@@ -2,6 +2,7 @@
 /// Aba "Início" do dashboard do paciente — +Fisio +Saúde
 library;
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
@@ -1221,10 +1222,41 @@ class _PieChartPainter extends CustomPainter {
     final radius = size.height / 2 - 4;
     double start = -3.14159 / 2;
     final paint = Paint()..style = PaintingStyle.fill;
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
     for (int i = 0; i < entries.length; i++) {
       final sweep = entries[i].value / total * 2 * 3.14159;
       paint.color = colors[i % colors.length];
       canvas.drawArc(Rect.fromCircle(center: center, radius: radius), start, sweep, true, paint);
+      
+      // Desenha o número no meio do segmento
+      if (entries[i].value > 0) {
+        final midAngle = start + sweep / 2;
+        // Posição entre o raio externo e interno (0.55 a 1.0 -> 0.775 é o meio)
+        final textRadius = radius * 0.775; 
+        
+        final dx = center.dx + textRadius * math.cos(midAngle);
+        final dy = center.dy + textRadius * math.sin(midAngle);
+
+        textPainter.text = TextSpan(
+          text: '${entries[i].value}',
+          style: const TextStyle(
+            color: Colors.white, 
+            fontSize: 14, 
+            fontWeight: FontWeight.bold,
+            shadows: [
+               Shadow(blurRadius: 2.0, color: Colors.black26, offset: Offset(1, 1))
+            ]
+          ),
+        );
+        textPainter.layout();
+        
+        textPainter.paint(
+          canvas, 
+          Offset(dx - textPainter.width / 2, dy - textPainter.height / 2)
+        );
+      }
+
       start += sweep;
     }
     // Hole for donut
