@@ -423,11 +423,13 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                   children: [
                     // Resumo Topo
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: _SummaryCard(
                             title: 'Consultas Hoje',
                             value: _isLoading ? '-' : _consultasHoje.length.toString(),
+                            details: 'Sessões agendadas para o dia atual.',
                             icon: Icons.calendar_month_rounded,
                             color: Colors.orange,
                           ),
@@ -437,6 +439,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                           child: _SummaryCard(
                             title: 'Total Pacientes',
                             value: _isLoading ? '-' : _totalPacientes.toString(),
+                            details: 'Pacientes atualmente vinculados a você.',
                             icon: Icons.people_alt_rounded,
                             color: Colors.blue,
                           ),
@@ -446,6 +449,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                           child: _SummaryCard(
                             title: 'Realizadas',
                             value: _isLoading ? '-' : _realizadas.toString(),
+                            details: 'Histórico total de atendimentos concluídos.',
                             icon: Icons.check_circle_rounded,
                             color: Colors.green,
                           ),
@@ -523,58 +527,104 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
+class _SummaryCard extends StatefulWidget {
   final String title;
   final String value;
+  final String details;
   final IconData icon;
   final Color color;
 
   const _SummaryCard({
     required this.title,
     required this.value,
+    required this.details,
     required this.icon,
     required this.color,
   });
 
   @override
+  State<_SummaryCard> createState() => _SummaryCardState();
+}
+
+class _SummaryCardState extends State<_SummaryCard> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4)),
-        ],
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
+        decoration: BoxDecoration(
+          color: _isExpanded ? widget.color.withValues(alpha: 0.03) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4)),
+          ],
+          border: Border.all(color: widget.color.withValues(alpha: _isExpanded ? 0.5 : 0.2)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: widget.color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(widget.icon, color: widget.color, size: 20),
             ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 10),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary)),
-          const SizedBox(height: 2),
-          Text(title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.textSecondary)),
-        ],
+            const SizedBox(height: 10),
+            Text(widget.value,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary)),
+            const SizedBox(height: 2),
+            Text(widget.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.textSecondary)),
+            
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              child: _isExpanded
+                  ? Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        Divider(height: 1, color: widget.color.withValues(alpha: 0.2)),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.details,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppTheme.textSecondary.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            
+            const SizedBox(height: 6),
+            Icon(
+              _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+              size: 14,
+              color: AppTheme.textHint.withValues(alpha: 0.5),
+            ),
+          ],
+        ),
       ),
     );
   }
