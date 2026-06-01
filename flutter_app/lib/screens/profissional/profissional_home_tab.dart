@@ -113,40 +113,79 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
       );
     }
 
-    return SizedBox(
-      height: 200,
-      child: PieChart(
-        PieChartData(
-          sectionsSpace: 2,
-          centerSpaceRadius: 40,
-          sections: [
+    const colorAgendadas  = Color(0xFF42A5F5); // azul
+    const colorRealizadas = Color(0xFF66BB6A); // verde
+    const colorCanceladas = Color(0xFFEF5350); // vermelho
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 210,
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 3,
+              centerSpaceRadius: 52,
+              sections: [
+                if (_agendadas > 0)
+                  PieChartSectionData(
+                    color: colorAgendadas,
+                    value: _agendadas.toDouble(),
+                    title: '$_agendadas',
+                    radius: 58,
+                    titleStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [Shadow(color: Colors.black26, blurRadius: 4)],
+                    ),
+                  ),
+                if (_realizadas > 0)
+                  PieChartSectionData(
+                    color: colorRealizadas,
+                    value: _realizadas.toDouble(),
+                    title: '$_realizadas',
+                    radius: 58,
+                    titleStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [Shadow(color: Colors.black26, blurRadius: 4)],
+                    ),
+                  ),
+                if (_canceladas > 0)
+                  PieChartSectionData(
+                    color: colorCanceladas,
+                    value: _canceladas.toDouble(),
+                    title: '$_canceladas',
+                    radius: 58,
+                    titleStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [Shadow(color: Colors.black26, blurRadius: 4)],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        // Legenda externa
+        Wrap(
+          spacing: 20,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: [
             if (_agendadas > 0)
-              PieChartSectionData(
-                color: Colors.blue,
-                value: _agendadas.toDouble(),
-                title: 'Agendadas\n$_agendadas',
-                radius: 50,
-                titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+              _LegendItem(color: colorAgendadas,  label: 'Agendadas'),
             if (_realizadas > 0)
-              PieChartSectionData(
-                color: Colors.green,
-                value: _realizadas.toDouble(),
-                title: 'Realizadas\n$_realizadas',
-                radius: 50,
-                titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+              _LegendItem(color: colorRealizadas, label: 'Realizadas'),
             if (_canceladas > 0)
-              PieChartSectionData(
-                color: Colors.redAccent,
-                value: _canceladas.toDouble(),
-                title: 'Canceladas\n$_canceladas',
-                radius: 50,
-                titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+              _LegendItem(color: colorCanceladas, label: 'Canceladas'),
           ],
         ),
-      ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 
@@ -754,6 +793,40 @@ class _EmptyState extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Item de legenda usado no gráfico de pizza
+class _LegendItem extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _LegendItem({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
