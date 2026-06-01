@@ -241,11 +241,13 @@ class _AgendaTabState extends State<AgendaTab> {
     }
 
     // Executa a recomendação 100% localmente (sem rede)
+    // topN = 8: o ML apresenta mais opções ao profissional;
+    // a decisão de quais vão para o paciente é sempre do profissional.
     final recomendacoesML = recomendador.recomendar(
       sintomas: sintomasPayload.isNotEmpty
           ? sintomasPayload
           : [{'descricao': '', 'categoria': 'Outra Região', 'intensidade': 5}],
-      topN: 5,
+      topN: 8,
       filtrarRegiao: regiaoPredominante,
     );
 
@@ -1053,10 +1055,8 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
   @override
   void initState() {
     super.initState();
-    // Pré-seleciona o exercício com maior score de similaridade (apenas quando ML ativo)
-    if (widget.mlDisponivel && widget.recomendacoes.isNotEmpty) {
-      _selecionados.add(widget.recomendacoes.first['id'] as String);
-    }
+    // Nenhum exercício é pré-selecionado: o profissional decide ativamente
+    // quais recomendações do ML serão enviadas ao paciente.
     _buscaCtrl.addListener(() {
       setState(() => _termoBusca = _buscaCtrl.text.toLowerCase());
     });
