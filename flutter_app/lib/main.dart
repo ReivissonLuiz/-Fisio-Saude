@@ -4,6 +4,7 @@
 library;
 
 import 'dart:async';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -34,7 +35,15 @@ void main() async {
     anonKey: SupabaseConfig.anonKey,
   );
 
-  runApp(const FisioSaudeApp());
+  // runZonedGuarded captura erros assíncronos não tratados (ex: sessão inválida ao iniciar)
+  runZonedGuarded(
+    () => runApp(const FisioSaudeApp()),
+    (error, stack) {
+      // Erros de sessão/auth são esperados quando o usuário foi deletado
+      // ou o token expirou. Não devem quebrar o app.
+      debugPrint('Erro assíncrono capturado: $error');
+    },
+  );
 }
 
 // Chave global para navegar a partir de qualquer lugar no app
@@ -57,16 +66,23 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
     super.initState();
     // Ouve eventos globais de autenticação do Supabase
     _authSubscription =
-        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      // Quando o usuário clica no link de recuperação do e-mail,
-      // o Supabase emite este evento com type=recovery
-      if (data.event == AuthChangeEvent.passwordRecovery) {
-        _navigatorKey.currentState?.pushNamedAndRemoveUntil(
-          '/reset-password',
-          (route) => false,
-        );
-      }
-    });
+        Supabase.instance.client.auth.onAuthStateChange.listen(
+      (data) {
+        // Quando o usuário clica no link de recuperação do e-mail,
+        // o Supabase emite este evento com type=recovery
+        if (data.event == AuthChangeEvent.passwordRecovery) {
+          _navigatorKey.currentState?.pushNamedAndRemoveUntil(
+            '/reset-password',
+            (route) => false,
+          );
+        }
+      },
+      onError: (Object error) {
+        // Ignora erros de sessão inválida (ex: usuário deletado, token expirado).
+        // Sem este handler, uma sessão corrompida causaria "Uncaught Error" no startup.
+        debugPrint('Auth stream error (ignorado): $error');
+      },
+    );
   }
 
   @override
