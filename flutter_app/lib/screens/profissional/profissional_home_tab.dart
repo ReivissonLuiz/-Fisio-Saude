@@ -505,7 +505,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                             title: 'Cancelamentos',
                             value: _isLoading ? '-' : '${_taxaCancelamento.toStringAsFixed(0)}%',
                             details: 'Taxa de faltas e cancelamentos no histórico.',
-                            icon: Icons.trending_down_rounded,
+                            icon: Icons.block_flipped,
                             color: Colors.redAccent,
                           ),
                         ),
@@ -545,7 +545,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                       _ExpandableCard(
                         title: 'Principais Queixas',
                         subtitle: 'Sintomas mais relatados (Geral)',
-                        icon: Icons.medical_information_rounded,
+                        icon: Icons.healing_rounded,
                         child: _principaisQueixas.isEmpty
                             ? const Padding(
                                 padding: EdgeInsets.all(20),
