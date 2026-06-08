@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../theme/app_theme.dart';
 import '../../services/api_service.dart';
 
@@ -59,8 +61,8 @@ class _AdminManagementTabState extends State<AdminManagementTab>
     final formKey = GlobalKey<FormState>();
     final nomeCtrl    = TextEditingController(text: usuario['nome']?.toString() ?? '');
     final emailCtrl   = TextEditingController(text: usuario['email']?.toString() ?? '');
-    final telCtrl     = TextEditingController(text: usuario['telefone']?.toString() ?? '');
-    final cepCtrl     = TextEditingController(text: usuario['cep']?.toString() ?? '');
+    final telCtrl     = TextEditingController(text: _formatTelefone(usuario['telefone']?.toString() ?? ''));
+    final cepCtrl     = TextEditingController(text: _formatCep(usuario['cep']?.toString() ?? ''));
     final logCtrl     = TextEditingController(text: usuario['logradouro']?.toString() ?? '');
     final numCtrl     = TextEditingController(text: usuario['numero']?.toString() ?? '');
     final bairroCtrl  = TextEditingController(text: usuario['bairro']?.toString() ?? '');
@@ -68,6 +70,11 @@ class _AdminManagementTabState extends State<AdminManagementTab>
     final ufCtrl      = TextEditingController(text: usuario['uf']?.toString() ?? '');
     final crefitoCtrl = TextEditingController(text: usuario['crefito']?.toString() ?? '');
     final espCtrl     = TextEditingController(text: usuario['especialidade']?.toString() ?? '');
+
+    final telMask = MaskTextInputFormatter(
+        mask: '(##) #####-####', filter: {'#': RegExp(r'\d')});
+    final cepMask = MaskTextInputFormatter(
+        mask: '#####-###', filter: {'#': RegExp(r'\d')});
 
     bool isSaving = false;
 
@@ -124,8 +131,21 @@ class _AdminManagementTabState extends State<AdminManagementTab>
                             _editField('Nome completo', nomeCtrl, icon: Icons.person_outline, required: true),
                             _editField('E-mail', emailCtrl, icon: Icons.email_outlined, required: true,
                                 keyboardType: TextInputType.emailAddress),
-                            _editField('Telefone', telCtrl, icon: Icons.phone_outlined,
-                                keyboardType: TextInputType.phone),
+                            _editField(
+                              'Telefone',
+                              telCtrl,
+                              icon: Icons.phone_outlined,
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [telMask],
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) return null;
+                                final clean = v.replaceAll(RegExp(r'\D'), '');
+                                if (clean.length < 10) {
+                                  return 'Telefone inválido (mínimo 10 dígitos)';
+                                }
+                                return null;
+                              },
+                            ),
                           ]),
                           if ((usuario['id_permissao'] as int?) == 2) ...[
                             const SizedBox(height: 12),
@@ -136,8 +156,21 @@ class _AdminManagementTabState extends State<AdminManagementTab>
                           ],
                           const SizedBox(height: 12),
                           _EditSection(title: 'Endereço', children: [
-                            _editField('CEP', cepCtrl, icon: Icons.location_on_outlined,
-                                keyboardType: TextInputType.number),
+                            _editField(
+                              'CEP',
+                              cepCtrl,
+                              icon: Icons.location_on_outlined,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [cepMask],
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) return null;
+                                final clean = v.replaceAll(RegExp(r'\D'), '');
+                                if (clean.length != 8) {
+                                  return 'CEP inválido (deve ter 8 dígitos)';
+                                }
+                                return null;
+                              },
+                            ),
                             _editField('Logradouro', logCtrl, icon: Icons.home_outlined),
                             Row(
                               children: [
@@ -175,8 +208,8 @@ class _AdminManagementTabState extends State<AdminManagementTab>
                             final dados = <String, dynamic>{
                               'nome'       : nomeCtrl.text.trim(),
                               'email'      : emailCtrl.text.trim().toLowerCase(),
-                              'telefone'   : telCtrl.text.trim(),
-                              'cep'        : cepCtrl.text.trim(),
+                              'telefone'   : telCtrl.text.replaceAll(RegExp(r'\D'), ''),
+                              'cep'        : cepCtrl.text.replaceAll(RegExp(r'\D'), ''),
                               'logradouro' : logCtrl.text.trim(),
                               'numero'     : numCtrl.text.trim(),
                               'bairro'     : bairroCtrl.text.trim(),
@@ -230,14 +263,18 @@ class _AdminManagementTabState extends State<AdminManagementTab>
   }
 
   Widget _editField(String label, TextEditingController ctrl, {
-    IconData? icon, bool required = false,
+    IconData? icon,
+    bool required = false,
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextFormField(
         controller: ctrl,
         keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: icon != null ? Icon(icon, size: 20) : null,
@@ -247,9 +284,9 @@ class _AdminManagementTabState extends State<AdminManagementTab>
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           isDense: true,
         ),
-        validator: required
+        validator: validator ?? (required
             ? (v) => (v == null || v.trim().isEmpty) ? 'Campo obrigatório' : null
-            : null,
+            : null),
       ),
     );
   }
@@ -422,7 +459,8 @@ class _UserList extends StatelessWidget {
         final isAtivo = u['ativo'] as bool? ?? true;
         final nome = u['nome']?.toString() ?? 'Sem nome';
         final email = u['email']?.toString() ?? '';
-        final sub = u['especialidade']?.toString() ?? u['telefone']?.toString() ?? '';
+        final rawTel = u['telefone']?.toString() ?? '';
+        final sub = u['especialidade']?.toString() ?? (rawTel.isNotEmpty ? _formatTelefone(rawTel) : '');
 
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
@@ -530,4 +568,22 @@ class _EditSection extends StatelessWidget {
       ],
     );
   }
+}
+
+String _formatTelefone(String tel) {
+  final digits = tel.replaceAll(RegExp(r'\D'), '');
+  if (digits.length == 11) {
+    return '(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}';
+  } else if (digits.length == 10) {
+    return '(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}';
+  }
+  return tel;
+}
+
+String _formatCep(String cep) {
+  final digits = cep.replaceAll(RegExp(r'\D'), '');
+  if (digits.length == 8) {
+    return '${digits.substring(0, 5)}-${digits.substring(5)}';
+  }
+  return cep;
 }
