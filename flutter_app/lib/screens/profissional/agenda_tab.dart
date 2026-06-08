@@ -1167,8 +1167,15 @@ class _RecomendacaoMLModalState extends State<_RecomendacaoMLModal> {
 
     setState(() => _enviando = true);
 
+    // Filtra os exercícios selecionados e remove url_videos (lista de 3 URLs),
+    // mantendo apenas url_video (URL principal) para evitar enviar múltiplos vídeos.
     final videosSelecionados = widget.recomendacoes
         .where((r) => _selecionados.contains(r['id'] as String))
+        .map((r) {
+          final v = Map<String, dynamic>.from(r);
+          v.remove('url_videos'); // garante envio de apenas 1 vídeo por exercício
+          return v;
+        })
         .toList();
 
     final res = await widget.api.enviarRecomendacaoVideos(

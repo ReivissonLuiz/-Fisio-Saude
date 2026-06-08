@@ -63,3 +63,6 @@ desktop.ini
 *.pfx
 secrets/
 credentials/
+# ── Documentos de Projeto (Cronogramas, etc) ────────────
+CRONOGRAMA_ATUALIZADO.md
+*.pdf
