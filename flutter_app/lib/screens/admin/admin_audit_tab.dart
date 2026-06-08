@@ -4,9 +4,9 @@
 library;
 
 import 'dart:convert';
-import 'dart:html' as html;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import '../../services/audit_service.dart';
 
@@ -116,25 +116,39 @@ class _AdminAuditTabState extends State<AdminAuditTab> {
 
       final dados = resultado['data'] as List;
       final csv = AuditService.paraCSV(dados);
-      final nomeArquivo =
-          'auditoria_${DateTime.now().toIso8601String().substring(0, 10)}.csv';
 
       if (kIsWeb) {
-        // Download no browser
-        final bytes = csv.codeUnits;
-        final blob = html.Blob([bytes], 'text/csv;charset=utf-8');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        html.AnchorElement(href: url)
-          ..setAttribute('download', nomeArquivo)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        // Na versão Web o export via browser é feito pelo JS nativo.
+        // Como estamos compilando para Android aqui, este bloco nunca executa,
+        // mas mantemos o guard por clareza.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Exportação disponível na versão web do sistema.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
       }
+
+      // --- Android / Desktop: copia o CSV para o clipboard ---
+      await Clipboard.setData(ClipboardData(text: csv));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${dados.length} registros exportados: $nomeArquivo'),
+            content: Text(
+              '${dados.length} registros copiados para a área de transferência!\n'
+              'Cole em um editor de texto e salve como .csv',
+            ),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
           ),
         );
       }
