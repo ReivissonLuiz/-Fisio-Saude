@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../services/audit_service.dart';
@@ -75,10 +76,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _idPermissao = (_args['id_permissao'] as int?) ?? 1;
     _visaoAtiva = _visaoFromPermissao(_idPermissao);
 
-    // Sem argumentos = reload da página (Flutter Web perde os args)
     if (_args.isEmpty) {
+      // Sem argumentos: reload antigo sem _AuthGate → resolve sessão
+      // (_resolveFromSession já chama _loadPrefs internamente)
       WidgetsBinding.instance
           .addPostFrameCallback((_) => _resolveFromSession());
+    } else {
+      // Com argumentos: login normal ou reload via _AuthGate
+      // → restaura aba e visão persistidas diretamente
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _loadPrefs(_idPermissao));
     }
   }
 
@@ -91,6 +98,57 @@ class _HomeScreenState extends State<HomeScreen> {
       default:
         return _VisaoAtiva.paciente;
     }
+  }
+
+  // ── Chaves para persistência de estado entre reloads ────────────────────
+  static const _kTabIndex  = 'pref_tab_index';
+  static const _kVisaoAtiva = 'pref_visao_ativa';
+
+  /// Salva aba e visão ativas no SharedPreferences.
+  Future<void> _savePrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kTabIndex, _tabIndex);
+    await prefs.setString(_kVisaoAtiva, _visaoAtiva.name);
+  }
+
+  /// Restaura aba e visão ativas do SharedPreferences.
+  /// Deve ser chamado após o perfil do usuário ser carregado, para que
+  /// a visão restaurada seja compatível com a permissão real do usuário.
+  Future<void> _loadPrefs(int permissao) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTab   = prefs.getInt(_kTabIndex) ?? 0;
+    final savedVisao = prefs.getString(_kVisaoAtiva);
+
+    // Determina a visão padrão para a permissão do usuário
+    final visaoPadrao = _visaoFromPermissao(permissao);
+
+    // Só restaura a visão se o usuário tiver permissão para ela
+    _VisaoAtiva visaoRestaurada = visaoPadrao;
+    if (savedVisao != null) {
+      final candidata = _VisaoAtiva.values.firstWhere(
+        (v) => v.name == savedVisao,
+        orElse: () => visaoPadrao,
+      );
+      // Valida permissão: admin pode ver tudo; profissional não pode ver admin
+      final bool permitido = switch (candidata) {
+        _VisaoAtiva.admin        => permissao == Permissao.administrador,
+        _VisaoAtiva.profissional => permissao >= Permissao.profissional,
+        _VisaoAtiva.paciente     => true,
+      };
+      visaoRestaurada = permitido ? candidata : visaoPadrao;
+    }
+
+    // Número de abas por visão — evita índice fora do range
+    final maxTab = switch (visaoRestaurada) {
+      _VisaoAtiva.admin        => 3,
+      _VisaoAtiva.profissional => 4,
+      _VisaoAtiva.paciente     => 3,
+    };
+
+    setState(() {
+      _visaoAtiva = visaoRestaurada;
+      _tabIndex   = savedTab.clamp(0, maxTab);
+    });
   }
 
   /// Recupera dados do usuário logado via Supabase quando os argumentos
@@ -118,6 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final data = result['data'] as Map<String, dynamic>;
       final permissaoData = data['permissao'] as Map<String, dynamic>?;
+      final idPerm = data['id_permissao'] as int? ?? 1;
 
       setState(() {
         _supabaseUserId = user.id;
@@ -125,13 +184,15 @@ class _HomeScreenState extends State<HomeScreen> {
         _nome = data['nome'] as String? ?? user.email ?? 'Usuário';
         _email = data['email'] as String? ?? user.email ?? '';
         _avatarUrl = data['avatar_url'] as String?;
-        _idPermissao = data['id_permissao'] as int? ?? 1;
+        _idPermissao = idPerm;
         // ignore: unused_local_variable
         final tipo = permissaoData?['nome'] as String? ??
             Permissao.nomePorNivel(_idPermissao);
-        _visaoAtiva = _visaoFromPermissao(_idPermissao);
         _isLoadingSession = false;
       });
+
+      // Restaura aba e visão persistidas (após saber a permissão real)
+      await _loadPrefs(idPerm);
     } catch (_) {
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
@@ -152,6 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _visaoAtiva = novaVisao;
       _tabIndex = 0;
     });
+    _savePrefs();
   }
 
   // ── Banner de alternância de visão ───────────────────────────────────────
@@ -294,6 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
               perfil: 'administrador',
             );
             setState(() => _tabIndex = i);
+            _savePrefs();
           },
           backgroundColor: Colors.white,
           indicatorColor: Colors.purple.withValues(alpha: 0.12),
@@ -388,6 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
               perfil: 'profissional',
             );
             setState(() => _tabIndex = i);
+            _savePrefs();
           },
           backgroundColor: Colors.white,
           indicatorColor: AppTheme.secondary.withValues(alpha: 0.12),
@@ -488,6 +552,7 @@ class _HomeScreenState extends State<HomeScreen> {
             perfil: 'paciente',
           );
           setState(() => _tabIndex = i);
+          _savePrefs();
         },
         backgroundColor: Colors.white,
         indicatorColor: AppTheme.primary.withValues(alpha: 0.12),

@@ -195,6 +195,13 @@ class RecomendadorService {
   factory RecomendadorService() => _instance;
   RecomendadorService._internal();
 
+  // ── IDs de exercícios com vídeos problemáticos (erro de processamento
+  //    no Google Drive). Adicione aqui os IDs conforme forem identificados.
+  static const Set<String> _idsBloqueados = {
+    // Exemplo: 'shoulder_abduction_left',
+    // Adicione os IDs dos vídeos com erro de processamento aqui:
+  };
+
   List<Map<String, dynamic>> _catalogo = [];
   late _TfidfVectorizer _vectorizer;
   late List<List<double>> _matrizTfidf; // um vetor por exercício
@@ -210,7 +217,12 @@ class RecomendadorService {
     final jsonStr =
         await rootBundle.loadString('assets/catalogo_exercicios.json');
     final lista = jsonDecode(jsonStr) as List;
-    _catalogo = lista.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+
+    // Carrega o catálogo excluindo exercícios com vídeos problemáticos
+    _catalogo = lista
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .where((e) => !_idsBloqueados.contains(e['id'] as String? ?? ''))
+        .toList();
 
     // Monta texto TF-IDF para cada exercício (espelho de _montar_texto_tfidf)
     _textosTfidf = _catalogo.map(_montarTextoExercicio).toList();
@@ -332,8 +344,7 @@ class RecomendadorService {
         'descricao': ex['descricao'],
         'nivel_dificuldade': ex['nivel_dificuldade'],
         'duracao_min': (ex['duracao_min'] as num).toInt(),
-        'url_video': ex['url_video'],
-        'url_videos': ex['url_videos'] ?? [ex['url_video']],
+        'url_video': ex['url_video'], // apenas 1 URL — url_videos removido
         'lateralidade': ex['lateralidade'],
         'score_similaridade': double.parse(scores[i].toStringAsFixed(4)),
         'indicacoes': ex['indicacoes'] ?? [],

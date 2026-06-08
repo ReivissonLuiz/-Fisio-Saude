@@ -20,6 +20,7 @@ import 'screens/register/patient_register_screen.dart';
 import 'screens/register/professional_register_screen.dart';
 import 'screens/register/register_success_screen.dart';
 import 'screens/register/admin_register_screen.dart';
+import 'services/api_service.dart';
 
 
 void main() async {
@@ -104,9 +105,9 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       navigatorKey: _navigatorKey,
-      initialRoute: '/',
+      // _AuthGate decide se exibe Splash ou vai direto para Home (reload)
+      home: const _AuthGate(),
       routes: {
-        '/': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/forgot-step1': (context) => const ForgotStep1Screen(),
@@ -124,6 +125,82 @@ class _FisioSaudeAppState extends State<FisioSaudeApp> {
         },
       },
     );
+  }
+}
+
+/// Verifica se há sessão ativa ao iniciar o app (ex: reload no browser).
+/// - Com sessão → busca dados do usuário e abre HomeScreen diretamente.
+/// - Sem sessão → exibe SplashScreen normalmente.
+class _AuthGate extends StatefulWidget {
+  const _AuthGate();
+
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  final _api = ApiService();
+  bool _checking = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final session = Supabase.instance.client.auth.currentSession;
+
+    if (session == null) {
+      // Sem sessão ativa → mostra Splash normalmente
+      if (mounted) setState(() => _checking = false);
+      return;
+    }
+
+    try {
+      final result = await _api.getUsuarioPorSupabaseId(session.user.id);
+
+      if (!mounted) return;
+
+      if (result['success'] != true) {
+        // Sessão inválida ou usuário não encontrado → Splash
+        setState(() => _checking = false);
+        return;
+      }
+
+      final data = result['data'] as Map<String, dynamic>;
+      final permissaoData = data['permissao'] as Map<String, dynamic>?;
+
+      // Sessão válida → vai direto para HomeScreen preservando o estado
+      // (HomeScreen irá restaurar _tabIndex e _visaoAtiva via SharedPreferences)
+      Navigator.of(context).pushReplacementNamed(
+        '/home',
+        arguments: {
+          'id': session.user.id,
+          'id_usuario': data['id'] as String?,
+          'nome': data['nome'] as String? ?? session.user.email ?? 'Usuário',
+          'email': data['email'] as String? ?? session.user.email ?? '',
+          'avatar_url': data['avatar_url'] as String?,
+          'id_permissao': data['id_permissao'] as int? ?? 1,
+          'tipo': permissaoData?['nome'] as String? ?? 'Paciente',
+        },
+      );
+    } catch (_) {
+      // Erro de rede → mostra Splash (usuário precisará fazer login)
+      if (mounted) setState(() => _checking = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_checking) {
+      // Tela de carregamento enquanto verifica sessão
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    // Sem sessão → Splash normal
+    return const SplashScreen();
   }
 }
 
