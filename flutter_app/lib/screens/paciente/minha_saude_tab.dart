@@ -693,8 +693,21 @@ class _RecomendacaoCardState extends State<_RecomendacaoCard> {
     }
   }
 
+  /// Converte URLs do Google Drive de /view para /preview, que usa o player
+  /// embarcado e lida melhor com arquivos maiores (≥10 MB).
+  /// URLs de outros serviços (YouTube etc.) são retornadas sem alteração.
+  String _converterUrlDrive(String url) {
+    if (!url.contains('drive.google.com')) return url;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return url;
+    // Troca /view por /preview e descarta os query params (ex: ?usp=drive_link)
+    final path = uri.path.replaceFirst('/view', '/preview');
+    return 'https://drive.google.com$path';
+  }
+
   Future<void> _abrirVideo(String url) async {
-    final uri = Uri.parse(url);
+    final urlFinal = _converterUrlDrive(url);
+    final uri = Uri.parse(urlFinal);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
