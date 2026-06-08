@@ -271,6 +271,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _ExpandableChartCard(
                     title: 'Sintomas Registrados',
                     summary: 'Histórico de sintomas registrados por mês.',
+                    timeLabel: 'Últimos 6 meses',
                     icon: Icons.monitor_heart_rounded,
                     color: const Color(0xFFE91E63),
                     chart: _sintomasPorMes.isEmpty
@@ -281,6 +282,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _ExpandableChartCard(
                     title: 'Sessões Marcadas',
                     summary: 'Histórico de consultas por mês.',
+                    timeLabel: 'Últimos 6 meses',
                     icon: Icons.calendar_month_rounded,
                     color: AppTheme.primary,
                     chart: _consultasPorMes.isEmpty
@@ -291,6 +293,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _ExpandableChartCard(
                     title: 'Principais Regiões Afetadas',
                     summary: 'Proporção das regiões com queixas de dor.',
+                    timeLabel: 'Histórico total',
                     icon: Icons.accessibility_new_rounded,
                     color: Colors.orange,
                     chart: _categoriasSintomas.isEmpty
@@ -304,6 +307,7 @@ class _PacienteHomeTabState extends State<PacienteHomeTab> {
                   _ExpandableChartCard(
                     title: 'Intensidade de Dor',
                     summary: 'Distribuição dos níveis de dor relatados.',
+                    timeLabel: 'Histórico total',
                     icon: Icons.thermostat_rounded,
                     color: Colors.red,
                     chart: _intensidadeSintomas.values.every((v) => v == 0)
@@ -1057,6 +1061,7 @@ class _EmptyCard extends StatelessWidget {
 // ── Expandable Chart Card ────────────────────────────────────────────────────
 class _ExpandableChartCard extends StatefulWidget {
   final String title, summary;
+  final String? timeLabel;
   final IconData icon;
   final Color color;
   final Widget? chart;
@@ -1064,6 +1069,7 @@ class _ExpandableChartCard extends StatefulWidget {
   const _ExpandableChartCard({
     required this.title, required this.summary,
     required this.icon, required this.color, this.chart,
+    this.timeLabel,
   });
 
   @override
@@ -1105,6 +1111,17 @@ class _ExpandableChartCardState extends State<_ExpandableChartCard> {
                         Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         const SizedBox(height: 3),
                         Text(widget.summary, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4)),
+                        if (widget.timeLabel != null) ...[  
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.access_time_rounded, size: 11, color: AppTheme.textHint),
+                              const SizedBox(width: 3),
+                              Text(widget.timeLabel!, style: const TextStyle(fontSize: 10, color: AppTheme.textHint, fontStyle: FontStyle.italic)),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

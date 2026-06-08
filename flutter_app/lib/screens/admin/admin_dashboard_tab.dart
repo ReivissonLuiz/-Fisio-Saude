@@ -321,6 +321,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                           icon: Icons.emoji_events_rounded,
                           color: Colors.amber,
                           title: 'Profissional Destaque',
+                          timeLabel: 'Últimos 30 dias',
                           summary: _topProfissionalConsultas > 0
                               ? '$_topProfissionalNome lidera com $_topProfissionalConsultas sessão(ões) no último mês.'
                               : 'Nenhuma consulta no último mês.',
@@ -333,6 +334,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                           icon: Icons.star_rounded,
                           color: Colors.orange,
                           title: 'Avaliações de Pacientes',
+                          timeLabel: 'Histórico total',
                           summary: 'Top profissionais com as melhores notas de feedback.',
                           chart: _listaProfissionais.isEmpty
                               ? null
@@ -342,6 +344,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                           icon: Icons.location_on_rounded,
                           color: const Color(0xFFE91E63),
                           title: 'Principais Queixas de Dores',
+                          timeLabel: 'Histórico total',
                           summary: _categoriasCount.isEmpty
                               ? 'Sem registros de sintomas.'
                               : 'Categoria mais frequente: ${_categoriasCount.entries.reduce((a,b)=>a.value>=b.value?a:b).key}.',
@@ -355,6 +358,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                           icon: Icons.speed_rounded,
                           color: Colors.deepOrange,
                           title: 'Distribuição de Intensidade de Dor',
+                          timeLabel: 'Histórico total',
                           summary: _totalSintomas > 0
                               ? 'Média geral: ${_dorMedio.toStringAsFixed(1)}/10.'
                               : 'Nenhum sintoma registrado.',
@@ -367,6 +371,7 @@ class _AdminDashboardTabState extends State<AdminDashboardTab> {
                           icon: Icons.group_work_rounded,
                           color: Colors.indigo,
                           title: 'Pacientes por Profissional',
+                          timeLabel: 'Histórico total',
                           summary: _totalProf > 0
                               ? 'Média de ${(_totalPacientes / _totalProf).toStringAsFixed(1)} pacientes por fisioterapeuta.'
                               : 'Nenhum profissional cadastrado.',
@@ -447,6 +452,7 @@ class _KPICard extends StatelessWidget {
 // ── Expandable Chart Card ────────────────────────────────────────────────────
 class _ExpandableChartCard extends StatefulWidget {
   final String title, summary;
+  final String? timeLabel;
   final IconData icon;
   final Color color;
   final Widget? chart;
@@ -454,6 +460,7 @@ class _ExpandableChartCard extends StatefulWidget {
   const _ExpandableChartCard({
     required this.title, required this.summary,
     required this.icon, required this.color, this.chart,
+    this.timeLabel,
   });
 
   @override
@@ -495,6 +502,17 @@ class _ExpandableChartCardState extends State<_ExpandableChartCard> {
                         Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         const SizedBox(height: 3),
                         Text(widget.summary, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary, height: 1.4)),
+                        if (widget.timeLabel != null) ...[  
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.access_time_rounded, size: 11, color: AppTheme.textHint),
+                              const SizedBox(width: 3),
+                              Text(widget.timeLabel!, style: const TextStyle(fontSize: 10, color: AppTheme.textHint, fontStyle: FontStyle.italic)),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

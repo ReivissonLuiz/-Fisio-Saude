@@ -535,6 +535,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                         title: 'Evolução de Atendimentos',
                         subtitle: 'Últimos 6 meses',
                         icon: Icons.bar_chart_rounded,
+                        timeLabel: 'Últimos 6 meses',
                         initiallyExpanded: true,
                         child: _buildBarChart(),
                       ),
@@ -543,6 +544,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                         title: 'Distribuição por Status',
                         subtitle: 'Todas as consultas registradas',
                         icon: Icons.pie_chart_rounded,
+                        timeLabel: 'Histórico total',
                         child: _buildPieChart(),
                       ),
                       const SizedBox(height: 16),
@@ -550,6 +552,7 @@ class _ProfissionalHomeTabState extends State<ProfissionalHomeTab> {
                         title: 'Principais Queixas',
                         subtitle: 'Sintomas mais relatados (Geral)',
                         icon: Icons.healing_rounded,
+                        timeLabel: 'Histórico total',
                         child: _principaisQueixas.isEmpty
                             ? const Padding(
                                 padding: EdgeInsets.all(20),
@@ -739,6 +742,7 @@ class _SummaryCardState extends State<_SummaryCard> {
 class _ExpandableCard extends StatelessWidget {
   final String title;
   final String subtitle;
+  final String? timeLabel;
   final IconData icon;
   final Widget child;
   final bool initiallyExpanded;
@@ -748,6 +752,7 @@ class _ExpandableCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.child,
+    this.timeLabel,
     this.initiallyExpanded = false,
   });
 
@@ -782,7 +787,23 @@ class _ExpandableCard extends StatelessWidget {
             child: Icon(icon, color: AppTheme.primary, size: 22),
           ),
           title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.textPrimary)),
-          subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textHint)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(subtitle, style: const TextStyle(fontSize: 12, color: AppTheme.textHint)),
+              if (timeLabel != null) ...[  
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.access_time_rounded, size: 11, color: AppTheme.textHint),
+                    const SizedBox(width: 3),
+                    Text(timeLabel!, style: const TextStyle(fontSize: 10, color: AppTheme.textHint, fontStyle: FontStyle.italic)),
+                  ],
+                ),
+              ]
+            ],
+          ),
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
