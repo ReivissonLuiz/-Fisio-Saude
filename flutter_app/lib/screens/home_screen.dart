@@ -76,10 +76,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _idPermissao = (_args['id_permissao'] as int?) ?? 1;
     _visaoAtiva = _visaoFromPermissao(_idPermissao);
 
-    // Sem argumentos = reload da página (Flutter Web perde os args)
     if (_args.isEmpty) {
+      // Sem argumentos: reload antigo sem _AuthGate → resolve sessão
+      // (_resolveFromSession já chama _loadPrefs internamente)
       WidgetsBinding.instance
           .addPostFrameCallback((_) => _resolveFromSession());
+    } else {
+      // Com argumentos: login normal ou reload via _AuthGate
+      // → restaura aba e visão persistidas diretamente
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _loadPrefs(_idPermissao));
     }
   }
 
